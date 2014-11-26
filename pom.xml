@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>Nucleus (Parent)</name>
+    <description>Bringing MVP to the Android</description>
+
+    <packaging>pom</packaging>
+
+    <groupId>info.android15.nucleus</groupId>
+    <artifactId>nucleus-parent</artifactId>
+    <version>0.1-SNAPSHOT</version>
+
+    <modules>
+        <module>nucleus</module>
+        <module>nucleus-example</module>
+    </modules>
+
+    <properties>
+        <android-maven.version>4.0.0-rc.2</android-maven.version>
+        <java.version>1.7</java.version>
+        <android.version>4.1.1.4</android.version>
+        <android.sdk.platform>15</android.sdk.platform>
+        <dagger.version>1.2.2</dagger.version>
+
+        <junit.version>4.11</junit.version>
+        <mockito.version>1.10.8</mockito.version>
+        <powermock.version>1.5.6</powermock.version>
+        <robolectric.version>2.4</robolectric.version>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+                <artifactId>android-maven-plugin</artifactId>
+                <version>${android-maven.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <sdk>
+                        <platform>19</platform>
+                    </sdk>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
