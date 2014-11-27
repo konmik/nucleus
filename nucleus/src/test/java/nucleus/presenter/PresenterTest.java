@@ -1,7 +1,7 @@
 package nucleus.presenter;
 
 import android.os.Bundle;
-import nucleus.presenter.broker.SimpleBroker;
+import nucleus.presenter.broker.Broker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -20,9 +20,8 @@ public class PresenterTest {
     class TestPresenter extends Presenter {
 
         private static final long IN_ID = 3;
-        private static final String SUPER = "super";
 
-        public class TestBroker extends SimpleBroker {
+        public class TestBroker extends Broker {
         }
 
         public TestBroker testBroker1;
@@ -32,7 +31,6 @@ public class PresenterTest {
 
         @Override
         public void onCreate(Bundle savedState) {
-            super.onCreate(savedState == null ? null : savedState.getBundle(SUPER));
             outId = getTestBundleValue(savedState);
 
             testBroker1 = (TestBroker)addViewBroker(new TestBroker());
@@ -41,16 +39,15 @@ public class PresenterTest {
 
         @Override
         public Bundle onSave() {
-            Bundle bundle = createTestBundle(IN_ID);
-            bundle.putBundle(SUPER, super.onSave());
-            return bundle;
+            return createTestBundle(IN_ID);
         }
     }
 
     @Test
     public void testProvide() throws Exception {
-        final Presenter mockPresenter = Mockito.mock(Presenter.class);
+        // EXPECTATION: [Presenter.provide()] -> Presenter.onCreate
 
+        final Presenter mockPresenter = Mockito.mock(Presenter.class);
         Presenter result = new Presenter().provide(new PresenterCreator() {
             @Override
             public Presenter createPresenter() {
@@ -64,6 +61,8 @@ public class PresenterTest {
 
     @Test
     public void testProvideWithSaveRestore() throws Exception {
+        // EXPECTATION: Presenter.save() -> bundle -> [Presenter.provide()] -> bundle -> Presenter.onCreate
+
         final TestPresenter testPresenter = new TestPresenter();
         new Presenter().provide(new PresenterCreator() {
             @Override

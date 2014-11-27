@@ -5,7 +5,7 @@ import nucleus.model.Loader;
 import java.util.HashMap;
 
 @SuppressWarnings("unchecked") // too many of them but all are safe
-public abstract class LoaderBroker<TargetType> implements Broker<TargetType>, Loader.Receiver {
+public abstract class LoaderBroker<TargetType> extends Broker<TargetType> implements Loader.Receiver {
 
     private HashMap<Loader, Object> loaders = new HashMap<Loader, Object>();
     private TargetType target;

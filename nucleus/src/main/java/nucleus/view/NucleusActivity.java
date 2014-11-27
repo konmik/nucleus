@@ -17,6 +17,10 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
 
     private PresenterType presenter;
 
+    public void setPresenter(PresenterType presenter) {
+        this.presenter = presenter;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,8 +28,10 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
         if (finishIfWrongInstance())
             return;
 
-        presenter = (PresenterType)findParentPresenter()
-            .provide(this, savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY));
+        if (presenter == null) {
+            Bundle savedPresenterState = savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY);
+            presenter = (PresenterType)PresenterFinder.getInstance().findParentPresenter(this).provide(this, savedPresenterState);
+        }
     }
 
     @Override
@@ -37,7 +43,6 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         presenter.dropView(this);
 
         if (isFinishing())
@@ -55,10 +60,6 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
         return presenter;
     }
 
-    protected Presenter findParentPresenter() {
-        return PresenterFinder.findParentPresenter(this);
-    }
-
     private boolean finishIfWrongInstance() {
         if (!isTaskRoot()) {
             Intent intent = getIntent();
@@ -66,6 +67,7 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
             if (intent.hasCategory(CATEGORY_LAUNCHER) && isMainAction)
                 finish();
         }
+
         return false;
     }
 }

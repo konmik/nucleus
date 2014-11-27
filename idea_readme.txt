@@ -3,7 +3,7 @@
 
 2. Change directory path in the Structure for the Facet
 
-3. Right-click on the res directory and mark it as "resources root"
+3. Mark the res directory as "resources rootPresenter"
 
 4. Restart
 

@@ -2,13 +2,16 @@ package nucleus.example.main;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Printer;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import nucleus.example.R;
 import nucleus.example.network.ServerAPI;
 import nucleus.example.utils.ViewFn;
+import nucleus.presenter.Presenter;
 import nucleus.view.NucleusActivity;
+import nucleus.view.PresenterFinder;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -50,6 +53,18 @@ public class MainActivity extends NucleusActivity<MainPresenter> {
                 getPresenter().toggleTo(NAME_2);
             }
         });
+
+        getWindow().getDecorView().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Presenter.getRootPresenter().print(new Printer() {
+                    @Override
+                    public void println(String line) {
+                        Log.v(MainActivity.class.getSimpleName(), line);
+                    }
+                });
+            }
+        }, 1000);
     }
 
     public void publishCounter(int i) {

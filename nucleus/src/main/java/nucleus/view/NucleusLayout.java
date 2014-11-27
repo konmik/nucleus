@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
-
 import nucleus.presenter.Presenter;
 import nucleus.presenter.PresenterCreator;
 
@@ -32,6 +31,15 @@ public abstract class NucleusLayout<PresenterType extends Presenter<NucleusLayou
         super(context, attrs, defStyle);
     }
 
+    public void setPresenter(PresenterType presenter) {
+        this.presenter = presenter;
+    }
+
+    @Override
+    public PresenterType getPresenter() {
+        return presenter;
+    }
+
     @Override
     protected void onRestoreInstanceState(Parcelable state) {
         Bundle bundle = (Bundle)state;
@@ -47,8 +55,9 @@ public abstract class NucleusLayout<PresenterType extends Presenter<NucleusLayou
         if (isInEditMode())
             return;
 
-        Presenter parentPresenter = PresenterFinder.findParentPresenter(this);
-        presenter = (PresenterType)parentPresenter.provide(this, savedPresenterState);
+        if (presenter == null)
+            presenter = (PresenterType)PresenterFinder.getInstance().findParentPresenter(this).provide(this, savedPresenterState);
+
         presenter.takeView(this);
 
         savedPresenterState = null;
@@ -66,16 +75,10 @@ public abstract class NucleusLayout<PresenterType extends Presenter<NucleusLayou
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-
         presenter.dropView(this);
 
         if (activity.isFinishing())
             presenter.destroy();
-    }
-
-    @Override
-    public PresenterType getPresenter() {
-        return presenter;
     }
 
     // should be called for a view with a life cycle different to Activity's

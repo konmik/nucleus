@@ -11,6 +11,8 @@ public class Presenter<ViewType> {
     private static final String PRESENTER_ID_KEY = "id";
     private static final String PRESENTER_STATE_KEY = "state";
 
+    private static Presenter rootPresenter = new Presenter();
+
     private Presenter parent;
     private String id;
 
@@ -19,6 +21,14 @@ public class Presenter<ViewType> {
 
     private ArrayList<Broker<ViewType>> viewBrokers = new ArrayList<Broker<ViewType>>();
     private ArrayList<Broker<Presenter>> presenterBrokers = new ArrayList<Broker<Presenter>>();
+
+    public static Presenter getRootPresenter() {
+        return rootPresenter;
+    }
+
+    public static void setRootPresenter(Presenter rootPresenter) {
+        Presenter.rootPresenter = rootPresenter;
+    }
 
     public Presenter getParent() {
         return parent;
@@ -44,9 +54,13 @@ public class Presenter<ViewType> {
 
     /**
      * Finds a Presenter or restores it from the saved state.
+     * There can be three cases when this method is being called:
+     * 1. First creation of a view;
+     * 2. Restoring of a view when the process has NOT been destroyed (configuration change, activity recreation because of memory limitation);
+     * 3. Restoring of a view when the process has been destroyed.
      *
-     * @param creator    a callback for creating an instance of the Presenter class
-     * @param savedState saved state of the required {@link nucleus.presenter.Presenter}, that been created with
+     * @param creator    a callback for the Presenter class instantiation
+     * @param savedState saved state of the required {@link nucleus.presenter.Presenter} that been created with
      *                   {@link nucleus.presenter.Presenter#save} or null
      * @param <T>        Type of the required presenter
      * @return found or created with {@link nucleus.presenter.PresenterCreator} presenter
@@ -61,7 +75,7 @@ public class Presenter<ViewType> {
             for (Presenter presenter : presenters) {
                 if (presenter.id.equals(id))
                     //noinspection unchecked
-                    return (T)presenter; // it should always be of the same type if the caller will not cheat us
+                    return (T)presenter; // it should always be of the same type if the caller will not cheat
             }
         }
 
@@ -182,13 +196,13 @@ public class Presenter<ViewType> {
             padding += ".   ";
 
         ViewType view = getView();
-        printer.println(padding + id + (view == null ? "" : " => view: " + view.toString()));
+        printer.println(padding + (id == null ? "rootPresenter" : "id: " + id) + (view == null ? "" : " => view: " + view.toString()));
 
         for (Broker broker : viewBrokers)
-            printer.println(padding + " {broker} -> " + broker.getClass().getName());
+            printer.println(padding + "    {broker} -> " + broker.getClass().getName());
 
         for (Broker broker : presenterBrokers)
-            printer.println(padding + " {broker} -> " + broker.getClass().getName());
+            printer.println(padding + "    {broker} -> " + broker.getClass().getName());
 
         for (Presenter m : presenters)
             m.print(printer, level + 1);

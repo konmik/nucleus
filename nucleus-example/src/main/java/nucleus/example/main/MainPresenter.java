@@ -5,7 +5,7 @@ import nucleus.example.base.Injector;
 import nucleus.example.network.ItemsLoader;
 import nucleus.presenter.Presenter;
 import nucleus.presenter.broker.LoaderBroker;
-import nucleus.presenter.broker.SimpleBroker;
+import nucleus.presenter.broker.Broker;
 
 import javax.inject.Inject;
 
@@ -33,7 +33,7 @@ public class MainPresenter extends Presenter<MainActivity> {
 
         addViewBroker(new LogBroker());
 
-        addViewBroker(new SimpleBroker<MainActivity>() {
+        addViewBroker(new Broker<MainActivity>() {
             @Override
             public void onTakeTarget(MainActivity view) {
                 view.publishCounter(++counter);

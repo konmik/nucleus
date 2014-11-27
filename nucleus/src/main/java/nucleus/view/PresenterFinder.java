@@ -4,40 +4,48 @@ import android.app.Activity;
 import android.app.Application;
 import android.view.View;
 import android.view.ViewParent;
-
 import nucleus.presenter.Presenter;
 
 public class PresenterFinder {
 
-    private static Presenter root = new Presenter();
+    private static PresenterFinder instance = new PresenterFinder();
 
-    public static void setRootPresenter(Presenter root) {
-        PresenterFinder.root = root;
+    public static PresenterFinder getInstance() {
+        return instance;
     }
 
-    public static Presenter findParentPresenter(NucleusLayout view) {
+    public static void setInstance(PresenterFinder instance) {
+        PresenterFinder.instance = instance;
+    }
 
-        ViewParent parent = view.getParent();
-        while (parent != null && parent instanceof View) {
-            if (parent instanceof PresenterProvider)
-                return ((PresenterProvider)parent).getPresenter();
+    public Presenter findParentPresenter(Object view) {
 
-            parent = parent.getParent();
+        if (view instanceof View) {
+
+            View v = (View)view;
+            ViewParent parent = v.getParent();
+            while (parent != null && parent instanceof View) {
+                if (parent instanceof PresenterProvider)
+                    return ((PresenterProvider)parent).getPresenter();
+
+                parent = parent.getParent();
+            }
+
+            Activity activity = (Activity)v.getContext();
+            if (activity instanceof PresenterProvider)
+                return ((PresenterProvider)activity).getPresenter();
+
+            view = activity;
         }
 
-        Activity activity = (Activity)view.getContext();
-        if (activity instanceof PresenterProvider)
-            return ((PresenterProvider)activity).getPresenter();
+        if (view instanceof Activity) {
 
-        return findParentPresenter(activity);
+            Activity activity = (Activity)view;
+            Application application = activity.getApplication();
+            if (application instanceof PresenterProvider)
+                return ((PresenterProvider)application).getPresenter();
+        }
+
+        return Presenter.getRootPresenter();
     }
-
-    public static Presenter findParentPresenter(Activity activity) {
-
-        Application application = activity.getApplication();
-        if (application instanceof PresenterProvider)
-            return ((PresenterProvider)application).getPresenter();
-
-        return root;
-    }
-}
+};

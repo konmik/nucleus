@@ -2,7 +2,7 @@ package nucleus.example.main;
 
 import nucleus.presenter.broker.Broker;
 
-public class LogBroker<TargetType> implements Broker<TargetType> {
+public class LogBroker<TargetType> extends Broker<TargetType> {
 
     private final String CLS = getClass().getSimpleName();
 

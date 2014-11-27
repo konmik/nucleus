@@ -1,9 +1,13 @@
 package nucleus.presenter.broker;
 
-public interface Broker<TargetType> {
+public class Broker<TargetType> {
 
-    void onDestroy();
+    public void onDestroy() {
+    }
 
-    void onTakeTarget(TargetType target);
-    void onDropTarget(TargetType target);
+    public void onTakeTarget(TargetType target) {
+    }
+
+    public void onDropTarget(TargetType target) {
+    }
 }
