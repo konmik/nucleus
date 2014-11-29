@@ -9,7 +9,7 @@ import android.widget.RelativeLayout;
 import nucleus.presenter.Presenter;
 import nucleus.presenter.PresenterCreator;
 
-public abstract class NucleusLayout<PresenterType extends Presenter<NucleusLayout>> extends RelativeLayout implements PresenterProvider<PresenterType>, PresenterCreator<PresenterType> {
+public abstract class NucleusLayout<PresenterType extends Presenter<NucleusLayout>> extends RelativeLayout implements PresenterProvider<PresenterType> {
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
     private static final String PARENT_STATE_KEY = "parent_state";
@@ -31,14 +31,12 @@ public abstract class NucleusLayout<PresenterType extends Presenter<NucleusLayou
         super(context, attrs, defStyle);
     }
 
-    public void setPresenter(PresenterType presenter) {
-        this.presenter = presenter;
-    }
-
     @Override
     public PresenterType getPresenter() {
         return presenter;
     }
+
+    protected abstract PresenterCreator<PresenterType> getPresenterCreator();
 
     @Override
     protected void onRestoreInstanceState(Parcelable state) {
@@ -55,9 +53,7 @@ public abstract class NucleusLayout<PresenterType extends Presenter<NucleusLayou
         if (isInEditMode())
             return;
 
-        if (presenter == null)
-            presenter = (PresenterType)PresenterFinder.getInstance().findParentPresenter(this).provide(this, savedPresenterState);
-
+        presenter = (PresenterType)PresenterFinder.getInstance().findParentPresenter(this).provide(getPresenterCreator(), savedPresenterState);
         presenter.takeView(this);
 
         savedPresenterState = null;

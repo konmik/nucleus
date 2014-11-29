@@ -11,6 +11,10 @@ public class Injector {
         Injector.graph = graph;
     }
 
+    public static ObjectGraph getGraph() {
+        return graph;
+    }
+
     public static <T> void inject(T target) {
         graph.inject(target);
     }

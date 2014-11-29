@@ -21,7 +21,7 @@ public class MainPresenter extends Presenter<MainActivity> {
     private String name = MainActivity.DEFAULT_NAME;
 
     @Override
-    public void onCreate(Bundle savedState) {
+    protected void onCreate(Bundle savedState) {
         if (savedState != null) {
             name = savedState.getString(NAME_KEY);
             counter = savedState.getInt(COUNTER_KEY);

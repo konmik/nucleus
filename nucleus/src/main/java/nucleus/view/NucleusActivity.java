@@ -3,7 +3,6 @@ package nucleus.view;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-
 import nucleus.presenter.Presenter;
 import nucleus.presenter.PresenterCreator;
 
@@ -11,15 +10,18 @@ import static android.content.Intent.ACTION_MAIN;
 import static android.content.Intent.CATEGORY_LAUNCHER;
 
 @SuppressWarnings("unchecked")
-public abstract class NucleusActivity<PresenterType extends Presenter> extends Activity implements PresenterProvider<PresenterType>, PresenterCreator<PresenterType> {
+public abstract class NucleusActivity<PresenterType extends Presenter> extends Activity implements PresenterProvider<PresenterType> {
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
 
     private PresenterType presenter;
 
-    public void setPresenter(PresenterType presenter) {
-        this.presenter = presenter;
+    @Override
+    public PresenterType getPresenter() {
+        return presenter;
     }
+
+    protected abstract PresenterCreator<PresenterType> getPresenterCreator();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,10 +30,8 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
         if (finishIfWrongInstance())
             return;
 
-        if (presenter == null) {
-            Bundle savedPresenterState = savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY);
-            presenter = (PresenterType)PresenterFinder.getInstance().findParentPresenter(this).provide(this, savedPresenterState);
-        }
+        Bundle savedPresenterState = savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY);
+        presenter = (PresenterType)PresenterFinder.getInstance().findParentPresenter(this).provide(getPresenterCreator(), savedPresenterState);
     }
 
     @Override
@@ -53,11 +53,6 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBundle(PRESENTER_STATE_KEY, presenter.save());
-    }
-
-    @Override
-    public PresenterType getPresenter() {
-        return presenter;
     }
 
     private boolean finishIfWrongInstance() {

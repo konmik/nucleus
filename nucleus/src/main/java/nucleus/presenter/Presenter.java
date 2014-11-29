@@ -190,7 +190,7 @@ public class Presenter<ViewType> {
 
     // debug
 
-    private void print(Printer printer, int level) {
+    protected void print(Printer printer, int level) {
         String padding = "";
         for (int p = 0; p < level; p++)
             padding += ".   ";

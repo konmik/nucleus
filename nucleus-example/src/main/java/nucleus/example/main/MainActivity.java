@@ -4,17 +4,20 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Printer;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.ArrayAdapter;
+import android.widget.CheckedTextView;
+import android.widget.ListView;
+import android.widget.TextView;
+import dagger.Module;
 import nucleus.example.R;
+import nucleus.example.base.Injector;
 import nucleus.example.network.ServerAPI;
 import nucleus.example.utils.ViewFn;
 import nucleus.presenter.Presenter;
+import nucleus.presenter.PresenterCreator;
 import nucleus.view.NucleusActivity;
-import nucleus.view.PresenterFinder;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import javax.inject.Inject;
 
 public class MainActivity extends NucleusActivity<MainPresenter> {
 
@@ -25,9 +28,16 @@ public class MainActivity extends NucleusActivity<MainPresenter> {
     CheckedTextView check1;
     CheckedTextView check2;
 
+    static PresenterCreator<MainPresenter> presenterCreator = new PresenterCreator<MainPresenter>() {
+        @Override
+        public MainPresenter createPresenter() {
+            return new MainPresenter();
+        }
+    };
+
     @Override
-    public MainPresenter createPresenter() {
-        return new MainPresenter();
+    protected PresenterCreator<MainPresenter> getPresenterCreator() {
+        return presenterCreator;
     }
 
     @Override

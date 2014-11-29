@@ -23,7 +23,7 @@
         <android-maven.version>4.0.0-rc.2</android-maven.version>
         <java.version>1.7</java.version>
         <android.version>4.1.1.4</android.version>
-        <android.sdk.platform>15</android.sdk.platform>
+        <android.sdk.platform>16</android.sdk.platform>
         <dagger.version>1.2.2</dagger.version>
 
         <junit.version>4.11</junit.version>
@@ -33,20 +33,4 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.jayway.maven.plugins.android.generation2</groupId>
-                <artifactId>android-maven-plugin</artifactId>
-                <version>${android-maven.version}</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <sdk>
-                        <platform>19</platform>
-                    </sdk>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

@@ -26,10 +26,17 @@ public class PresenterActivityTest {
     ActivityController<TestNucleusActivity> activityController;
     TestNucleusActivity activity;
 
-    public static class TestNucleusActivity extends NucleusActivity {
+    static PresenterCreator presenterCreator = new PresenterCreator() {
         @Override
         public Presenter createPresenter() {
             return Mockito.mock(Presenter.class);
+        }
+    };
+
+    public static class TestNucleusActivity extends NucleusActivity {
+        @Override
+        protected PresenterCreator getPresenterCreator() {
+            return presenterCreator;
         }
     }
 
@@ -40,11 +47,11 @@ public class PresenterActivityTest {
 
     public static Presenter parentPresenter = new Presenter() {
         @Override
-        public Presenter provide(PresenterCreator creator, Bundle savedState) {
+        public Presenter provide(PresenterCreator presenterCreator1, Bundle savedState) {
             ParentPresenter_provide++;
             ParentPresenter_bundleOut = savedState;
 
-            mockPresenter = creator.createPresenter();
+            mockPresenter = presenterCreator1.createPresenter();
             when(mockPresenter.save()).thenReturn(ParentPresenter_bundleIn);
             return mockPresenter;
         }
