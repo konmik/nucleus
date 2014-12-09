@@ -6,10 +6,11 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
+
 import nucleus.presenter.Presenter;
 import nucleus.presenter.PresenterCreator;
 
-public abstract class NucleusLayout<PresenterType extends Presenter<NucleusLayout>> extends RelativeLayout implements PresenterProvider<PresenterType> {
+public abstract class NucleusLayout<PresenterType extends Presenter> extends RelativeLayout implements PresenterProvider<PresenterType> {
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
     private static final String PARENT_STATE_KEY = "parent_state";
@@ -53,8 +54,12 @@ public abstract class NucleusLayout<PresenterType extends Presenter<NucleusLayou
         if (isInEditMode())
             return;
 
-        presenter = (PresenterType)PresenterFinder.getInstance().findParentPresenter(this).provide(getPresenterCreator(), savedPresenterState);
-        presenter.takeView(this);
+        PresenterCreator<PresenterType> creator = getPresenterCreator();
+        if (creator != null) {
+            presenter = (PresenterType)PresenterFinder.getInstance().findParentPresenter(this).provide(creator, savedPresenterState);
+            if (presenter != null)
+                presenter.takeView(this);
+        }
 
         savedPresenterState = null;
         activity = (Activity)getContext();
@@ -63,7 +68,8 @@ public abstract class NucleusLayout<PresenterType extends Presenter<NucleusLayou
     @Override
     protected Parcelable onSaveInstanceState() {
         Bundle bundle = new Bundle();
-        bundle.putBundle(PRESENTER_STATE_KEY, presenter.save());
+        if (presenter != null)
+            bundle.putBundle(PRESENTER_STATE_KEY, presenter.save());
         bundle.putParcelable(PARENT_STATE_KEY, super.onSaveInstanceState());
         return bundle;
     }
@@ -71,15 +77,22 @@ public abstract class NucleusLayout<PresenterType extends Presenter<NucleusLayou
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        presenter.dropView(this);
 
-        if (activity.isFinishing())
-            presenter.destroy();
+        if (presenter != null) {
+            presenter.dropView(this);
+
+            if (activity.isFinishing()) {
+                presenter.destroy();
+                presenter = null;
+            }
+        }
     }
 
     // should be called for a view with a life cycle different to Activity's
     public void destroyPresenter() {
-        presenter.destroy();
-        presenter = null;
+        if (presenter != null) {
+            presenter.destroy();
+            presenter = null;
+        }
     }
 }

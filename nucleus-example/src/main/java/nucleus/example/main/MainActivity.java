@@ -8,16 +8,12 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ListView;
 import android.widget.TextView;
-import dagger.Module;
 import nucleus.example.R;
-import nucleus.example.base.Injector;
 import nucleus.example.network.ServerAPI;
 import nucleus.example.utils.ViewFn;
 import nucleus.presenter.Presenter;
 import nucleus.presenter.PresenterCreator;
 import nucleus.view.NucleusActivity;
-
-import javax.inject.Inject;
 
 public class MainActivity extends NucleusActivity<MainPresenter> {
 

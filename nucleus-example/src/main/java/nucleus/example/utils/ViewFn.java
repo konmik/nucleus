@@ -13,16 +13,4 @@ public class ViewFn {
             view.animate().alpha(1).setDuration(300).start();
         }
     }
-
-    public static int getScrollY(AbsListView listView) {
-        View c = listView.getChildAt(0);
-        if (c == null) {
-            return 0;
-        }
-
-        int firstVisiblePosition = listView.getFirstVisiblePosition();
-        int top = c.getTop();
-
-        return -top + firstVisiblePosition * c.getHeight();
-    }
 }

@@ -8,7 +8,6 @@ import java.util.HashMap;
 public abstract class LoaderBroker<TargetType> extends Broker<TargetType> implements Loader.Receiver {
 
     private HashMap<Loader, Object> loaders = new HashMap<Loader, Object>();
-    private TargetType target;
 
     public LoaderBroker(Loader... loaders) {
         for (Loader loader : loaders)
@@ -20,19 +19,21 @@ public abstract class LoaderBroker<TargetType> extends Broker<TargetType> implem
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
         for (Loader loader : loaders.keySet())
             loader.unregister(this);
     }
 
     @Override
     public void onTakeTarget(TargetType target) {
-        this.target = target;
-        onPresent(target, isLoadingComplete());
+        super.onTakeTarget(target);
+        present();
     }
 
-    @Override
-    public void onDropTarget(TargetType target) {
-        this.target = null;
+    public void present() {
+        TargetType target = getTarget();
+        if (target != null)
+            onPresent(target, isLoadingComplete());
     }
 
     protected abstract void onPresent(TargetType target, boolean complete);
@@ -41,8 +42,8 @@ public abstract class LoaderBroker<TargetType> extends Broker<TargetType> implem
     public void onLoadComplete(Loader loader, Object data) {
         loaders.put(loader, data);
 
-        if (isLoadingComplete() && target != null)
-            onPresent(target, true);
+        if (isLoadingComplete())
+            present();
     }
 
     private boolean isLoadingComplete() {
