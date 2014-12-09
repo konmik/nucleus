@@ -61,5 +61,7 @@ public abstract class Loader<ResultType> {
         }
 
         unregistered.clear();
+
+        notifying = false;
     }
 }

@@ -2,9 +2,10 @@ package nucleus.presenter;
 
 import android.os.Bundle;
 import android.util.Printer;
-import nucleus.presenter.broker.Broker;
 
 import java.util.ArrayList;
+
+import nucleus.presenter.broker.Broker;
 
 public class Presenter<ViewType> {
 

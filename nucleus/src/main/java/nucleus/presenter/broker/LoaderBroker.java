@@ -1,8 +1,8 @@
 package nucleus.presenter.broker;
 
-import nucleus.model.Loader;
-
 import java.util.HashMap;
+
+import nucleus.model.Loader;
 
 @SuppressWarnings("unchecked") // too many of them but all are safe
 public abstract class LoaderBroker<TargetType> extends Broker<TargetType> implements Loader.Receiver {
