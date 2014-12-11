@@ -1,12 +1,12 @@
 package nucleus.example.network;
 
+import javax.inject.Inject;
+
 import nucleus.example.base.App;
 import nucleus.model.Loader;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-
-import javax.inject.Inject;
 
 public abstract class RetrofitLoader<ResponseT> extends Loader<ResponseT> {
 
@@ -17,7 +17,7 @@ public abstract class RetrofitLoader<ResponseT> extends Loader<ResponseT> {
     public RetrofitLoader() {
     }
 
-    public void request() {
+    protected void request() {
         final int r = ++request;
 
         doRequest(new Callback<ResponseT>() {

@@ -33,10 +33,10 @@ public abstract class LoaderBroker<TargetType> extends Broker<TargetType> implem
     public void present() {
         TargetType target = getTarget();
         if (target != null)
-            onPresent(target, isLoadingComplete());
+            onPresent(target);
     }
 
-    protected abstract void onPresent(TargetType target, boolean complete);
+    protected abstract void onPresent(TargetType target);
 
     @Override
     public void onLoadComplete(Loader loader, Object data) {
@@ -46,7 +46,7 @@ public abstract class LoaderBroker<TargetType> extends Broker<TargetType> implem
             present();
     }
 
-    private boolean isLoadingComplete() {
+    public boolean isLoadingComplete() {
         return !loaders.values().contains(null);
     }
 

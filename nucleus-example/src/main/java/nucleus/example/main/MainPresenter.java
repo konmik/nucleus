@@ -1,13 +1,14 @@
 package nucleus.example.main;
 
 import android.os.Bundle;
+
+import javax.inject.Inject;
+
 import nucleus.example.base.Injector;
 import nucleus.example.network.ItemsLoader;
 import nucleus.presenter.Presenter;
-import nucleus.presenter.broker.LoaderBroker;
 import nucleus.presenter.broker.Broker;
-
-import javax.inject.Inject;
+import nucleus.presenter.broker.LoaderBroker;
 
 public class MainPresenter extends Presenter<MainActivity> {
 
@@ -42,8 +43,8 @@ public class MainPresenter extends Presenter<MainActivity> {
 
         addViewBroker(new LoaderBroker<MainActivity>(itemsLoader) {
             @Override
-            protected void onPresent(MainActivity target, boolean complete) {
-                target.publishItems(!complete ? null : getData(itemsLoader).items, name);
+            protected void onPresent(MainActivity target) {
+                target.publishItems(!isLoadingComplete() ? null : getData(itemsLoader).items, name);
             }
         });
 

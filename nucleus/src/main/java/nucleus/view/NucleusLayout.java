@@ -54,11 +54,13 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Rel
         if (isInEditMode())
             return;
 
-        PresenterCreator<PresenterType> creator = getPresenterCreator();
-        if (creator != null) {
-            presenter = (PresenterType)PresenterFinder.getInstance().findParentPresenter(this).provide(creator, savedPresenterState);
-            if (presenter != null)
-                presenter.takeView(this);
+        if (presenter == null) {
+            PresenterCreator<PresenterType> creator = getPresenterCreator();
+            if (creator != null) {
+                presenter = (PresenterType)PresenterFinder.getInstance().findParentPresenter(this).provide(creator, savedPresenterState);
+                if (presenter != null)
+                    presenter.takeView(this);
+            }
         }
 
         savedPresenterState = null;
