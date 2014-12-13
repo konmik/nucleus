@@ -12,6 +12,10 @@ import nucleus.presenter.broker.LoaderBroker;
 
 public class MainPresenter extends Presenter<MainActivity> {
 
+    public static final String NAME_1 = "Chuck Norris";
+    public static final String NAME_2 = "Jackie Chan";
+    public static final String DEFAULT_NAME = NAME_1;
+
     private static final String NAME_KEY = "name";
     private static final String COUNTER_KEY = "counter";
 
@@ -19,7 +23,7 @@ public class MainPresenter extends Presenter<MainActivity> {
 
     @Inject ItemsLoader itemsLoader;
 
-    private String name = MainActivity.DEFAULT_NAME;
+    private String name = DEFAULT_NAME;
 
     @Override
     protected void onCreate(Bundle savedState) {
