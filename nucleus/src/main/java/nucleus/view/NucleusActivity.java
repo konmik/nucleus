@@ -2,11 +2,12 @@ package nucleus.view;
 
 import android.app.Activity;
 import android.os.Bundle;
+
 import nucleus.presenter.Presenter;
 import nucleus.presenter.PresenterCreator;
 
 @SuppressWarnings("unchecked")
-public abstract class NucleusActivity<PresenterType extends Presenter> extends Activity implements PresenterProvider<PresenterType> {
+public class NucleusActivity<PresenterType extends Presenter> extends Activity implements PresenterProvider<PresenterType> {
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
 
@@ -17,7 +18,9 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
         return presenter;
     }
 
-    protected abstract PresenterCreator<PresenterType> getPresenterCreator();
+    protected PresenterCreator<PresenterType> getPresenterCreator() {
+        return null;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,13 +35,17 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
+
         if (presenter != null)
             presenter.takeView(this);
     }
 
+    /**
+     * Presenter destruction is here because we want Activity's presenter to live longer than view's presenter
+     */
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
 
         if (presenter != null) {
             presenter.dropView(this);
@@ -53,6 +60,7 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
         if (presenter != null)
             outState.putBundle(PRESENTER_STATE_KEY, presenter.save());
     }

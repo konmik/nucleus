@@ -1,6 +1,6 @@
 package nucleus.model;
 
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Formalizes any background data loading, implementing the Adapter pattern.
@@ -18,10 +18,7 @@ public abstract class Loader<ResultType> {
         void onLoadComplete(Loader<ResultType> loader, ResultType data);
     }
 
-    private ArrayList<Receiver<ResultType>> receivers = new ArrayList<Receiver<ResultType>>();
-
-    private boolean notifying;
-    private ArrayList<Receiver<ResultType>> unregistered = new ArrayList<Receiver<ResultType>>();
+    private CopyOnWriteArrayList<Receiver<ResultType>> receivers = new CopyOnWriteArrayList<Receiver<ResultType>>();
 
     /**
      * Registers a receiver for data updates.
@@ -40,28 +37,16 @@ public abstract class Loader<ResultType> {
      */
     public void unregister(Receiver<ResultType> receiver) {
         receivers.remove(receiver);
-
-        if (notifying)
-            unregistered.add(receiver);
     }
 
     /**
-     * Notify all registered receivers with a data update. This method is change-proof which means that it will handle
-     * {@link nucleus.model.Loader#unregister} during {@link nucleus.model.Loader.Receiver#onLoadComplete} properly.
+     * Notify all registered receivers with a data update.
      *
      * @param data Data object emitted by the {@link nucleus.model.Loader}.
      */
     protected void notifyReceivers(ResultType data) {
-        notifying = true;
-
-        for (Receiver receiver : receivers.toArray(new Receiver[receivers.size()])) {
-            if (!unregistered.contains(receiver))
-                //noinspection unchecked
-                receiver.onLoadComplete(this, data);
-        }
-
-        unregistered.clear();
-
-        notifying = false;
+        for (Receiver receiver : receivers)
+            //noinspection unchecked
+            receiver.onLoadComplete(this, data);
     }
 }

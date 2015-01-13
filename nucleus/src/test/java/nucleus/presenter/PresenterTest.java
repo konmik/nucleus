@@ -22,6 +22,9 @@ public class PresenterTest {
         private static final long IN_ID = 3;
 
         public class TestBroker extends Broker {
+            @Override
+            protected void onPresent(Object target) {
+            }
         }
 
         public TestBroker testBroker1;

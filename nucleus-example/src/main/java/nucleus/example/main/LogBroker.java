@@ -24,4 +24,9 @@ public class LogBroker<TargetType> extends Broker<TargetType> {
     public void onDropTarget(TargetType target) {
         System.out.println(CLS + ".onDropTarget " + target);
     }
+
+    @Override
+    protected void onPresent(TargetType target) {
+        System.out.println(CLS + ".onPresent " + target);
+    }
 }

@@ -5,12 +5,14 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 
 import nucleus.presenter.Presenter;
 import nucleus.presenter.PresenterCreator;
 
-public abstract class NucleusLayout<PresenterType extends Presenter> extends RelativeLayout implements PresenterProvider<PresenterType> {
+public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout implements PresenterProvider<PresenterType> {
+
+    public enum OnDetachedAction {NONE, DESTROY_PRESENTER, DESTROY_PRESENTER_IF_FINISHING}
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
     private static final String PARENT_STATE_KEY = "parent_state";
@@ -19,6 +21,8 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Rel
     private Bundle savedPresenterState;
 
     private Activity activity;
+
+    private OnDetachedAction onDetachedAction = OnDetachedAction.DESTROY_PRESENTER_IF_FINISHING;
 
     public NucleusLayout(Context context) {
         super(context);
@@ -37,7 +41,13 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Rel
         return presenter;
     }
 
-    protected abstract PresenterCreator<PresenterType> getPresenterCreator();
+    protected PresenterCreator<PresenterType> getPresenterCreator() {
+        return null;
+    }
+
+    public void setOnDetachedAction(OnDetachedAction onDetachedAction) {
+        this.onDetachedAction = onDetachedAction;
+    }
 
     @Override
     protected void onRestoreInstanceState(Parcelable state) {
@@ -46,7 +56,6 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Rel
         super.onRestoreInstanceState(bundle.getParcelable(PARENT_STATE_KEY));
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -83,10 +92,9 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Rel
         if (presenter != null) {
             presenter.dropView(this);
 
-            if (activity.isFinishing()) {
-                presenter.destroy();
-                presenter = null;
-            }
+            if (onDetachedAction == OnDetachedAction.DESTROY_PRESENTER ||
+                (onDetachedAction == OnDetachedAction.DESTROY_PRESENTER_IF_FINISHING && activity.isFinishing()))
+                destroyPresenter();
         }
     }
 

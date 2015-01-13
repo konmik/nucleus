@@ -1,9 +1,24 @@
 package nucleus.presenter.broker;
 
-public class Broker<TargetType> {
+import nucleus.presenter.Presenter;
+
+public abstract class Broker<TargetType> implements Presenter.TargetListener<TargetType>, Presenter.OnDestroyListener {
 
     private TargetType target;
 
+    @Override
+    public void onTakeTarget(TargetType target) {
+        this.target = target;
+        present();
+    }
+
+    @Override
+    public void onDropTarget(TargetType target) {
+        if (this.target == target)
+            this.target = null;
+    }
+
+    @Override
     public void onDestroy() {
     }
 
@@ -11,12 +26,11 @@ public class Broker<TargetType> {
         return target;
     }
 
-    public void onTakeTarget(TargetType target) {
-        this.target = target;
+    public void present() {
+        TargetType target = getTarget();
+        if (target != null)
+            onPresent(target);
     }
 
-    public void onDropTarget(TargetType target) {
-        if (this.target == target)
-            this.target = null;
-    }
+    protected abstract void onPresent(TargetType target);
 }

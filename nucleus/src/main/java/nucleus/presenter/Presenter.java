@@ -3,7 +3,7 @@ package nucleus.presenter;
 import android.os.Bundle;
 import android.util.Printer;
 
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import nucleus.presenter.broker.Broker;
 
@@ -12,16 +12,26 @@ public class Presenter<ViewType> {
     private static final String PRESENTER_ID_KEY = "id";
     private static final String PRESENTER_STATE_KEY = "state";
 
+    public interface TargetListener<TargetType> {
+        void onTakeTarget(TargetType target);
+        void onDropTarget(TargetType target);
+    }
+
+    public interface OnDestroyListener {
+        void onDestroy();
+    }
+
     private static Presenter rootPresenter = new Presenter();
 
     private Presenter parent;
     private String id;
+    private CopyOnWriteArrayList<Presenter> presenters = new CopyOnWriteArrayList<Presenter>();
 
     private ViewType view;
-    private ArrayList<Presenter> presenters = new ArrayList<Presenter>();
 
-    private ArrayList<Broker<ViewType>> viewBrokers = new ArrayList<Broker<ViewType>>();
-    private ArrayList<Broker<Presenter>> presenterBrokers = new ArrayList<Broker<Presenter>>();
+    private CopyOnWriteArrayList<TargetListener> presenterListeners = new CopyOnWriteArrayList<TargetListener>();
+    private CopyOnWriteArrayList<TargetListener> viewListeners = new CopyOnWriteArrayList<TargetListener>();
+    private CopyOnWriteArrayList<OnDestroyListener> onDestroyListeners = new CopyOnWriteArrayList<OnDestroyListener>();
 
     public static Presenter getRootPresenter() {
         return rootPresenter;
@@ -94,14 +104,15 @@ public class Presenter<ViewType> {
     }
 
     public void destroy() {
+        for (Presenter presenter : presenters)
+            presenter.destroy();
+
         parent.dropPresenter(this);
 
+        for (OnDestroyListener listener : onDestroyListeners)
+            listener.onDestroy();
+
         onDestroy();
-
-        for (Broker broker : viewBrokers)
-            broker.onDestroy();
-
-        viewBrokers.clear();
     }
 
     public Bundle save() {
@@ -116,16 +127,16 @@ public class Presenter<ViewType> {
 
         onTakeView(view);
 
-        for (Broker<ViewType> broker : viewBrokers)
-            broker.onTakeTarget(view);
+        for (TargetListener listener : viewListeners)
+            listener.onTakeTarget(view);
     }
 
     public void dropView(ViewType view) {
 
-        onDropView(view);
+        for (TargetListener listener : viewListeners)
+            listener.onDropTarget(view);
 
-        for (Broker<ViewType> broker : viewBrokers)
-            broker.onDropTarget(view);
+        onDropView(view);
 
         this.view = null;
     }
@@ -135,16 +146,16 @@ public class Presenter<ViewType> {
 
         onTakePresenter(presenter);
 
-        for (Broker<Presenter> broker : presenterBrokers)
-            broker.onTakeTarget(presenter);
+        for (TargetListener listener : presenterListeners)
+            listener.onTakeTarget(presenter);
     }
 
     public void dropPresenter(Presenter presenter) {
 
-        onDropPresenter(presenter);
+        for (TargetListener listener : presenterListeners)
+            listener.onDropTarget(presenter);
 
-        for (Broker<Presenter> broker : presenterBrokers)
-            broker.onDropTarget(presenter);
+        onDropPresenter(presenter);
 
         presenters.remove(presenter);
     }
@@ -180,13 +191,31 @@ public class Presenter<ViewType> {
      * @return The same {@link Broker} that has been passed as an argument
      */
     protected <T extends Broker<ViewType>> T addViewBroker(T broker) {
-        viewBrokers.add(broker);
+        viewListeners.add(broker);
+        onDestroyListeners.add(broker);
         return broker;
     }
 
     protected <T extends Broker<Presenter>> T addPresenterBroker(T broker) {
-        presenterBrokers.add(broker);
+        presenterListeners.add(broker);
+        onDestroyListeners.add(broker);
         return broker;
+    }
+
+    protected void addViewListener(TargetListener<ViewType> listener) {
+        viewListeners.add(listener);
+    }
+
+    protected void removeViewListener(TargetListener<ViewType> listener) {
+        viewListeners.remove(listener);
+    }
+
+    protected void addOnDestroyListener(OnDestroyListener listener) {
+        onDestroyListeners.add(listener);
+    }
+
+    protected void removeOnDestroyListener(OnDestroyListener listener) {
+        onDestroyListeners.remove(listener);
     }
 
     // debug
@@ -198,12 +227,6 @@ public class Presenter<ViewType> {
 
         ViewType view = getView();
         printer.println(padding + (id == null ? "rootPresenter" : "id: " + id) + (view == null ? "" : " => view: " + view.toString()));
-
-        for (Broker broker : viewBrokers)
-            printer.println(padding + "    {broker} -> " + broker.getClass().getName());
-
-        for (Broker broker : presenterBrokers)
-            printer.println(padding + "    {broker} -> " + broker.getClass().getName());
 
         for (Presenter m : presenters)
             m.print(printer, level + 1);

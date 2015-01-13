@@ -25,20 +25,6 @@ public abstract class LoaderBroker<TargetType> extends Broker<TargetType> implem
     }
 
     @Override
-    public void onTakeTarget(TargetType target) {
-        super.onTakeTarget(target);
-        present();
-    }
-
-    public void present() {
-        TargetType target = getTarget();
-        if (target != null)
-            onPresent(target);
-    }
-
-    protected abstract void onPresent(TargetType target);
-
-    @Override
     public void onLoadComplete(Loader loader, Object data) {
         loaders.put(loader, data);
 

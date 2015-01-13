@@ -40,7 +40,7 @@ public class MainPresenter extends Presenter<MainActivity> {
 
         addViewBroker(new Broker<MainActivity>() {
             @Override
-            public void onTakeTarget(MainActivity view) {
+            public void onPresent(MainActivity view) {
                 view.publishCounter(++counter);
             }
         });

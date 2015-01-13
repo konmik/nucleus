@@ -106,6 +106,7 @@ public class PresenterActivityTest {
 
         setUp(null);
         activityController.destroy();
+        activity.onDetachedFromWindow();
 
         verify(mockPresenter, times(1)).dropView(any(TestNucleusActivity.class));
         verify(mockPresenter, never()).destroy();
@@ -113,6 +114,7 @@ public class PresenterActivityTest {
         setUp(null);
         activity.finish();
         activityController.destroy();
+        activity.onDetachedFromWindow();
 
         verify(mockPresenter, times(1)).dropView(any(TestNucleusActivity.class));
         verify(mockPresenter, times(1)).destroy();

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
@@ -14,28 +13,29 @@
     <parent>
         <groupId>info.android15.nucleus</groupId>
         <artifactId>nucleus-parent</artifactId>
-        <version>0.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>0.2</version>
     </parent>
+
+    <properties>
+        <retrofit.version>1.7.1</retrofit.version>
+        <dagger.version>1.2.2</dagger.version>
+    </properties>
 
     <dependencies>
         <!-- test dependencies should go before android sdk -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.robolectric</groupId>
             <artifactId>robolectric</artifactId>
-            <version>${robolectric.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -59,13 +59,12 @@
         <dependency>
             <groupId>com.squareup.retrofit</groupId>
             <artifactId>retrofit</artifactId>
-            <version>1.7.1</version>
+            <version>${retrofit.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.google.android</groupId>
             <artifactId>android</artifactId>
-            <version>${android.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -74,7 +73,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>${maven.compiler.version}</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
