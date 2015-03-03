@@ -8,7 +8,7 @@ import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
 import nucleus.presenter.Presenter;
-import nucleus.presenter.PresenterCreator;
+import nucleus.presenter.PresenterManager;
 
 public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout implements PresenterProvider<PresenterType> {
 
@@ -18,7 +18,6 @@ public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout 
     private static final String PARENT_STATE_KEY = "parent_state";
 
     private PresenterType presenter;
-    private Bundle savedPresenterState;
 
     private Activity activity;
 
@@ -41,10 +40,6 @@ public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout 
         return presenter;
     }
 
-    protected PresenterCreator<PresenterType> getPresenterCreator() {
-        return null;
-    }
-
     public void setOnDetachedAction(OnDetachedAction onDetachedAction) {
         this.onDetachedAction = onDetachedAction;
     }
@@ -52,35 +47,26 @@ public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout 
     @Override
     protected void onRestoreInstanceState(Parcelable state) {
         Bundle bundle = (Bundle)state;
-        savedPresenterState = bundle.getBundle(PRESENTER_STATE_KEY);
         super.onRestoreInstanceState(bundle.getParcelable(PARENT_STATE_KEY));
+        presenter = PresenterManager.getInstance().provide(this, bundle.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-
-        if (isInEditMode())
-            return;
-
-        if (presenter == null) {
-            PresenterCreator<PresenterType> creator = getPresenterCreator();
-            if (creator != null) {
-                presenter = (PresenterType)PresenterFinder.getInstance().findParentPresenter(this).provide(creator, savedPresenterState);
-                if (presenter != null)
-                    presenter.takeView(this);
-            }
+        if (!isInEditMode()) {
+            activity = (Activity)getContext();
+            if (presenter == null)
+                presenter = PresenterManager.getInstance().provide(this, null);
+            //noinspection unchecked
+            presenter.takeView(this);
         }
-
-        savedPresenterState = null;
-        activity = (Activity)getContext();
     }
 
     @Override
     protected Parcelable onSaveInstanceState() {
         Bundle bundle = new Bundle();
-        if (presenter != null)
-            bundle.putBundle(PRESENTER_STATE_KEY, presenter.save());
+        bundle.putBundle(PRESENTER_STATE_KEY, PresenterManager.getInstance().save(presenter));
         bundle.putParcelable(PARENT_STATE_KEY, super.onSaveInstanceState());
         return bundle;
     }
@@ -88,17 +74,13 @@ public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-
-        if (presenter != null) {
-            presenter.dropView(this);
-
-            if (onDetachedAction == OnDetachedAction.DESTROY_PRESENTER ||
-                (onDetachedAction == OnDetachedAction.DESTROY_PRESENTER_IF_FINISHING && activity.isFinishing()))
-                destroyPresenter();
-        }
+        presenter.dropView();
+        if (onDetachedAction == OnDetachedAction.DESTROY_PRESENTER ||
+            (onDetachedAction == OnDetachedAction.DESTROY_PRESENTER_IF_FINISHING && activity.isFinishing()))
+            destroyPresenter();
     }
 
-    // should be called for a view with a life cycle different to Activity's
+    // could be called for a view with a life cycle different to Activity
     public void destroyPresenter() {
         if (presenter != null) {
             presenter.destroy();
