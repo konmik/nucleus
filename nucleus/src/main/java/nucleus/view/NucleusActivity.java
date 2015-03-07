@@ -7,13 +7,12 @@ import android.support.annotation.NonNull;
 import nucleus.presenter.Presenter;
 import nucleus.presenter.PresenterManager;
 
-public abstract class NucleusActivity<PresenterType extends Presenter> extends Activity implements PresenterProvider<PresenterType> {
+public abstract class NucleusActivity<PresenterType extends Presenter> extends Activity {
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
 
     private PresenterType presenter;
 
-    @Override
     public PresenterType getPresenter() {
         return presenter;
     }

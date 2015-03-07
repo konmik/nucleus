@@ -114,15 +114,37 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     }
 
     /**
-     * Delays onNext, onError and onComplete delivery unless a view becomes available.
-     * Duplicates latest onNext emission in case if a view has been reattached.
-     * getView() is guaranteed to be != null during successive calls.
-     * If onNext it called by source observable while previous undelivered result exists,
-     * the older result will be dropped.
+     * Returns an operator that will
+     * delay onNext, onError and onComplete emissions unless a view become available.
+     * getView() is guaranteed to be != null during emissions.
      *
-     * @param <T> a type of onNext data
+     * @param <T> a type of onNext value.
+     * @return the delaying operator.
      */
-    public class DeliverLatest<T> implements Observable.Operator<T, T> {
+    public <T> Observable.Operator<T, T> deliverLatest() {
+        return new DeliverLatest<>(false);
+    }
+
+    /**
+     * Returns an operator that will
+     * delay onNext, onError and onComplete emissions unless a view become available.
+     * The operator will duplicate the latest onNext emission in case if a view has been reattached.
+     *
+     * @param <T> a type of onNext value.
+     * @return the delaying operator.
+     */
+    public <T> Observable.Operator<T, T> deliverLatestCache() {
+        return new DeliverLatest<>(true);
+    }
+
+    private class DeliverLatest<T> implements Observable.Operator<T, T> {
+
+        boolean cache;
+
+        private DeliverLatest(boolean cache) {
+            this.cache = cache;
+        }
+
         @Override
         public Subscriber<? super T> call(final Subscriber<? super T> s) {
             return new Subscriber<T>() {
@@ -131,23 +153,32 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
                     @Override
                     public void call() {
                         if (!s.isUnsubscribed() && getView() != null) {
-                            if (deliverLatest)
-                                s.onNext(latest);
+                            if (deliverNext) {
+                                s.onNext(next);
+                                if (!cache) {
+                                    next = null;
+                                    deliverNext = false;
+                                }
+                            }
                             if (deliverError) {
                                 s.onError(error);
                                 error = null;
                                 deliverError = false;
+                                deliverNext = false;
+                                unsubscribe();
                             }
                             if (deliverCompleted) {
                                 s.onCompleted();
                                 deliverCompleted = false;
+                                deliverNext = false;
+                                unsubscribe();
                             }
                         }
                     }
                 };
 
-                T latest;
-                boolean deliverLatest;
+                T next;
+                boolean deliverNext;
                 Throwable error;
                 boolean deliverError;
                 boolean deliverCompleted;
@@ -169,16 +200,16 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
                 }
 
                 @Override
-                public void onError(Throwable e) {
-                    error = e;
+                public void onError(Throwable throwable) {
+                    error = throwable;
                     deliverError = true;
                     deliver.call();
                 }
 
                 @Override
-                public void onNext(T t) {
-                    latest = t;
-                    deliverLatest = true;
+                public void onNext(T value) {
+                    next = value;
+                    deliverNext = true;
                     deliver.call();
                 }
             };

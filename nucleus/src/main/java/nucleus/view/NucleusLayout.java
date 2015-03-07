@@ -10,7 +10,7 @@ import android.widget.FrameLayout;
 import nucleus.presenter.Presenter;
 import nucleus.presenter.PresenterManager;
 
-public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout implements PresenterProvider<PresenterType> {
+public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout {
 
     public enum OnDetachedAction {NONE, DESTROY_PRESENTER, DESTROY_PRESENTER_IF_FINISHING}
 
@@ -35,7 +35,6 @@ public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout 
         super(context, attrs, defStyle);
     }
 
-    @Override
     public PresenterType getPresenter() {
         return presenter;
     }

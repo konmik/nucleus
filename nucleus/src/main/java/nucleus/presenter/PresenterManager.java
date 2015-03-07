@@ -141,4 +141,11 @@ public class PresenterManager {
             printer.println("id: " + entry.getKey() + (view == null ? "" : " => view: " + view.toString()));
         }
     }
+
+    /**
+     * Testing utility
+     */
+    static void clear() {
+        instance = new PresenterManager();
+    }
 }
