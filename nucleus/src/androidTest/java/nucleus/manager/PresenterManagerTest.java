@@ -1,4 +1,4 @@
-package nucleus.presenter;
+package nucleus.manager;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -8,6 +8,10 @@ import android.test.ActivityInstrumentationTestCase2;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import nucleus.TestActivity;
+import nucleus.manager.DefaultPresenterManager;
+import nucleus.manager.PresenterManager;
+import nucleus.manager.RequiresPresenter;
+import nucleus.presenter.Presenter;
 
 public class PresenterManagerTest extends ActivityInstrumentationTestCase2 {
     public PresenterManagerTest() {
@@ -16,7 +20,7 @@ public class PresenterManagerTest extends ActivityInstrumentationTestCase2 {
 
     @Override
     protected void setUp() throws Exception {
-        PresenterManager.clear();
+        PresenterManager.setInstance(new DefaultPresenterManager());
     }
 
     public void testGetInstance() throws Exception {
@@ -60,7 +64,7 @@ public class PresenterManagerTest extends ActivityInstrumentationTestCase2 {
         assertNotNull(presenter);
         Bundle bundle = PresenterManager.getInstance().save(presenter);
         assertTrue(presenter.testPresenterOnSave.get());
-        PresenterManager.clear();
+        PresenterManager.setInstance(new DefaultPresenterManager());
         presenter = PresenterManager.getInstance().provide(new TestView(), bundle);
         assertTrue(presenter.testPresenterOnCreateBundleStateAssert.get());
     }

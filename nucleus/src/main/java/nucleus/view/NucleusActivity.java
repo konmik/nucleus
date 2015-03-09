@@ -5,14 +5,28 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import nucleus.presenter.Presenter;
-import nucleus.presenter.PresenterManager;
+import nucleus.manager.PresenterManager;
 
+/**
+ * This class is an example of how an activity could controls it's presenter.
+ * You can inherit from this class or copy/paste this class's code to
+ * create your own view implementation.
+ *
+ * @param <PresenterType> a type of presenter to return with {@link #getPresenter}.
+ */
 public abstract class NucleusActivity<PresenterType extends Presenter> extends Activity {
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
 
     private PresenterType presenter;
 
+    /**
+     * Returns a current attached presenter.
+     * This method is guaranteed to return a non-null value between
+     * onResume/onPause calls.
+     *
+     * @return a current attached presenter or null.
+     */
     public PresenterType getPresenter() {
         return presenter;
     }

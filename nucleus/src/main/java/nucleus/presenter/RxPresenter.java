@@ -114,35 +114,69 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     }
 
     /**
-     * Returns an operator that will
-     * delay onNext, onError and onComplete emissions unless a view become available.
+     * This operator will delay onNext, onError and onComplete emissions unless a view become available.
      * getView() is guaranteed to be != null during emissions.
+     * <p/>
+     * Use this operator if you need o deliver all emissions to a view, in example when you're sending items
+     * into adapter.
      *
      * @param <T> a type of onNext value.
      * @return the delaying operator.
      */
-    public <T> Observable.Operator<T, T> deliverLatest() {
-        return new DeliverLatest<>(false);
+    public class Deliver<T> extends DeliverOperator<T> {
+        public Deliver() {
+            super(false, false);
+        }
     }
 
     /**
-     * Returns an operator that will
-     * delay onNext, onError and onComplete emissions unless a view become available.
-     * The operator will duplicate the latest onNext emission in case if a view has been reattached.
+     * This operator will delay onNext, onError and onComplete emissions unless a view become available.
+     * getView() is guaranteed to be != null during emissions.
+     * <p/>
+     * If this operator receives a next value while the previous value has not been delivered, the
+     * previous value will be dropped.
+     * <p/>
+     * Use this operator when you need to show updatable data.
      *
      * @param <T> a type of onNext value.
      * @return the delaying operator.
      */
-    public <T> Observable.Operator<T, T> deliverLatestCache() {
-        return new DeliverLatest<>(true);
+    public class DeliverLatest<T> extends DeliverOperator<T> {
+        public DeliverLatest() {
+            super(false, true);
+        }
     }
 
-    private class DeliverLatest<T> implements Observable.Operator<T, T> {
+    /**
+     * This operator will delay onNext, onError and onComplete emissions unless a view become available.
+     * getView() is guaranteed to be != null during emissions.
+     * <p/>
+     * The operator will duplicate the latest onNext emission in case if a view has been reattached.
+     * <p/>
+     * If the operator receives a next value while the previous value has not been delivered, the
+     * previous value will be dropped.
+     * <p/>
+     * This operator ignores the onComplete emission.
+     * <p/>
+     * Use this operator when you need to chow updatable data that needs to be cached in memory.
+     *
+     * @param <T> a type of onNext value.
+     * @return the delaying operator.
+     */
+    public class DeliverLatestCache<T> extends DeliverOperator<T> {
+        public DeliverLatestCache() {
+            super(true, true);
+        }
+    }
 
-        boolean cache;
+    private class DeliverOperator<T> implements Observable.Operator<T, T> {
 
-        private DeliverLatest(boolean cache) {
-            this.cache = cache;
+        boolean replayLatest;
+        boolean keepLatestOnly;
+
+        private DeliverOperator(boolean replayLatest, boolean keepLatestOnly) {
+            this.replayLatest = replayLatest;
+            this.keepLatestOnly = keepLatestOnly;
         }
 
         @Override
@@ -153,44 +187,46 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
                     @Override
                     public void call() {
                         if (!s.isUnsubscribed() && getView() != null) {
-                            if (deliverNext) {
-                                s.onNext(next);
-                                if (!cache) {
-                                    next = null;
-                                    deliverNext = false;
-                                }
-                            }
+
+                            while (deliverNext.size() > (replayLatest ? 1 : 0))
+                                s.onNext(deliverNext.remove(0));
+
+                            if (deliverNext.size() > 0)
+                                s.onNext(deliverNext.get(0));
+
                             if (deliverError) {
                                 s.onError(error);
                                 error = null;
                                 deliverError = false;
-                                deliverNext = false;
-                                unsubscribe();
+                                deliverNext.clear();
+                                complete.call();
                             }
-                            if (deliverCompleted) {
+                            if (deliverCompleted && !replayLatest) {
                                 s.onCompleted();
                                 deliverCompleted = false;
-                                deliverNext = false;
-                                unsubscribe();
+                                deliverNext.clear();
+                                complete.call();
                             }
                         }
                     }
                 };
 
-                T next;
-                boolean deliverNext;
+                ArrayList<T> deliverNext = new ArrayList<>();
                 Throwable error;
                 boolean deliverError;
                 boolean deliverCompleted;
 
+                private Action0 complete = new Action0() {
+                    @Override
+                    public void call() {
+                        unsubscribe();
+                        RxPresenter.this.callOnTakeView.remove(deliver);
+                    }
+                };
+
                 {
                     RxPresenter.this.callOnTakeView.add(deliver);
-                    add(Subscriptions.create(new Action0() {
-                        @Override
-                        public void call() {
-                            RxPresenter.this.callOnTakeView.remove(deliver);
-                        }
-                    }));
+                    add(Subscriptions.create(complete));
                 }
 
                 @Override
@@ -208,8 +244,9 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
                 @Override
                 public void onNext(T value) {
-                    next = value;
-                    deliverNext = true;
+                    if (keepLatestOnly)
+                        deliverNext.clear();
+                    deliverNext.add(value);
                     deliver.call();
                 }
             };

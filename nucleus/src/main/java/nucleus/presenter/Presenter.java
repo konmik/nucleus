@@ -6,7 +6,60 @@ import android.support.annotation.Nullable;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * This is a base class for all presenters. Subclasses can override
+ * {@link #onCreate}, {@link #onDestroy}, {@link #onSave},
+ * {@link #onTakeView}, {@link #onDropView}.
+ * <p/>
+ * {@link nucleus.presenter.Presenter.OnDestroyListener} can also be used by external classes
+ * to be notified about the need of freeing resources.
+ *
+ * @param <ViewType> a type of view to return with {@link #getView()}.
+ */
 public class Presenter<ViewType> {
+
+    /**
+     * This method is intended for overriding. It is being called by {@link nucleus.manager.PresenterManager#provide}
+     * method after construction complete.
+     *
+     * @param savedState If the presenter is being re-initialized then this Bundle contains the data it most
+     *                   recently supplied in {@link #onSave}.
+     */
+    protected void onCreate(@Nullable Bundle savedState) {
+    }
+
+    /**
+     * This method is intended for overriding. It is being called by {@link #destroy}
+     * after {@link nucleus.presenter.Presenter.OnDestroyListener} listeners are notified about it
+     * but before the actual destruction happens.
+     */
+    protected void onDestroy() {
+    }
+
+    /**
+     * This method is intended for overriding.
+     * It is being called by {@link nucleus.manager.PresenterManager#save} to save presenter's instance state.
+     * Later the state can be passed in {@link #onCreate} for a new presenter.
+     *
+     * @param state a non-null bundle which should be used to put presenter's state info.
+     */
+    protected void onSave(@NonNull Bundle state) {
+    }
+
+    /**
+     * This method is intended for overriding. It is being called by parent presenter class, when view
+     * calls {@link nucleus.presenter.Presenter#takeView}
+     *
+     * @param view a view that should be taken
+     */
+    protected void onTakeView(ViewType view) {
+    }
+
+    /**
+     * This method is intended for overriding. Use it to be notified about a view is going to be destroyed.
+     */
+    protected void onDropView() {
+    }
 
     /**
      * Callback to be invoked when a presenter is about to be destroyed.
@@ -16,6 +69,24 @@ public class Presenter<ViewType> {
          * Called before presenter's destruction.
          */
         void onDestroy();
+    }
+
+    /**
+     * Adds a listener observing {@link #onDestroy}.
+     *
+     * @param listener a listener to add.
+     */
+    public void addOnDestroyListener(OnDestroyListener listener) {
+        onDestroyListeners.add(listener);
+    }
+
+    /**
+     * Removed a listener observing {@link #onDestroy}.
+     *
+     * @param listener a listener to add.
+     */
+    public void removeOnDestroyListener(OnDestroyListener listener) {
+        onDestroyListeners.remove(listener);
     }
 
     private ViewType view;
@@ -31,13 +102,29 @@ public class Presenter<ViewType> {
     }
 
     /**
+     * Creates a presenter.
+     * This method is called from {@link nucleus.manager.PresenterManager#provide} and should not be called directly.
+     */
+    public void create(Bundle bundle) {
+        onCreate(bundle);
+    }
+
+    /**
      * Destroys a presenter.
-     * This method is called from {@link nucleus.presenter.PresenterManager#destroy(Presenter)} and should not be called directly.
+     * This method is called from {@link nucleus.manager.PresenterManager#destroy(Presenter)} and should not be called directly.
      */
     public void destroy() {
         for (OnDestroyListener listener : onDestroyListeners)
             listener.onDestroy();
         onDestroy();
+    }
+
+    /**
+     * Saves a presenter.
+     * This method is called from {@link nucleus.manager.PresenterManager#save} and should not be called directly.
+     */
+    public void save(Bundle state) {
+        onSave(state);
     }
 
     /**
@@ -60,66 +147,5 @@ public class Presenter<ViewType> {
     public void dropView() {
         onDropView();
         this.view = null;
-    }
-
-    /**
-     * Adds a listener observing {@link #onDestroy}.
-     *
-     * @param listener a listener to add.
-     */
-    public void addOnDestroyListener(OnDestroyListener listener) {
-        onDestroyListeners.add(listener);
-    }
-
-    /**
-     * Removed a listener observing {@link #onDestroy}.
-     *
-     * @param listener a listener to add.
-     */
-    public void removeOnDestroyListener(OnDestroyListener listener) {
-        onDestroyListeners.remove(listener);
-    }
-
-    /**
-     * This method is intended for overriding. It is being called by {@link PresenterManager#provide}
-     * method after construction complete.
-     *
-     * @param savedState If the presenter is being re-initialized then this Bundle contains the data it most
-     *                   recently supplied in {@link #onSave}.
-     */
-    protected void onCreate(@Nullable Bundle savedState) {
-    }
-
-    /**
-     * This method is intended for overriding. It is being called by {@link #destroy}
-     * after {@link nucleus.presenter.Presenter.OnDestroyListener} listeners are notified about it
-     * but before actual destruction happens but .
-     */
-    protected void onDestroy() {
-    }
-
-    /**
-     * This method is intended for overriding.
-     * It is being called by {@link nucleus.presenter.PresenterManager#save} to save presenter's instance state.
-     * Later the state can be passed in {@link #onCreate} for a new presenter.
-     *
-     * @param state a non-null bundle which should be used to put presenter's state info.
-     */
-    protected void onSave(@NonNull Bundle state) {
-    }
-
-    /**
-     * This method is intended for overriding. It is being called by parent presenter class, when view
-     * calls {@link nucleus.presenter.Presenter#takeView}
-     *
-     * @param view a view that should be taken
-     */
-    protected void onTakeView(ViewType view) {
-    }
-
-    /**
-     * This method is intended for overriding. Use it to be notified about view going to be destroyed.
-     */
-    protected void onDropView() {
     }
 }

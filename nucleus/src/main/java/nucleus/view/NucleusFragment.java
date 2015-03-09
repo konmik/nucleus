@@ -1,14 +1,10 @@
 package nucleus.view;
 
-import android.app.Activity;
-import android.content.Context;
+import android.app.Fragment;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.util.AttributeSet;
-import android.widget.FrameLayout;
 
-import nucleus.presenter.Presenter;
 import nucleus.manager.PresenterManager;
+import nucleus.presenter.Presenter;
 
 /**
  * This view is an example of how a view should control it's presenter.
@@ -17,26 +13,12 @@ import nucleus.manager.PresenterManager;
  *
  * @param <PresenterType> a type of presenter to return with {@link #getPresenter}.
  */
-public abstract class NucleusLayout<PresenterType extends Presenter> extends FrameLayout {
+public class NucleusFragment<PresenterType extends Presenter> extends Fragment {
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
-    private static final String PARENT_STATE_KEY = "parent_state";
 
     private PresenterType presenter;
-    private Activity activity;
     private OnDropViewAction onDropViewAction = OnDropViewAction.DESTROY_PRESENTER_IF_FINISHING;
-
-    public NucleusLayout(Context context) {
-        super(context);
-    }
-
-    public NucleusLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public NucleusLayout(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-    }
 
     /**
      * Returns a current attached presenter.
@@ -71,38 +53,32 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
     }
 
     @Override
-    protected void onRestoreInstanceState(Parcelable state) {
-        Bundle bundle = (Bundle)state;
-        super.onRestoreInstanceState(bundle.getParcelable(PARENT_STATE_KEY));
-        presenter = PresenterManager.getInstance().provide(this, bundle.getBundle(PRESENTER_STATE_KEY));
+    public void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
+        presenter = PresenterManager.getInstance().provide(this, bundle == null ? null : bundle.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        if (!isInEditMode()) {
-            activity = (Activity)getContext();
-            if (presenter == null)
-                presenter = PresenterManager.getInstance().provide(this, null);
-            //noinspection unchecked
-            presenter.takeView(this);
-        }
+    public void onResume() {
+        super.onResume();
+        if (presenter == null)
+            presenter = PresenterManager.getInstance().provide(this, null);
+        //noinspection unchecked
+        presenter.takeView(this);
     }
 
     @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
+    public void onPause() {
+        super.onPause();
         presenter.dropView();
         if (onDropViewAction == OnDropViewAction.DESTROY_PRESENTER ||
-            (onDropViewAction == OnDropViewAction.DESTROY_PRESENTER_IF_FINISHING && activity.isFinishing()))
+            (onDropViewAction == OnDropViewAction.DESTROY_PRESENTER_IF_FINISHING && getActivity().isFinishing()))
             destroyPresenter();
     }
 
     @Override
-    protected Parcelable onSaveInstanceState() {
-        Bundle bundle = new Bundle();
+    public void onSaveInstanceState(Bundle bundle) {
+        super.onSaveInstanceState(bundle);
         bundle.putBundle(PRESENTER_STATE_KEY, PresenterManager.getInstance().save(presenter));
-        bundle.putParcelable(PARENT_STATE_KEY, super.onSaveInstanceState());
-        return bundle;
     }
 }

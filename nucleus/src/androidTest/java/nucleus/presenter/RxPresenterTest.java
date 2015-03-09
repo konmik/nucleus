@@ -3,11 +3,15 @@ package nucleus.presenter;
 import android.os.Bundle;
 import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
+import android.util.Log;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import nucleus.manager.DefaultPresenterManager;
+import nucleus.manager.PresenterManager;
+import nucleus.manager.RequiresPresenter;
 import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action0;
@@ -21,13 +25,18 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
     private TestScheduler testScheduler;
 
-    static class TestPresenter extends RxPresenter<TestView> {
+    public static class TestPresenter extends RxPresenter<TestView> {
 
     }
 
     @RequiresPresenter(TestPresenter.class)
     static class TestView {
     }
+
+    AtomicLong onNextValue = new AtomicLong();
+    AtomicLong onNextCounter = new AtomicLong();
+    AtomicLong onErrorCounter = new AtomicLong();
+    AtomicLong onCompleteCounter = new AtomicLong();
 
     @Override
     protected void setUp() throws Exception {
@@ -37,13 +46,21 @@ public class RxPresenterTest extends InstrumentationTestCase {
             runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    PresenterManager.clear();
+                    PresenterManager.setInstance(new DefaultPresenterManager());
+                    resetCounters();
                 }
             });
         }
         catch (Throwable throwable) {
             throw new Exception(throwable);
         }
+    }
+
+    private void resetCounters() {
+        onNextValue = new AtomicLong();
+        onNextCounter = new AtomicLong();
+        onErrorCounter = new AtomicLong();
+        onCompleteCounter = new AtomicLong();
     }
 
     @UiThreadTest
@@ -126,13 +143,9 @@ public class RxPresenterTest extends InstrumentationTestCase {
     }
 
     @UiThreadTest
-    public void testDeliverOperator() throws Exception {
+    public void testDeliverLatestCache() throws Exception {
         TestPresenter presenter = PresenterManager.getInstance().provide(new TestView(), null);
-        final AtomicLong onNextValue = new AtomicLong();
-        final AtomicLong onNextCounter = new AtomicLong();
-        final AtomicLong onErrorCounter = new AtomicLong();
-        final AtomicLong onCompleteCounter = new AtomicLong();
-        PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter, onNextValue, onNextCounter, onErrorCounter, onCompleteCounter);
+        PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter.new DeliverLatestCache<Integer>());
         bus.onNext(1);
         assertEquals(0, onNextValue.get());
 
@@ -152,13 +165,13 @@ public class RxPresenterTest extends InstrumentationTestCase {
         presenter.takeView(new TestView());
 
         assertEquals(3, onNextValue.get());
-        assertEquals(1, onCompleteCounter.get());
+        assertEquals(0, onCompleteCounter.get());
 
         presenter.dropView();
         presenter.takeView(new TestView());
 
         assertEquals(3, onNextValue.get());
-        assertEquals(1, onCompleteCounter.get());
+        assertEquals(0, onCompleteCounter.get());
 
         presenter.dropView();
 
@@ -166,7 +179,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
         onCompleteCounter.set(0);
         onErrorCounter.set(0);
 
-        bus = createBusSubscriptionWithOperator(presenter, onNextValue, onNextCounter, onErrorCounter, onCompleteCounter);
+        bus = createBusSubscriptionWithOperator(presenter.new DeliverLatestCache<Integer>());
         bus.onNext(4);
         Exception exception = new Exception();
         bus.onError(exception);
@@ -182,9 +195,94 @@ public class RxPresenterTest extends InstrumentationTestCase {
         assertEquals(1, onErrorCounter.get());
     }
 
-    private PublishSubject<Integer> createBusSubscriptionWithOperator(TestPresenter presenter, final AtomicLong onNextValue, final AtomicLong onNextCounter, final AtomicLong onErrorCounter, final AtomicLong onCompleteCounter) {
+    @UiThreadTest
+    public void testDeliver() {
+        TestPresenter presenter = PresenterManager.getInstance().provide(new TestView(), null);
+
+        PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter.new Deliver<Integer>());
+        bus.onNext(100);
+        bus.onNext(200);
+        assertEquals(0, onNextCounter.get());
+        presenter.takeView(new TestView());
+        assertEquals(200, onNextValue.get());
+        assertEquals(2, onNextCounter.get());
+        presenter.dropView();
+        presenter.takeView(new TestView());
+        assertEquals(2, onNextCounter.get());
+
+        for (int onComplete = 0; onComplete < 2; onComplete++) {
+            resetCounters();
+            presenter = PresenterManager.getInstance().provide(new TestView(), null);
+            bus = createBusSubscriptionWithOperator(presenter.new Deliver<Integer>());
+            bus.onNext(100);
+            bus.onNext(200);
+            if (onComplete == 1)
+                bus.onCompleted();
+            else
+                bus.onError(new Exception());
+            assertEquals(0, onNextCounter.get());
+            assertEquals(0, onCompleteCounter.get());
+            assertEquals(0, onErrorCounter.get());
+            presenter.takeView(new TestView());
+            assertEquals(200, onNextValue.get());
+            assertEquals(2, onNextCounter.get());
+            assertEquals(onComplete, onCompleteCounter.get());
+            assertEquals(1 - onComplete, onErrorCounter.get());
+
+            presenter.dropView();
+            presenter.takeView(new TestView());
+            assertEquals(2, onNextCounter.get());
+            assertEquals(onComplete, onCompleteCounter.get());
+            assertEquals(1 - onComplete, onErrorCounter.get());
+        }
+    }
+
+    @UiThreadTest
+    public void testDeliverLatest() {
+        TestPresenter presenter = PresenterManager.getInstance().provide(new TestView(), null);
+
+        PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter.new DeliverLatest<Integer>());
+        bus.onNext(100);
+        bus.onNext(200);
+        assertEquals(0, onNextCounter.get());
+        presenter.takeView(new TestView());
+        assertEquals(200, onNextValue.get());
+        assertEquals(1, onNextCounter.get());
+        presenter.dropView();
+        presenter.takeView(new TestView());
+        assertEquals(200, onNextValue.get());
+        assertEquals(1, onNextCounter.get());
+
+        for (int onComplete = 0; onComplete < 2; onComplete++) {
+            resetCounters();
+            presenter = PresenterManager.getInstance().provide(new TestView(), null);
+            bus = createBusSubscriptionWithOperator(presenter.new DeliverLatest<Integer>());
+            bus.onNext(100);
+            bus.onNext(200);
+            if (onComplete == 1)
+                bus.onCompleted();
+            else
+                bus.onError(new Exception());
+            assertEquals(0, onNextCounter.get());
+            assertEquals(0, onCompleteCounter.get());
+            assertEquals(0, onErrorCounter.get());
+            presenter.takeView(new TestView());
+            assertEquals(200, onNextValue.get());
+            assertEquals(1, onNextCounter.get());
+            assertEquals(onComplete, onCompleteCounter.get());
+            assertEquals(1 - onComplete, onErrorCounter.get());
+
+            presenter.dropView();
+            presenter.takeView(new TestView());
+            assertEquals(1, onNextCounter.get());
+            assertEquals(onComplete, onCompleteCounter.get());
+            assertEquals(1 - onComplete, onErrorCounter.get());
+        }
+    }
+
+    private PublishSubject<Integer> createBusSubscriptionWithOperator(Observable.Operator<Integer, Integer> operator) {
         PublishSubject<Integer> bus = PublishSubject.create();
-        bus.lift(presenter.<Integer>deliverLatestCache()).subscribe(new Action1<Integer>() {
+        bus.lift(operator).subscribe(new Action1<Integer>() {
             @Override
             public void call(Integer o) {
                 onNextValue.set(o);
@@ -205,17 +303,57 @@ public class RxPresenterTest extends InstrumentationTestCase {
     }
 
     @UiThreadTest
-    public void testDeliveryOnTake() {
-        TestPresenter presenter = PresenterManager.getInstance().provide(new TestView(), null);
-        final AtomicLong onNextValue = new AtomicLong();
-        final AtomicLong onNextCounter = new AtomicLong();
-        final AtomicLong onErrorCounter = new AtomicLong();
-        final AtomicLong onCompleteCounter = new AtomicLong();
-        PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter, onNextValue, onNextCounter, onErrorCounter, onCompleteCounter);
-        bus.onNext(1);
-        presenter.takeView(new TestView());
-        presenter.dropView();
-        presenter.takeView(new TestView());
-        assertEquals(2, onNextCounter.get());
+    public void testOperatorsLifecycle() {
+        for (int type = 0; type < 3; type++) {
+            // 0 = Deliver, 1 = DeliverLatest, 2 = DeliverLatestCache
+
+            TestPresenter presenter = PresenterManager.getInstance().provide(new TestView(), null);
+            //noinspection unchecked
+            Observable.Operator<Integer, Integer> operator =
+                type == 0 ? presenter.new <Integer>Deliver() :
+                    type == 1 ? presenter.new <Integer>DeliverLatest() :
+                        presenter.new <Integer>DeliverLatestCache();
+
+            TestOperator<Integer> operator1 = new TestOperator<>();
+            TestOperator<Integer> operator2 = new TestOperator<>();
+            presenter.takeView(new TestView());
+            PublishSubject<Integer> bus = PublishSubject.create();
+            bus.lift(operator1).lift(operator).lift(operator2).subscribe(new Action1<Integer>() {
+                @Override
+                public void call(Integer o) {
+                    onNextValue.set(o);
+                    onNextCounter.incrementAndGet();
+                }
+            }, new Action1<Throwable>() {
+                @Override
+                public void call(Throwable throwable) {
+                    onErrorCounter.incrementAndGet();
+                }
+            }, new Action0() {
+                @Override
+                public void call() {
+                    onCompleteCounter.incrementAndGet();
+                }
+            });
+
+            assertTrue(bus.hasObservers());
+            assertFalse(operator1.destinationSubscriber.isUnsubscribed());
+            assertFalse(operator1.createdSubscriber.isUnsubscribed());
+            assertFalse(operator2.destinationSubscriber.isUnsubscribed());
+            assertFalse(operator2.createdSubscriber.isUnsubscribed());
+
+            bus.onCompleted();
+//            assertEquals(0, onNextCounter.get());
+//            assertEquals(0, onErrorCounter.get());
+//            assertEquals(type == 2 ? 0 : 1, onCompleteCounter.get());
+// TODO: continue here
+            Log.v(getClass().getSimpleName(), String.format("type: %d", type));
+            operator1.print("operator1");
+            operator2.print("operator2");
+//            assertFalse(operator1.destinationSubscriber.isUnsubscribed());
+//            assertFalse(operator1.createdSubscriber.isUnsubscribed());
+//            assertFalse(operator2.destinationSubscriber.isUnsubscribed());
+//            assertFalse(operator2.createdSubscriber.isUnsubscribed());
+        }
     }
 }

@@ -1,4 +1,4 @@
-package nucleus.presenter;
+package nucleus.manager;
 
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
