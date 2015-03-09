@@ -40,8 +40,8 @@ public class TestOperator<T> implements Observable.Operator<T, T> {
     }
 
     public void print(String tag) {
-        Log.v(tag, String.format("destination: %b, created: %b, onNext: %d, onError: %s, onCompleted: %b",
-            !destinationSubscriber.isUnsubscribed(), createdSubscriber.isUnsubscribed(), onNext.size(), onError != null, onCompleted));
+        Log.v(tag, String.format("destination is subscribed: %b, created is subscribed: %b, onNext: %d, onError: %s, onCompleted: %b",
+            !destinationSubscriber.isUnsubscribed(), !createdSubscriber.isUnsubscribed(), onNext.size(), onError != null, onCompleted));
     }
 
     @Override

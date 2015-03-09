@@ -306,6 +306,9 @@ public class RxPresenterTest extends InstrumentationTestCase {
     public void testOperatorsLifecycle() {
         for (int type = 0; type < 3; type++) {
             // 0 = Deliver, 1 = DeliverLatest, 2 = DeliverLatestCache
+            Log.v(getClass().getSimpleName(), String.format("type: %d", type));
+
+            PresenterManager.setInstance(new DefaultPresenterManager());
 
             TestPresenter presenter = PresenterManager.getInstance().provide(new TestView(), null);
             //noinspection unchecked
@@ -316,7 +319,6 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
             TestOperator<Integer> operator1 = new TestOperator<>();
             TestOperator<Integer> operator2 = new TestOperator<>();
-            presenter.takeView(new TestView());
             PublishSubject<Integer> bus = PublishSubject.create();
             bus.lift(operator1).lift(operator).lift(operator2).subscribe(new Action1<Integer>() {
                 @Override
@@ -343,17 +345,25 @@ public class RxPresenterTest extends InstrumentationTestCase {
             assertFalse(operator2.createdSubscriber.isUnsubscribed());
 
             bus.onCompleted();
-//            assertEquals(0, onNextCounter.get());
-//            assertEquals(0, onErrorCounter.get());
-//            assertEquals(type == 2 ? 0 : 1, onCompleteCounter.get());
-// TODO: continue here
-            Log.v(getClass().getSimpleName(), String.format("type: %d", type));
+
+            assertTrue(!bus.hasObservers());
+            assertFalse(operator1.destinationSubscriber.isUnsubscribed());
+            assertFalse(operator1.createdSubscriber.isUnsubscribed());
+            assertFalse(operator2.destinationSubscriber.isUnsubscribed());
+            assertFalse(operator2.createdSubscriber.isUnsubscribed());
+
+            presenter.takeView(new TestView());
+            assertEquals(type != 2 ? 0 : 1, presenter.onTakeViewListenerCount());
+
             operator1.print("operator1");
             operator2.print("operator2");
-//            assertFalse(operator1.destinationSubscriber.isUnsubscribed());
-//            assertFalse(operator1.createdSubscriber.isUnsubscribed());
-//            assertFalse(operator2.destinationSubscriber.isUnsubscribed());
-//            assertFalse(operator2.createdSubscriber.isUnsubscribed());
+
+//  TODO: continue here
+
+//            assertTrue(type == 2 || operator1.destinationSubscriber.isUnsubscribed());
+//            assertTrue(operator1.createdSubscriber.isUnsubscribed());
+//            assertTrue(type == 2 || operator2.destinationSubscriber.isUnsubscribed());
+//            assertTrue(operator2.createdSubscriber.isUnsubscribed());
         }
     }
 }

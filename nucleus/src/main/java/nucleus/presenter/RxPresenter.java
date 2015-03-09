@@ -115,7 +115,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
     /**
      * This operator will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during emissions.
+     * getView() is guaranteed to be != null during emissions. This operator can only be used on Application's main thread.
      * <p/>
      * Use this operator if you need o deliver all emissions to a view, in example when you're sending items
      * into adapter.
@@ -131,7 +131,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
     /**
      * This operator will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during emissions.
+     * getView() is guaranteed to be != null during emissions. This operator can only be used on Application's main thread.
      * <p/>
      * If this operator receives a next value while the previous value has not been delivered, the
      * previous value will be dropped.
@@ -143,13 +143,13 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      */
     public class DeliverLatest<T> extends DeliverOperator<T> {
         public DeliverLatest() {
-            super(false, true);
+            super(true, false);
         }
     }
 
     /**
      * This operator will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during emissions.
+     * getView() is guaranteed to be != null during emissions. This operator can only be used on Application's main thread.
      * <p/>
      * The operator will duplicate the latest onNext emission in case if a view has been reattached.
      * <p/>
@@ -169,21 +169,28 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
         }
     }
 
+    /**
+     * @hide testing facility
+     */
+    public int onTakeViewListenerCount() {
+        return callOnTakeView.size();
+    }
+
     private class DeliverOperator<T> implements Observable.Operator<T, T> {
 
-        boolean replayLatest;
         boolean keepLatestOnly;
+        boolean replayLatest;
 
-        private DeliverOperator(boolean replayLatest, boolean keepLatestOnly) {
-            this.replayLatest = replayLatest;
+        private DeliverOperator(boolean keepLatestOnly, boolean replayLatest) {
             this.keepLatestOnly = keepLatestOnly;
+            this.replayLatest = replayLatest;
         }
 
         @Override
         public Subscriber<? super T> call(final Subscriber<? super T> s) {
             return new Subscriber<T>() {
 
-                Action0 deliver = new Action0() {
+                Action0 tick = new Action0() {
                     @Override
                     public void call() {
                         if (!s.isUnsubscribed() && getView() != null) {
@@ -195,17 +202,17 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
                                 s.onNext(deliverNext.get(0));
 
                             if (deliverError) {
+                                deliverNext.clear();
                                 s.onError(error);
+                                s.unsubscribe();
                                 error = null;
                                 deliverError = false;
-                                deliverNext.clear();
-                                complete.call();
                             }
                             if (deliverCompleted && !replayLatest) {
-                                s.onCompleted();
-                                deliverCompleted = false;
                                 deliverNext.clear();
-                                complete.call();
+                                s.onCompleted();
+                                s.unsubscribe();
+                                deliverCompleted = false;
                             }
                         }
                     }
@@ -216,30 +223,29 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
                 boolean deliverError;
                 boolean deliverCompleted;
 
-                private Action0 complete = new Action0() {
-                    @Override
-                    public void call() {
-                        unsubscribe();
-                        RxPresenter.this.callOnTakeView.remove(deliver);
-                    }
-                };
-
-                {
-                    RxPresenter.this.callOnTakeView.add(deliver);
-                    add(Subscriptions.create(complete));
+                @Override
+                public void onStart() {
+                    super.onStart();
+                    RxPresenter.this.callOnTakeView.add(tick);
+                    s.add(Subscriptions.create(new Action0() {
+                        @Override
+                        public void call() {
+                            RxPresenter.this.callOnTakeView.remove(tick);
+                        }
+                    }));
                 }
 
                 @Override
                 public void onCompleted() {
                     deliverCompleted = true;
-                    deliver.call();
+                    tick.call();
                 }
 
                 @Override
                 public void onError(Throwable throwable) {
                     error = throwable;
                     deliverError = true;
-                    deliver.call();
+                    tick.call();
                 }
 
                 @Override
@@ -247,7 +253,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
                     if (keepLatestOnly)
                         deliverNext.clear();
                     deliverNext.add(value);
-                    deliver.call();
+                    tick.call();
                 }
             };
         }

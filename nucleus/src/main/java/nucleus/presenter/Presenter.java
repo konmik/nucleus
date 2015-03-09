@@ -148,4 +148,14 @@ public class Presenter<ViewType> {
         onDropView();
         this.view = null;
     }
+
+    /**
+     * Returns a number of onDestroy listeners.
+     *
+     * @return a number of onDestroy listeners.
+     * @hide testing facility
+     */
+    public int onDestroyListenerCount() {
+        return onDestroyListeners.size();
+    }
 }
