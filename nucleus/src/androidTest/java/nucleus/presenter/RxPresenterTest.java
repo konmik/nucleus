@@ -320,7 +320,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
             TestOperator<Integer> operator1 = new TestOperator<>();
             TestOperator<Integer> operator2 = new TestOperator<>();
             PublishSubject<Integer> bus = PublishSubject.create();
-            bus.lift(operator1).lift(operator).lift(operator2).subscribe(new Action1<Integer>() {
+            Subscription subscription = bus.lift(operator1).lift(operator).lift(operator2).subscribe(new Action1<Integer>() {
                 @Override
                 public void call(Integer o) {
                     onNextValue.set(o);
@@ -358,12 +358,11 @@ public class RxPresenterTest extends InstrumentationTestCase {
             operator1.print("operator1");
             operator2.print("operator2");
 
-//  TODO: continue here
+            subscription.unsubscribe();
 
-//            assertTrue(type == 2 || operator1.destinationSubscriber.isUnsubscribed());
-//            assertTrue(operator1.createdSubscriber.isUnsubscribed());
-//            assertTrue(type == 2 || operator2.destinationSubscriber.isUnsubscribed());
-//            assertTrue(operator2.createdSubscriber.isUnsubscribed());
+            operator1.print("operator1");
+            operator2.print("operator2");
+            assertEquals(0, presenter.onTakeViewListenerCount());
         }
     }
 }

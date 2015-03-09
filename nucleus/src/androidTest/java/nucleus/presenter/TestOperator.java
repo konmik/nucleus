@@ -16,25 +16,31 @@ public class TestOperator<T> implements Observable.Operator<T, T> {
     public boolean onCompleted;
 
     @Override
-    public Subscriber<? super T> call(final Subscriber<? super T> subscriber) {
-        this.destinationSubscriber = subscriber;
+    public Subscriber<? super T> call(final Subscriber<? super T> child) {
+        this.destinationSubscriber = child;
         return this.createdSubscriber = new Subscriber<T>() {
+            @Override
+            public void onStart() {
+                super.onStart();
+                child.add(this);
+            }
+
             @Override
             public void onCompleted() {
                 onCompleted = true;
-                subscriber.onCompleted();
+                child.onCompleted();
             }
 
             @Override
             public void onError(Throwable e) {
                 onError = e;
-                subscriber.onError(e);
+                child.onError(e);
             }
 
             @Override
             public void onNext(T t) {
                 onNext.add(t);
-                subscriber.onNext(t);
+                child.onNext(t);
             }
         };
     }

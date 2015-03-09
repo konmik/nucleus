@@ -187,31 +187,31 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
         }
 
         @Override
-        public Subscriber<? super T> call(final Subscriber<? super T> s) {
+        public Subscriber<? super T> call(final Subscriber<? super T> child) {
             return new Subscriber<T>() {
 
                 Action0 tick = new Action0() {
                     @Override
                     public void call() {
-                        if (!s.isUnsubscribed() && getView() != null) {
+                        if (!child.isUnsubscribed() && getView() != null) {
 
                             while (deliverNext.size() > (replayLatest ? 1 : 0))
-                                s.onNext(deliverNext.remove(0));
+                                child.onNext(deliverNext.remove(0));
 
                             if (deliverNext.size() > 0)
-                                s.onNext(deliverNext.get(0));
+                                child.onNext(deliverNext.get(0));
 
                             if (deliverError) {
                                 deliverNext.clear();
-                                s.onError(error);
-                                s.unsubscribe();
+                                child.onError(error);
+                                unsubscribe();
                                 error = null;
                                 deliverError = false;
                             }
                             if (deliverCompleted && !replayLatest) {
                                 deliverNext.clear();
-                                s.onCompleted();
-                                s.unsubscribe();
+                                child.onCompleted();
+                                unsubscribe();
                                 deliverCompleted = false;
                             }
                         }
@@ -227,12 +227,13 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
                 public void onStart() {
                     super.onStart();
                     RxPresenter.this.callOnTakeView.add(tick);
-                    s.add(Subscriptions.create(new Action0() {
+                    add(Subscriptions.create(new Action0() {
                         @Override
                         public void call() {
                             RxPresenter.this.callOnTakeView.remove(tick);
                         }
                     }));
+                    child.add(this);
                 }
 
                 @Override
