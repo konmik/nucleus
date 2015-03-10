@@ -145,7 +145,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
     @UiThreadTest
     public void testDeliverLatestCache() throws Exception {
         TestPresenter presenter = PresenterManager.getInstance().provide(new TestView(), null);
-        PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter.new DeliverLatestCache<Integer>());
+        PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter.<Integer>deliverLatestCache());
         bus.onNext(1);
         assertEquals(0, onNextValue.get());
 
@@ -179,7 +179,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
         onCompleteCounter.set(0);
         onErrorCounter.set(0);
 
-        bus = createBusSubscriptionWithOperator(presenter.new DeliverLatestCache<Integer>());
+        bus = createBusSubscriptionWithOperator(presenter.<Integer>deliverLatestCache());
         bus.onNext(4);
         Exception exception = new Exception();
         bus.onError(exception);
@@ -199,7 +199,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
     public void testDeliver() {
         TestPresenter presenter = PresenterManager.getInstance().provide(new TestView(), null);
 
-        PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter.new Deliver<Integer>());
+        PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter.<Integer>deliver());
         bus.onNext(100);
         bus.onNext(200);
         assertEquals(0, onNextCounter.get());
@@ -213,7 +213,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
         for (int onComplete = 0; onComplete < 2; onComplete++) {
             resetCounters();
             presenter = PresenterManager.getInstance().provide(new TestView(), null);
-            bus = createBusSubscriptionWithOperator(presenter.new Deliver<Integer>());
+            bus = createBusSubscriptionWithOperator(presenter.<Integer>deliver());
             bus.onNext(100);
             bus.onNext(200);
             if (onComplete == 1)
@@ -241,7 +241,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
     public void testDeliverLatest() {
         TestPresenter presenter = PresenterManager.getInstance().provide(new TestView(), null);
 
-        PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter.new DeliverLatest<Integer>());
+        PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter.<Integer>deliverLatest());
         bus.onNext(100);
         bus.onNext(200);
         assertEquals(0, onNextCounter.get());
@@ -256,7 +256,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
         for (int onComplete = 0; onComplete < 2; onComplete++) {
             resetCounters();
             presenter = PresenterManager.getInstance().provide(new TestView(), null);
-            bus = createBusSubscriptionWithOperator(presenter.new DeliverLatest<Integer>());
+            bus = createBusSubscriptionWithOperator(presenter.<Integer>deliverLatest());
             bus.onNext(100);
             bus.onNext(200);
             if (onComplete == 1)
@@ -280,9 +280,9 @@ public class RxPresenterTest extends InstrumentationTestCase {
         }
     }
 
-    private PublishSubject<Integer> createBusSubscriptionWithOperator(Observable.Operator<Integer, Integer> operator) {
+    private PublishSubject<Integer> createBusSubscriptionWithOperator(Observable.Transformer<Integer, Integer> operator) {
         PublishSubject<Integer> bus = PublishSubject.create();
-        bus.lift(operator).subscribe(new Action1<Integer>() {
+        bus.compose(operator).subscribe(new Action1<Integer>() {
             @Override
             public void call(Integer o) {
                 onNextValue.set(o);
@@ -312,15 +312,15 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
             TestPresenter presenter = PresenterManager.getInstance().provide(new TestView(), null);
             //noinspection unchecked
-            Observable.Operator<Integer, Integer> operator =
-                type == 0 ? presenter.new <Integer>Deliver() :
-                    type == 1 ? presenter.new <Integer>DeliverLatest() :
-                        presenter.new <Integer>DeliverLatestCache();
+            Observable.Transformer<Integer, Integer> operator =
+                type == 0 ? presenter.<Integer>deliver() :
+                    type == 1 ? presenter.<Integer>deliverLatest() :
+                        presenter.<Integer>deliverLatestCache();
 
             TestOperator<Integer> operator1 = new TestOperator<>();
             TestOperator<Integer> operator2 = new TestOperator<>();
             PublishSubject<Integer> bus = PublishSubject.create();
-            Subscription subscription = bus.lift(operator1).lift(operator).lift(operator2).subscribe(new Action1<Integer>() {
+            Subscription subscription = bus.lift(operator1).compose(operator).lift(operator2).subscribe(new Action1<Integer>() {
                 @Override
                 public void call(Integer o) {
                     onNextValue.set(o);
@@ -353,7 +353,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
             assertFalse(operator2.createdSubscriber.isUnsubscribed());
 
             presenter.takeView(new TestView());
-            assertEquals(type != 2 ? 0 : 1, presenter.onTakeViewListenerCount());
+            assertEquals(type != 2 ? false : true, presenter.viewStatusHasObservers());
 
             operator1.print("operator1");
             operator2.print("operator2");
@@ -362,7 +362,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
             operator1.print("operator1");
             operator2.print("operator2");
-            assertEquals(0, presenter.onTakeViewListenerCount());
+            assertFalse(presenter.viewStatusHasObservers());
         }
     }
 }

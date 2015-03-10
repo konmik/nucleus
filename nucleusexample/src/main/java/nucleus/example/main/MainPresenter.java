@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import nucleus.example.base.App;
-import nucleus.example.network.ServerAPI;
+import nucleus.example.base.ServerAPI;
 import nucleus.presenter.RxPresenter;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -40,7 +40,7 @@ public class MainPresenter extends RxPresenter<MainActivity> {
                 return App.getServerAPI()
                     .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
                     .observeOn(AndroidSchedulers.mainThread())
-                    .lift(new DeliverLatestCache<ServerAPI.Response>())
+                    .compose(MainPresenter.this.<ServerAPI.Response>deliverLatestCache())
                     .subscribe(new Action1<ServerAPI.Response>() {
                         @Override
                         public void call(ServerAPI.Response response) {

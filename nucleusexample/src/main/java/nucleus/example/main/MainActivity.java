@@ -8,7 +8,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import nucleus.example.R;
-import nucleus.example.network.ServerAPI;
+import nucleus.example.base.ServerAPI;
 import nucleus.example.utils.ViewFn;
 import nucleus.manager.RequiresPresenter;
 import nucleus.view.NucleusActivity;
@@ -18,6 +18,7 @@ public class MainActivity extends NucleusActivity<MainPresenter> {
 
     CheckedTextView check1;
     CheckedTextView check2;
+    ArrayAdapter<ServerAPI.Item> adapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,6 +43,9 @@ public class MainActivity extends NucleusActivity<MainPresenter> {
                 getPresenter().toggleTo(MainPresenter.NAME_2);
             }
         });
+
+        ListView listView = (ListView)findViewById(R.id.listView);
+        listView.setAdapter(adapter = new ArrayAdapter<>(this, R.layout.item));
     }
 
     public void publishCounter(int i) {
@@ -63,6 +67,7 @@ public class MainActivity extends NucleusActivity<MainPresenter> {
         check1.setChecked(user.equals(MainPresenter.NAME_1));
         check2.setChecked(user.equals(MainPresenter.NAME_2));
 
-        listView.setAdapter(new ArrayAdapter<>(this, R.layout.item, items));
+        adapter.clear();
+        adapter.addAll(items);
     }
 }

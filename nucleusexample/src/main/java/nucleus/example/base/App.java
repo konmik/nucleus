@@ -4,7 +4,6 @@ import android.app.Application;
 import android.util.Log;
 import android.widget.Toast;
 
-import nucleus.example.network.ServerAPI;
 import retrofit.RestAdapter;
 
 public class App extends Application {

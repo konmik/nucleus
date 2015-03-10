@@ -5,14 +5,11 @@ import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import rx.Observable;
-import rx.Subscriber;
 import rx.Subscription;
-import rx.functions.Action0;
 import rx.functions.Func0;
-import rx.subscriptions.Subscriptions;
+import rx.subjects.BehaviorSubject;
 
 /**
  * This is an extension of {@link nucleus.presenter.Presenter} which provides RxJava functionality.
@@ -27,7 +24,17 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     private HashMap<Integer, Func0<Subscription>> queryFactories = new HashMap<>();
     private HashMap<Integer, Subscription> querySubscriptions = new HashMap<>();
 
-    private CopyOnWriteArrayList<Action0> callOnTakeView = new CopyOnWriteArrayList<>();
+    private BehaviorSubject<Boolean> viewStatusSubject = BehaviorSubject.create();
+
+    /**
+     * Returns an observable that emits current status of view.
+     * True - a view is attached, False - a view is detached.
+     *
+     * @return an observable that emits current status of view.
+     */
+    public Observable<Boolean> viewStatus() {
+        return viewStatusSubject;
+    }
 
     /**
      * {@inheritDoc}
@@ -36,6 +43,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     protected void onCreate(Bundle savedState) {
         if (savedState != null)
             requestedQueries = savedState.getIntegerArrayList(REQUESTED_QUERIES);
+        viewStatusSubject.onNext(false);
     }
 
     /**
@@ -46,6 +54,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
         super.onDestroy();
         for (Subscription subs : querySubscriptions.values())
             subs.unsubscribe();
+        viewStatusSubject.onCompleted();
     }
 
     /**
@@ -70,8 +79,16 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     @Override
     protected void onTakeView(ViewType view) {
         super.onTakeView(view);
-        for (Action0 action : callOnTakeView)
-            action.call();
+        viewStatusSubject.onNext(true);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void onDropView() {
+        super.onDropView();
+        viewStatusSubject.onNext(false);
     }
 
     /**
@@ -114,26 +131,29 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     }
 
     /**
-     * This operator will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during emissions. This operator can only be used on Application's main thread.
+     * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
+     * getView() is guaranteed to be != null during emissions. This transformer can only be used on Application's main thread.
      * <p/>
-     * Use this operator if you need o deliver all emissions to a view, in example when you're sending items
-     * into adapter.
+     * Use this operator if you need to deliver all emissions to a view, in example when you're sending items
+     * into adapter one by one.
      *
      * @param <T> a type of onNext value.
      * @return the delaying operator.
      */
-    public class Deliver<T> extends DeliverOperator<T> {
-        public Deliver() {
-            super(false, false);
-        }
+    public <T> Observable.Transformer<T, T> deliver() {
+        return new Observable.Transformer<T, T>() {
+            @Override
+            public Observable<T> call(Observable<T> observable) {
+                return observable.lift(OperatorSemaphore.<T>semaphore(viewStatus()));
+            }
+        };
     }
 
     /**
-     * This operator will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during emissions. This operator can only be used on Application's main thread.
+     * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
+     * getView() is guaranteed to be != null during emissions. This transformer can only be used on Application's main thread.
      * <p/>
-     * If this operator receives a next value while the previous value has not been delivered, the
+     * If this transformer receives a next value while the previous value has not been delivered, the
      * previous value will be dropped.
      * <p/>
      * Use this operator when you need to show updatable data.
@@ -141,122 +161,44 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * @param <T> a type of onNext value.
      * @return the delaying operator.
      */
-    public class DeliverLatest<T> extends DeliverOperator<T> {
-        public DeliverLatest() {
-            super(true, false);
-        }
+    public <T> Observable.Transformer<T, T> deliverLatest() {
+        return new Observable.Transformer<T, T>() {
+            @Override
+            public Observable<T> call(Observable<T> observable) {
+                return observable.lift(OperatorSemaphore.<T>semaphoreLatest(viewStatus()));
+            }
+        };
     }
 
     /**
-     * This operator will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during emissions. This operator can only be used on Application's main thread.
+     * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
+     * getView() is guaranteed to be != null during emissions. This transformer can only be used on Application's main thread.
      * <p/>
-     * The operator will duplicate the latest onNext emission in case if a view has been reattached.
-     * <p/>
-     * If the operator receives a next value while the previous value has not been delivered, the
+     * If the transformer receives a next value while the previous value has not been delivered, the
      * previous value will be dropped.
      * <p/>
-     * This operator ignores the onComplete emission.
+     * The transformer will duplicate the latest onNext emission in case if a view has been reattached.
      * <p/>
-     * Use this operator when you need to chow updatable data that needs to be cached in memory.
+     * This operator ignores the onComplete emission and never sends one.
+     * <p/>
+     * Use this operator when you need to show updatable data that needs to be cached in memory.
      *
      * @param <T> a type of onNext value.
      * @return the delaying operator.
      */
-    public class DeliverLatestCache<T> extends DeliverOperator<T> {
-        public DeliverLatestCache() {
-            super(true, true);
-        }
+    public <T> Observable.Transformer<T, T> deliverLatestCache() {
+        return new Observable.Transformer<T, T>() {
+            @Override
+            public Observable<T> call(Observable<T> observable) {
+                return observable.lift(OperatorSemaphore.<T>semaphoreLatestCache(viewStatus()));
+            }
+        };
     }
 
     /**
      * @hide testing facility
      */
-    public int onTakeViewListenerCount() {
-        return callOnTakeView.size();
-    }
-
-    private class DeliverOperator<T> implements Observable.Operator<T, T> {
-
-        boolean keepLatestOnly;
-        boolean replayLatest;
-
-        private DeliverOperator(boolean keepLatestOnly, boolean replayLatest) {
-            this.keepLatestOnly = keepLatestOnly;
-            this.replayLatest = replayLatest;
-        }
-
-        @Override
-        public Subscriber<? super T> call(final Subscriber<? super T> child) {
-            return new Subscriber<T>() {
-
-                Action0 tick = new Action0() {
-                    @Override
-                    public void call() {
-                        if (!child.isUnsubscribed() && getView() != null) {
-
-                            while (deliverNext.size() > (replayLatest ? 1 : 0))
-                                child.onNext(deliverNext.remove(0));
-
-                            if (deliverNext.size() > 0)
-                                child.onNext(deliverNext.get(0));
-
-                            if (deliverError) {
-                                deliverNext.clear();
-                                child.onError(error);
-                                unsubscribe();
-                                error = null;
-                                deliverError = false;
-                            }
-                            if (deliverCompleted && !replayLatest) {
-                                deliverNext.clear();
-                                child.onCompleted();
-                                unsubscribe();
-                                deliverCompleted = false;
-                            }
-                        }
-                    }
-                };
-
-                ArrayList<T> deliverNext = new ArrayList<>();
-                Throwable error;
-                boolean deliverError;
-                boolean deliverCompleted;
-
-                @Override
-                public void onStart() {
-                    super.onStart();
-                    RxPresenter.this.callOnTakeView.add(tick);
-                    add(Subscriptions.create(new Action0() {
-                        @Override
-                        public void call() {
-                            RxPresenter.this.callOnTakeView.remove(tick);
-                        }
-                    }));
-                    child.add(this);
-                }
-
-                @Override
-                public void onCompleted() {
-                    deliverCompleted = true;
-                    tick.call();
-                }
-
-                @Override
-                public void onError(Throwable throwable) {
-                    error = throwable;
-                    deliverError = true;
-                    tick.call();
-                }
-
-                @Override
-                public void onNext(T value) {
-                    if (keepLatestOnly)
-                        deliverNext.clear();
-                    deliverNext.add(value);
-                    tick.call();
-                }
-            };
-        }
+    public boolean viewStatusHasObservers() {
+        return viewStatusSubject.hasObservers();
     }
 }

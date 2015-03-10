@@ -1,4 +1,4 @@
-package nucleus.example.network;
+package nucleus.example.base;
 
 import android.text.Html;
 
