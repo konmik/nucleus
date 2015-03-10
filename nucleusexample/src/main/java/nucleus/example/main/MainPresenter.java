@@ -33,6 +33,7 @@ public class MainPresenter extends RxPresenter<MainActivity> {
             name = savedState.getString(NAME_KEY);
             counter = savedState.getInt(COUNTER_KEY);
         }
+
         registerQuery(QUERY_ITEMS, new Func0<Subscription>() {
             @Override
             public Subscription call() {
@@ -54,7 +55,9 @@ public class MainPresenter extends RxPresenter<MainActivity> {
                     });
             }
         });
-        subscribeQuery(QUERY_ITEMS);
+
+        if (savedState == null)
+            subscribeQuery(QUERY_ITEMS);
     }
 
     @Override
