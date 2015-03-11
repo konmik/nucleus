@@ -6,6 +6,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import nucleus.example.R;
 import nucleus.example.base.ServerAPI;
@@ -69,5 +70,9 @@ public class MainActivity extends NucleusActivity<MainPresenter> {
 
         adapter.clear();
         adapter.addAll(items);
+    }
+
+    public void publishNetworkError(Throwable throwable) {
+        Toast.makeText(this, throwable.getMessage(), Toast.LENGTH_LONG).show();
     }
 }
