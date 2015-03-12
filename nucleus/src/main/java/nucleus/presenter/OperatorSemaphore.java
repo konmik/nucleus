@@ -1,7 +1,6 @@
 package nucleus.presenter;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.ArrayList;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -97,7 +96,7 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
         return new Subscriber<T>() {
 
             boolean isOpen;
-            Deque<T> next = new ArrayDeque<>();
+            ArrayList<T> next = new ArrayList<>();
             boolean deliverCompleted;
             Throwable error;
             boolean deliverError;
@@ -105,10 +104,10 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
             void tick() {
                 if (!isUnsubscribed() && isOpen) {
                     while (next.size() > (cache ? 1 : 0))
-                        child.onNext(next.removeFirst());
+                        child.onNext(next.remove(0));
 
                     if (next.size() > 0)
-                        child.onNext(next.peekFirst());
+                        child.onNext(next.get(0));
 
                     if (deliverCompleted && !cache) {
                         child.onCompleted();

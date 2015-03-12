@@ -10,7 +10,6 @@ import android.widget.Toast;
 
 import nucleus.example.R;
 import nucleus.example.base.ServerAPI;
-import nucleus.example.utils.ViewFn;
 import nucleus.manager.RequiresPresenter;
 import nucleus.view.NucleusActivity;
 
@@ -55,16 +54,6 @@ public class MainActivity extends NucleusActivity<MainPresenter> {
     }
 
     public void publishItems(ServerAPI.Item[] items, String user) {
-
-        ListView listView = (ListView)findViewById(R.id.listView);
-
-        if (items == null) {
-            listView.setVisibility(View.INVISIBLE);
-            return;
-        }
-
-        ViewFn.fadeIn(listView);
-
         check1.setChecked(user.equals(MainPresenter.NAME_1));
         check2.setChecked(user.equals(MainPresenter.NAME_2));
 
