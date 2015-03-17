@@ -7,8 +7,8 @@ import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
-import nucleus.presenter.Presenter;
 import nucleus.manager.PresenterManager;
+import nucleus.presenter.Presenter;
 
 /**
  * This view is an example of how a view should control it's presenter.
@@ -19,12 +19,9 @@ import nucleus.manager.PresenterManager;
  */
 public abstract class NucleusLayout<PresenterType extends Presenter> extends FrameLayout {
 
-    private static final String PRESENTER_STATE_KEY = "presenter_state";
     private static final String PARENT_STATE_KEY = "parent_state";
 
-    private PresenterType presenter;
     private Activity activity;
-    private OnDropViewAction onDropViewAction = OnDropViewAction.DESTROY_PRESENTER_IF_FINISHING;
 
     public NucleusLayout(Context context) {
         super(context);
@@ -38,6 +35,41 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
         super(context, attrs, defStyle);
     }
 
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Bundle bundle = new Bundle();
+        bundle.putBundle(PRESENTER_STATE_KEY, savePresenter());
+        bundle.putParcelable(PARENT_STATE_KEY, super.onSaveInstanceState());
+        return bundle;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        Bundle bundle = (Bundle)state;
+        super.onRestoreInstanceState(bundle.getParcelable(PARENT_STATE_KEY));
+        requestPresenter(bundle.getBundle(PRESENTER_STATE_KEY));
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (!isInEditMode()) {
+            activity = (Activity)getContext();
+            takeView();
+        }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        dropView(activity);
+    }
+
+    // The following section can be copy & pasted into any View class, just update their description if needed.
+
+    private static final String PRESENTER_STATE_KEY = "presenter_state";
+    private PresenterType presenter;
+
     /**
      * Returns a current attached presenter.
      * This method is guaranteed to return a non-null value between
@@ -50,59 +82,33 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
     }
 
     /**
-     * Sets an action that should be performed during onDetachedFromWindow call.
-     *
-     * @param onDropViewAction the action to perform.
-     */
-    public void setOnDropViewAction(OnDropViewAction onDropViewAction) {
-        this.onDropViewAction = onDropViewAction;
-    }
-
-    /**
      * Destroys a presenter that is currently attached to the view.
-     * Use this method if you set {@link #setOnDropViewAction(OnDropViewAction)} to
-     * {@link OnDropViewAction#NONE}.
      */
     public void destroyPresenter() {
         if (presenter != null) {
-            presenter.destroy();
+            PresenterManager.getInstance().destroy(presenter);
             presenter = null;
         }
     }
 
-    @Override
-    protected void onRestoreInstanceState(Parcelable state) {
-        Bundle bundle = (Bundle)state;
-        super.onRestoreInstanceState(bundle.getParcelable(PARENT_STATE_KEY));
-        presenter = PresenterManager.getInstance().provide(this, bundle.getBundle(PRESENTER_STATE_KEY));
+    private void requestPresenter(Bundle presenterState) {
+        if (presenter == null)
+            presenter = PresenterManager.getInstance().provide(this, presenterState);
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        if (!isInEditMode()) {
-            activity = (Activity)getContext();
-            if (presenter == null)
-                presenter = PresenterManager.getInstance().provide(this, null);
-            //noinspection unchecked
-            presenter.takeView(this);
-        }
+    private Bundle savePresenter() {
+        return PresenterManager.getInstance().save(presenter);
     }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
+    private void takeView() {
+        requestPresenter(null);
+        //noinspection unchecked
+        presenter.takeView(this);
+    }
+
+    private void dropView(Activity activity) {
         presenter.dropView();
-        if (onDropViewAction == OnDropViewAction.DESTROY_PRESENTER ||
-            (onDropViewAction == OnDropViewAction.DESTROY_PRESENTER_IF_FINISHING && activity.isFinishing()))
+        if (activity.isFinishing())
             destroyPresenter();
-    }
-
-    @Override
-    protected Parcelable onSaveInstanceState() {
-        Bundle bundle = new Bundle();
-        bundle.putBundle(PRESENTER_STATE_KEY, PresenterManager.getInstance().save(presenter));
-        bundle.putParcelable(PARENT_STATE_KEY, super.onSaveInstanceState());
-        return bundle;
     }
 }

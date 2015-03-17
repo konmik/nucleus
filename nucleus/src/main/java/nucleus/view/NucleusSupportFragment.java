@@ -1,5 +1,6 @@
 package nucleus.view;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
@@ -15,15 +16,39 @@ import nucleus.presenter.Presenter;
  */
 public class NucleusSupportFragment<PresenterType extends Presenter> extends Fragment {
 
-    private static final String PRESENTER_STATE_KEY = "presenter_state";
+    @Override
+    public void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
+        requestPresenter(bundle == null ? null : bundle.getBundle(PRESENTER_STATE_KEY));
+    }
 
+    @Override
+    public void onSaveInstanceState(Bundle bundle) {
+        super.onSaveInstanceState(bundle);
+        bundle.putBundle(PRESENTER_STATE_KEY, savePresenter());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        takeView();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        dropView(getActivity());
+    }
+
+    // The following section can be copy & pasted into any View class, just update their description if needed.
+
+    private static final String PRESENTER_STATE_KEY = "presenter_state";
     private PresenterType presenter;
-    private OnDropViewAction onDropViewAction = OnDropViewAction.DESTROY_PRESENTER_IF_FINISHING;
 
     /**
      * Returns a current attached presenter.
      * This method is guaranteed to return a non-null value between
-     * onAttachedToWindow/onDetachedFromWindow calls.
+     * onResume/onPause calls.
      *
      * @return a current attached presenter or null.
      */
@@ -32,53 +57,33 @@ public class NucleusSupportFragment<PresenterType extends Presenter> extends Fra
     }
 
     /**
-     * Sets an action that should be performed during onDetachedFromWindow call.
-     *
-     * @param onDropViewAction the action to perform.
-     */
-    public void setOnDropViewAction(OnDropViewAction onDropViewAction) {
-        this.onDropViewAction = onDropViewAction;
-    }
-
-    /**
-     * Destroys a presenter that is currently attached to the view.
-     * Use this method if you set {@link #setOnDropViewAction(nucleus.view.OnDropViewAction)} to
-     * {@link nucleus.view.OnDropViewAction#NONE}.
+     * Destroys a presenter that is currently attached to the View.
      */
     public void destroyPresenter() {
         if (presenter != null) {
-            presenter.destroy();
+            PresenterManager.getInstance().destroy(presenter);
             presenter = null;
         }
     }
 
-    @Override
-    public void onCreate(Bundle bundle) {
-        super.onCreate(bundle);
-        presenter = PresenterManager.getInstance().provide(this, bundle == null ? null : bundle.getBundle(PRESENTER_STATE_KEY));
+    private void requestPresenter(Bundle presenterState) {
+        if (presenter == null)
+            presenter = PresenterManager.getInstance().provide(this, presenterState);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (presenter == null)
-            presenter = PresenterManager.getInstance().provide(this, null);
+    private Bundle savePresenter() {
+        return PresenterManager.getInstance().save(presenter);
+    }
+
+    private void takeView() {
+        requestPresenter(null);
         //noinspection unchecked
         presenter.takeView(this);
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
+    private void dropView(Activity activity) {
         presenter.dropView();
-        if (onDropViewAction == OnDropViewAction.DESTROY_PRESENTER ||
-            (onDropViewAction == OnDropViewAction.DESTROY_PRESENTER_IF_FINISHING && getActivity().isFinishing()))
+        if (activity.isFinishing())
             destroyPresenter();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle bundle) {
-        super.onSaveInstanceState(bundle);
-        bundle.putBundle(PRESENTER_STATE_KEY, PresenterManager.getInstance().save(presenter));
     }
 }

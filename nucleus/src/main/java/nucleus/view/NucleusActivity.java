@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
-import nucleus.presenter.Presenter;
 import nucleus.manager.PresenterManager;
+import nucleus.presenter.Presenter;
 
 /**
  * This class is an example of how an activity could controls it's presenter.
@@ -16,8 +16,40 @@ import nucleus.manager.PresenterManager;
  */
 public abstract class NucleusActivity<PresenterType extends Presenter> extends Activity {
 
-    private static final String PRESENTER_STATE_KEY = "presenter_state";
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        requestPresenter(savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY));
+    }
 
+    @Override
+    protected void onDestroy() {
+        if (isFinishing())
+            destroyPresenter();
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBundle(PRESENTER_STATE_KEY, savePresenter());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        takeView();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        dropView(this);
+    }
+
+    // The following section can be copy & pasted into any View class, just update their description if needed.
+
+    private static final String PRESENTER_STATE_KEY = "presenter_state";
     private PresenterType presenter;
 
     /**
@@ -31,37 +63,34 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
         return presenter;
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        presenter = PresenterManager.getInstance().provide(this, savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY));
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (isFinishing()) {
+    /**
+     * Destroys a presenter that is currently attached to the View.
+     */
+    public void destroyPresenter() {
+        if (presenter != null) {
             PresenterManager.getInstance().destroy(presenter);
             presenter = null;
         }
-        super.onDestroy();
     }
 
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putBundle(PRESENTER_STATE_KEY, PresenterManager.getInstance().save(presenter));
+    private void requestPresenter(Bundle presenterState) {
+        if (presenter == null)
+            presenter = PresenterManager.getInstance().provide(this, presenterState);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    private Bundle savePresenter() {
+        return PresenterManager.getInstance().save(presenter);
+    }
+
+    private void takeView() {
+        requestPresenter(null);
         //noinspection unchecked
         presenter.takeView(this);
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
+    private void dropView(Activity activity) {
         presenter.dropView();
+        if (activity.isFinishing())
+            destroyPresenter();
     }
 }
