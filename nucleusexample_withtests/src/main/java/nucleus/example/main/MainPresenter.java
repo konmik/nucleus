@@ -6,11 +6,11 @@ import android.support.annotation.NonNull;
 import javax.inject.Inject;
 
 import nucleus.example.base.App;
+import nucleus.example.base.MainThread;
 import nucleus.example.base.ServerAPI;
 import nucleus.presenter.RxPresenter;
 import rx.Scheduler;
 import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func0;
 
@@ -26,7 +26,7 @@ public class MainPresenter extends RxPresenter<MainActivity> {
     private static final String COUNTER_KEY = "counter";
 
     @Inject ServerAPI api;
-    @Inject @Main Scheduler scheduler;
+    @Inject @MainThread Scheduler scheduler;
 
     private String name = DEFAULT_NAME;
     private int counter;

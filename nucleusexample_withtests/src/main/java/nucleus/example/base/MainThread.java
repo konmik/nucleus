@@ -1,4 +1,4 @@
-package nucleus.example.main;
+package nucleus.example.base;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -7,5 +7,5 @@ import javax.inject.Qualifier;
 
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Main {
+public @interface MainThread {
 }

@@ -12,6 +12,7 @@ import dagger.Module;
 import dagger.ObjectGraph;
 import dagger.Provides;
 import nucleus.example.base.App;
+import nucleus.example.base.MainThread;
 import nucleus.example.base.ServerAPI;
 import rx.Observable;
 import rx.Scheduler;
@@ -29,8 +30,6 @@ public class MainPresenterTest extends InstrumentationTestCase {
     public static final String FIRST_NAME = "Marilyn";
     public static final String LAST_NAME = "Manson";
 
-    private MainActivity mainActivity;
-
     @Module(injects = MainPresenter.class)
     public class MainPresenterTestModule {
         @Singleton
@@ -41,7 +40,7 @@ public class MainPresenterTest extends InstrumentationTestCase {
 
         @Singleton
         @Provides
-        @Main
+        @MainThread
         Scheduler provideScheduler() {
             return testScheduler;
         }
@@ -51,15 +50,15 @@ public class MainPresenterTest extends InstrumentationTestCase {
     TestScheduler testScheduler;
 
     public void testRequest() throws Throwable {
-        testScheduler = new TestScheduler();
         createServerApiMock();
+        createTestScheduler();
         App.setObjectGraph(ObjectGraph.create(new MainPresenterTestModule()));
 
         MainPresenter presenter = new MainPresenter();
         presenter.onCreate(null);
         presenter.request(FIRST_NAME + " " + LAST_NAME);
 
-        mainActivity = mock(MainActivity.class);
+        MainActivity mainActivity = mock(MainActivity.class);
         presenter.takeView(mainActivity);
 
         testScheduler.triggerActions();
@@ -83,5 +82,9 @@ public class MainPresenterTest extends InstrumentationTestCase {
                 return Observable.just(response);
             }
         });
+    }
+
+    private void createTestScheduler() {
+        testScheduler = new TestScheduler();
     }
 }

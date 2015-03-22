@@ -4,7 +4,6 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import nucleus.example.main.Main;
 import nucleus.example.main.MainPresenter;
 import retrofit.RestAdapter;
 import rx.Scheduler;
@@ -31,7 +30,7 @@ public class AppModule {
 
     @Provides
     @Singleton
-    @Main
+    @MainThread
     Scheduler provideMainScheduler() {
         return AndroidSchedulers.mainThread();
     }
