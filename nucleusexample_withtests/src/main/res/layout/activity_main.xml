@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".main.MainActivity">
+
+    <LinearLayout
+        android:background="@color/header_background"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="wrap_content">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="32dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:text="@string/app_name"
+            android:layout_height="64dp"
+            android:textColor="@color/header_text"
+            android:gravity="center_vertical"
+            android:textSize="32dp"
+            android:paddingLeft="24dp"/>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="48dp">
+
+            <TextView
+                android:textColor="@color/header_text"
+                android:gravity="center_vertical"
+                android:paddingLeft="24dp"
+                android:layout_width="wrap_content"
+                android:text="Presenter.onTakeView counter:"
+                android:layout_height="match_parent"/>
+
+            <TextView
+                android:id="@+id/counter"
+                android:textColor="@color/header_text"
+                android:layout_marginLeft="8dp"
+                android:gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="48dp">
+
+            <CheckedTextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@drawable/checked_text"
+                android:background="@drawable/checked_background"
+                android:layout_height="match_parent"
+                android:id="@+id/check1"/>
+
+            <CheckedTextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/checked_background"
+                android:gravity="center"
+                android:textColor="@drawable/checked_text"
+                android:layout_height="match_parent"
+                android:id="@+id/check2"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</LinearLayout>

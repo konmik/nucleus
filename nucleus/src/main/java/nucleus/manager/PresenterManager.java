@@ -12,9 +12,6 @@ import nucleus.presenter.Presenter;
  */
 public abstract class PresenterManager {
 
-    protected PresenterManager() {
-    }
-
     private static PresenterManager instance = new DefaultPresenterManager();
 
     /**

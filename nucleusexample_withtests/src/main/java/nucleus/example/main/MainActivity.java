@@ -59,7 +59,7 @@ public class MainActivity extends NucleusActivity<MainPresenter> {
         adapter.addAll(items);
     }
 
-    public void publishNetworkError(Throwable throwable) {
+    public void onNetworkError(Throwable throwable) {
         Toast.makeText(this, throwable.getMessage(), Toast.LENGTH_LONG).show();
     }
 

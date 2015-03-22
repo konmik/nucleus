@@ -18,11 +18,11 @@ import rx.subjects.BehaviorSubject;
  */
 public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
-    private static final String REQUESTED_QUERIES = RxPresenter.class.getName() + "#requestedQueries";
+    private static final String REQUESTED_KEY = RxPresenter.class.getName() + "#requested";
 
-    private ArrayList<Integer> requestedQueries = new ArrayList<>();
-    private HashMap<Integer, Func0<Subscription>> queryFactories = new HashMap<>();
-    private HashMap<Integer, Subscription> querySubscriptions = new HashMap<>();
+    private ArrayList<Integer> requested = new ArrayList<>();
+    private HashMap<Integer, Func0<Subscription>> factories = new HashMap<>();
+    private HashMap<Integer, Subscription> subscriptions = new HashMap<>();
 
     private BehaviorSubject<Boolean> viewStatusSubject = BehaviorSubject.create();
 
@@ -42,7 +42,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     @Override
     protected void onCreate(Bundle savedState) {
         if (savedState != null)
-            requestedQueries = savedState.getIntegerArrayList(REQUESTED_QUERIES);
+            requested = savedState.getIntegerArrayList(REQUESTED_KEY);
         viewStatusSubject.onNext(false);
     }
 
@@ -52,7 +52,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        for (Subscription subs : querySubscriptions.values())
+        for (Subscription subs : subscriptions.values())
             subs.unsubscribe();
         viewStatusSubject.onCompleted();
     }
@@ -63,14 +63,14 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     @Override
     protected void onSave(@NonNull Bundle state) {
         super.onSave(state);
-        for (int i = requestedQueries.size() - 1; i >= 0; i--) {
-            Integer queryId = requestedQueries.get(i);
-            if (querySubscriptions.get(queryId).isUnsubscribed()) {
-                requestedQueries.remove(i);
-                querySubscriptions.remove(queryId);
+        for (int i = requested.size() - 1; i >= 0; i--) {
+            Integer restartableId = requested.get(i);
+            if (subscriptions.get(restartableId).isUnsubscribed()) {
+                requested.remove(i);
+                subscriptions.remove(restartableId);
             }
         }
-        state.putIntegerArrayList(REQUESTED_QUERIES, requestedQueries);
+        state.putIntegerArrayList(REQUESTED_KEY, requested);
     }
 
     /**
@@ -92,47 +92,51 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     }
 
     /**
-     * Registers a query factory. Runs the query if it has been requested earlier (during previous instance
-     * of the presenter).
+     * A restartable is any RxJava query/request that can be started (subscribed) and
+     * should be restarted (re-subscribed) after a process restart.
+     * <p/>
+     * Registers a factory for a restartable. Re-subscribes the restartable after a process restart.
      *
-     * @param queryId id of a query
-     * @param factory a factory that will make an actual query when requested.
+     * @param restartableId id of a restartable.
+     * @param factory       a factory that will create an actual rxjava subscription when requested.
      */
-    public void registerQuery(int queryId, Func0<Subscription> factory) {
-        queryFactories.put(queryId, factory);
-        if (requestedQueries.contains(queryId))
-            querySubscriptions.put(queryId, queryFactories.get(queryId).call());
+    public void registerRestartable(int restartableId, Func0<Subscription> factory) {
+        factories.put(restartableId, factory);
+        if (requested.contains(restartableId))
+            subscriptions.put(restartableId, factories.get(restartableId).call());
     }
 
     /**
-     * Subscribes (runs) a query using a factory method provided with {@link #registerQuery}.
-     * If a presented gets destroyed during a temporary process shutdown while query is still
-     * subscribed, the query will be restarted on next {@link #registerQuery} call.
+     * Subscribes (runs) a restartable using a factory method provided with {@link #registerRestartable}.
+     * If a presenter gets destroyed during a process restart while restartable is still
+     * subscribed, the restartable will be restarted on next {@link #registerRestartable} call.
+     * <p/>
+     * If the restartable is already subscribed then it will be unsubscribed first.
      *
-     * @param queryId id of a query to subscribe
+     * @param restartableId id of a restartable.
      */
-    public void subscribeQuery(int queryId) {
-        unsubscribeQuery(queryId);
-        requestedQueries.add(queryId);
-        querySubscriptions.put(queryId, queryFactories.get(queryId).call());
+    public void subscribeRestartable(int restartableId) {
+        unsubscribeRestartable(restartableId);
+        requested.add(restartableId);
+        subscriptions.put(restartableId, factories.get(restartableId).call());
     }
 
     /**
-     * Unsubscribes a query
+     * Unsubscribes a restartable
      *
-     * @param queryId id of a query to unsubscribe
+     * @param restartableId id of a restartable.
      */
-    public void unsubscribeQuery(int queryId) {
-        if (querySubscriptions.containsKey(queryId)) {
-            querySubscriptions.get(queryId).unsubscribe();
-            querySubscriptions.remove(queryId);
+    public void unsubscribeRestartable(int restartableId) {
+        if (subscriptions.containsKey(restartableId)) {
+            subscriptions.get(restartableId).unsubscribe();
+            subscriptions.remove(restartableId);
         }
-        requestedQueries.remove((Integer)queryId);
+        requested.remove((Integer)restartableId);
     }
 
     /**
      * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during emissions. This transformer can only be used on Application's main thread.
+     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on Application's main thread.
      * <p/>
      * Use this operator if you need to deliver all emissions to a view, in example when you're sending items
      * into adapter one by one.
@@ -151,7 +155,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
     /**
      * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during emissions. This transformer can only be used on Application's main thread.
+     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on Application's main thread.
      * <p/>
      * If this transformer receives a next value while the previous value has not been delivered, the
      * previous value will be dropped.
@@ -172,7 +176,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
     /**
      * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during emissions. This transformer can only be used on Application's main thread.
+     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on Application's main thread.
      * <p/>
      * If the transformer receives a next value while the previous value has not been delivered, the
      * previous value will be dropped.

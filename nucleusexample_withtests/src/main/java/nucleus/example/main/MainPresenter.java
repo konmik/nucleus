@@ -3,9 +3,12 @@ package nucleus.example.main;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
+import javax.inject.Inject;
+
 import nucleus.example.base.App;
 import nucleus.example.base.ServerAPI;
 import nucleus.presenter.RxPresenter;
+import rx.Scheduler;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -22,12 +25,16 @@ public class MainPresenter extends RxPresenter<MainActivity> {
     private static final String NAME_KEY = "name";
     private static final String COUNTER_KEY = "counter";
 
+    @Inject ServerAPI api;
+    @Inject @Main Scheduler scheduler;
+
     private String name = DEFAULT_NAME;
     private int counter;
 
     @Override
     protected void onCreate(Bundle savedState) {
         super.onCreate(savedState);
+        App.inject(this);
 
         if (savedState != null) {
             name = savedState.getString(NAME_KEY);
@@ -38,9 +45,9 @@ public class MainPresenter extends RxPresenter<MainActivity> {
             @Override
             public Subscription call() {
                 final String name1 = name;
-                return App.getServerAPI()
+                return api
                     .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
-                    .observeOn(AndroidSchedulers.mainThread())
+                    .observeOn(scheduler)
                     .compose(MainPresenter.this.<ServerAPI.Response>deliverLatestCache())
                     .subscribe(new Action1<ServerAPI.Response>() {
                         @Override
@@ -50,7 +57,7 @@ public class MainPresenter extends RxPresenter<MainActivity> {
                     }, new Action1<Throwable>() {
                         @Override
                         public void call(Throwable throwable) {
-                            getView().publishNetworkError(throwable);
+                            getView().onNetworkError(throwable);
                         }
                     });
             }

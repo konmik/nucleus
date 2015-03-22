@@ -69,7 +69,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
         final AtomicInteger subscriptionCount = new AtomicInteger();
         registerImmediateQuery(presenter, subscriptionCount);
         assertEquals(0, subscriptionCount.get());
-        presenter.subscribeQuery(1);
+        presenter.subscribeRestartable(1);
         assertEquals(1, subscriptionCount.get());
 
         Bundle bundle = PresenterManager.getInstance().save(presenter);
@@ -80,7 +80,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
     }
 
     private void registerImmediateQuery(TestPresenter presenter, final AtomicInteger subscriptionCount) {
-        presenter.registerQuery(1, new Func0<Subscription>() {
+        presenter.registerRestartable(1, new Func0<Subscription>() {
             @Override
             public Subscription call() {
                 subscriptionCount.incrementAndGet();
@@ -100,7 +100,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
         testScheduler.triggerActions();
         assertEquals(0, onNextCount.get());
 
-        presenter.subscribeQuery(1);
+        presenter.subscribeRestartable(1);
         testScheduler.advanceTimeBy(1001, TimeUnit.MILLISECONDS);
         testScheduler.triggerActions();
         assertEquals(1, onNextCount.get());
@@ -122,7 +122,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
     }
 
     private void registerInfiniteQuery(TestPresenter presenter, final AtomicInteger subscriptionCount, final AtomicInteger onNextCount, final AtomicInteger unsubscribeCounter) {
-        presenter.registerQuery(1, new Func0<Subscription>() {
+        presenter.registerRestartable(1, new Func0<Subscription>() {
             @Override
             public Subscription call() {
                 subscriptionCount.incrementAndGet();

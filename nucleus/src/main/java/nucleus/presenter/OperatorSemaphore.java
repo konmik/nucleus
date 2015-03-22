@@ -101,15 +101,26 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
             Throwable error;
             boolean deliverError;
 
-            void tick() {
+            T nextCache;
+            boolean hasCache;
+
+            void tick(boolean deliverCache) {
                 if (!isUnsubscribed() && isOpen) {
-                    while (next.size() > (cache ? 1 : 0))
-                        child.onNext(next.remove(0));
 
-                    if (next.size() > 0)
-                        child.onNext(next.get(0));
+                    while (next.size() > 0) {
+                        T value = next.remove(0);
+                        child.onNext(value);
+                        deliverCache = false;
+                        if (cache) {
+                            nextCache = value;
+                            hasCache = true;
+                        }
+                    }
 
-                    if (deliverCompleted && !cache) {
+                    if (deliverCache && hasCache)
+                        child.onNext(nextCache);
+
+                    if (deliverCompleted) {
                         child.onCompleted();
                         unsubscribe();
                     }
@@ -128,7 +139,7 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
                     @Override
                     public void call(Boolean aBoolean) {
                         isOpen = aBoolean;
-                        tick();
+                        tick(cache);
                     }
                 }));
                 child.add(this);
@@ -136,15 +147,17 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
 
             @Override
             public void onCompleted() {
-                deliverCompleted = true;
-                tick();
+                if (!cache) {
+                    deliverCompleted = true;
+                    tick(false);
+                }
             }
 
             @Override
             public void onError(Throwable e) {
                 error = e;
                 deliverError = true;
-                tick();
+                tick(false);
             }
 
             @Override
@@ -152,7 +165,7 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
                 if (latest)
                     next.clear();
                 next.add(o);
-                tick();
+                tick(false);
             }
         };
     }
