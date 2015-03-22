@@ -19,6 +19,7 @@ android {
 
 dependencies {
     compile project(':nucleus')
+    compile 'io.reactivex:rxandroid:0.24.0'
     compile 'com.squareup.retrofit:retrofit:1.9.0'
     compile 'com.squareup.dagger:dagger:1.2.2'
     provided 'com.squareup.dagger:dagger-compiler:1.2.2'
