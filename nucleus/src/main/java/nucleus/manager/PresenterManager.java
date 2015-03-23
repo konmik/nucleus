@@ -7,7 +7,7 @@ import nucleus.presenter.Presenter;
 
 /**
  * A singleton that manages presenter's creation and state persistence.
- * This class is intended for internal usage by base classes implementing View part of MVP (NucleusLayout, NucleusActivity)
+ * This class is intended for usage by base classes implementing View part of MVP (NucleusLayout, NucleusActivity)
  * and should not be used by normal View classes.
  */
 public abstract class PresenterManager {
@@ -37,13 +37,15 @@ public abstract class PresenterManager {
      * Finds a Presenter for a given view or restores it from the saved state.
      * There can be three cases when this method is being called:
      * 1. First creation of a view;
-     * 2. Restoring of a view when the process has NOT been destroyed (configuration change, activity recreation because of memory limitation);
-     * 3. Restoring of a view when the process has been destroyed.
+     * 2. Restoring of a view when the process has NOT been destroyed (configuration change, other activity recreation cases);
+     * 3. Restoring of a view when entire process has been destroyed.
      * <p/>
-     * The default implementation searches a passed view for {@link RequiresPresenter} annotation to instantiate a presenter.
+     * The default implementation {@link nucleus.manager.DefaultPresenterManager} searches a passed view for {@link RequiresPresenter}
+     * annotation to instantiate a presenter. A presenter must have default constructor.
      *
-     * @return Successively: an overridden, found, restored or created presenter.
-     * A RuntimeException will be thrown if no {@link RequiresPresenter} annotation can not be found.
+     * @return a found or created presenter.
+     * The default implementation {@link nucleus.manager.DefaultPresenterManager} throws a {@link java.lang.RuntimeException}
+     * if no {@link RequiresPresenter} annotation can be found.
      */
     public abstract <T extends Presenter> T provide(Object view, Bundle savedState);
 

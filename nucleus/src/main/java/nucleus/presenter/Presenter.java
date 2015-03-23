@@ -19,19 +19,20 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class Presenter<ViewType> {
 
     /**
-     * This method is intended for overriding. It is being called by {@link nucleus.manager.PresenterManager#provide}
+     * This method is intended for overriding.
+     * It is being called by {@link nucleus.manager.PresenterManager#provide}
      * method after construction complete.
      *
-     * @param savedState If the presenter is being re-initialized then this Bundle contains the data it most
-     *                   recently supplied in {@link #onSave}.
+     * @param savedState If the presenter is being re-instantiated after a process restart then this Bundle
+     *                   contains the data it supplied in {@link #onSave}.
      */
     protected void onCreate(@Nullable Bundle savedState) {
     }
 
     /**
-     * This method is intended for overriding. It is being called by {@link #destroy}
-     * after {@link nucleus.presenter.Presenter.OnDestroyListener} listeners are notified about it
-     * but before the actual destruction happens.
+     * This method is intended for overriding.
+     * It is being called by {@link #destroy}
+     * after {@link nucleus.presenter.Presenter.OnDestroyListener} listeners are notified about presenter destruction.
      */
     protected void onDestroy() {
     }
@@ -39,7 +40,7 @@ public class Presenter<ViewType> {
     /**
      * This method is intended for overriding.
      * It is being called by {@link nucleus.manager.PresenterManager#save} to save presenter's instance state.
-     * Later the state can be passed in {@link #onCreate} for a new presenter.
+     * Later the state can be passed to {@link #onCreate} for a new presenter instance after a process restart.
      *
      * @param state a non-null bundle which should be used to put presenter's state info.
      */
@@ -47,7 +48,8 @@ public class Presenter<ViewType> {
     }
 
     /**
-     * This method is intended for overriding. It is being called by parent presenter class, when view
+     * This method is intended for overriding.
+     * It is being called by parent presenter class, when a view
      * calls {@link nucleus.presenter.Presenter#takeView}
      *
      * @param view a view that should be taken
@@ -62,11 +64,11 @@ public class Presenter<ViewType> {
     }
 
     /**
-     * Callback to be invoked when a presenter is about to be destroyed.
+     * A callback to be invoked when a presenter is about to be destroyed.
      */
     public interface OnDestroyListener {
         /**
-         * Called before presenter's destruction.
+         * Called before {@link Presenter#onDestroy()}.
          */
         void onDestroy();
     }
@@ -83,7 +85,7 @@ public class Presenter<ViewType> {
     /**
      * Removed a listener observing {@link #onDestroy}.
      *
-     * @param listener a listener to add.
+     * @param listener a listener to remove.
      */
     public void removeOnDestroyListener(OnDestroyListener listener) {
         onDestroyListeners.remove(listener);
@@ -93,7 +95,7 @@ public class Presenter<ViewType> {
     private CopyOnWriteArrayList<OnDestroyListener> onDestroyListeners = new CopyOnWriteArrayList<>();
 
     /**
-     * Returns a current attached to presenter view.
+     * Returns a current view attached to presenter.
      *
      * @return a current attached view.
      */
@@ -103,7 +105,7 @@ public class Presenter<ViewType> {
 
     /**
      * Creates a presenter.
-     * This method is called from {@link nucleus.manager.PresenterManager#provide} and should not be called directly.
+     * This method is called from {@link nucleus.manager.DefaultPresenterManager#provide} and should not be called directly.
      */
     public void create(Bundle bundle) {
         onCreate(bundle);
@@ -111,7 +113,7 @@ public class Presenter<ViewType> {
 
     /**
      * Destroys a presenter.
-     * This method is called from {@link nucleus.manager.PresenterManager#destroy(Presenter)} and should not be called directly.
+     * This method is called from {@link nucleus.manager.DefaultPresenterManager#destroy(Presenter)} and should not be called directly.
      */
     public void destroy() {
         for (OnDestroyListener listener : onDestroyListeners)
@@ -121,14 +123,14 @@ public class Presenter<ViewType> {
 
     /**
      * Saves a presenter.
-     * This method is called from {@link nucleus.manager.PresenterManager#save} and should not be called directly.
+     * This method is called from {@link nucleus.manager.DefaultPresenterManager#save} and should not be called directly.
      */
     public void save(Bundle state) {
         onSave(state);
     }
 
     /**
-     * Attaches a view to presenter. Call it from a view, after a view has been initialized and its state has been restored.
+     * Attaches a view to a presenter. Call it from the view, after it has been initialized and its state has been restored.
      * Good places for calling {@link #takeView} are:
      * {@link android.app.Activity#onResume}, {@link android.view.View#onAttachedToWindow}, {@link android.app.Fragment#onResume}
      *
@@ -140,7 +142,7 @@ public class Presenter<ViewType> {
     }
 
     /**
-     * Detaches presenter from a view. Call it for a view, at the beginning of the destruction phase.
+     * Detaches a presenter from a view. Call it for a view, at the beginning of the destruction phase.
      * Good places for calling {@link #dropView} are:
      * {@link android.app.Activity#onPause}, {@link android.view.View#onDetachedFromWindow}, {@link android.app.Fragment#onPause}
      */

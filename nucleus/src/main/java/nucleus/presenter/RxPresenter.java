@@ -27,10 +27,10 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     private BehaviorSubject<Boolean> viewStatusSubject = BehaviorSubject.create();
 
     /**
-     * Returns an observable that emits current status of view.
+     * Returns an observable that emits current status of a view.
      * True - a view is attached, False - a view is detached.
      *
-     * @return an observable that emits current status of view.
+     * @return an observable that emits current status of a view.
      */
     public Observable<Boolean> viewStatus() {
         return viewStatusSubject;
@@ -93,7 +93,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
     /**
      * A restartable is any RxJava query/request that can be started (subscribed) and
-     * should be restarted (re-subscribed) after a process restart.
+     * should be automatically restarted (re-subscribed) after a process restart.
      * <p/>
      * Registers a factory for a restartable. Re-subscribes the restartable after a process restart.
      *
@@ -108,7 +108,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
     /**
      * Subscribes (runs) a restartable using a factory method provided with {@link #registerRestartable}.
-     * If a presenter gets destroyed during a process restart while restartable is still
+     * If a presenter gets lost during a process restart while a restartable is still
      * subscribed, the restartable will be restarted on next {@link #registerRestartable} call.
      * <p/>
      * If the restartable is already subscribed then it will be unsubscribed first.
@@ -136,9 +136,9 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
     /**
      * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on Application's main thread.
+     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on application's main thread.
      * <p/>
-     * Use this operator if you need to deliver all emissions to a view, in example when you're sending items
+     * Use this operator if you need to deliver *all* emissions to a view, in example when you're sending items
      * into adapter one by one.
      *
      * @param <T> a type of onNext value.
@@ -155,7 +155,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
     /**
      * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on Application's main thread.
+     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on application's main thread.
      * <p/>
      * If this transformer receives a next value while the previous value has not been delivered, the
      * previous value will be dropped.
@@ -176,14 +176,14 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
     /**
      * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on Application's main thread.
+     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on application's main thread.
      * <p/>
      * If the transformer receives a next value while the previous value has not been delivered, the
      * previous value will be dropped.
      * <p/>
      * The transformer will duplicate the latest onNext emission in case if a view has been reattached.
      * <p/>
-     * This operator ignores the onComplete emission and never sends one.
+     * This operator ignores onComplete emission and never sends one.
      * <p/>
      * Use this operator when you need to show updatable data that needs to be cached in memory.
      *

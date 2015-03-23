@@ -9,7 +9,7 @@ import java.util.Map;
 import nucleus.presenter.Presenter;
 
 /**
- * This is the default implementation of PresenterManager.
+ * This is the default implementation of {@link nucleus.manager.PresenterManager}.
  */
 public class DefaultPresenterManager extends PresenterManager {
     private static final String PRESENTER_ID_KEY = "id";

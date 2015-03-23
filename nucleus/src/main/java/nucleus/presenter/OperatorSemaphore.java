@@ -8,9 +8,9 @@ import rx.functions.Action1;
 
 /**
  * This operator delays onNext, onComplete and onError emissions until a True value received from a given observable.
- * When the given observable emits False, the operator delays emissions again.
+ * When the given observable emits False, the operator starts delaying emissions again.
  * <p/>
- * semaphoreLatest variant drops older not emitted value if a new value has been received.
+ * semaphoreLatest variant drops older not emitted onNext value if a new value has been received.
  * <p/>
  * semaphoreLatestCache keeps the latest value after emission and sends it on each True value
  * from a given observable received. This variant never emits onCompleted.
@@ -25,12 +25,12 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
 
     /**
      * Returns an operator that delays onNext, onComplete and onError emissions until a True value received from a given observable.
-     * When the given observable emits False, the operator delays emissions again.
+     * When the given observable emits False, the operator starts delaying emissions again.
      *
      * @param go  an operator that controls emission.
      * @param <T> a type of onNext value.
      * @return an operator that delays onNext, onComplete and onError emissions until a True value received from a given observable.
-     * When the given observable emits False, the operator delays emissions again.
+     * When the given observable emits False, the operator starts delaying emissions again.
      */
     public static <T> OperatorSemaphore<T> semaphore(Observable<Boolean> go) {
         return new OperatorSemaphore<>(go);
@@ -38,14 +38,14 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
 
     /**
      * Returns an operator that delays onNext, onComplete and onError emissions until a True value received from a given observable.
-     * When the given observable emits False, the operator delays emissions again.
+     * When the given observable emits False, the operator starts delaying emissions again.
      * <p/>
      * This variant drops older not emitted value if a new value has been received.
      *
      * @param go  an operator that controls emission.
      * @param <T> a type of onNext value.
      * @return an operator that delays onNext, onComplete and onError emissions until a True value received from a given observable.
-     * When the given observable emits False, the operator delays emissions again.
+     * When the given observable emits False, the operator starts delaying emissions again.
      * <p/>
      * This variant drops older not emitted value if a new value has been received.
      */
@@ -55,7 +55,7 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
 
     /**
      * Returns an operator that delays onNext, onComplete and onError emissions until a True value received from a given observable.
-     * When the given observable emits False, the operator delays emissions again.
+     * When the given observable emits False, the operator starts delaying emissions again.
      * <p/>
      * This variant drops older not emitted value if a new value has been received.
      * <p/>
@@ -65,7 +65,7 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
      * @param go  an operator that controls emission.
      * @param <T> a type of onNext value.
      * @return an operator that delays onNext, onComplete and onError emissions until a True value received from a given observable.
-     * When the given observable emits False, the operator delays emissions again.
+     * When the given observable emits False, the operator starts delaying emissions again.
      * <p/>
      * This variant drops older not emitted value if a new value has been received.
      * <p/>
