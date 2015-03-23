@@ -7,6 +7,8 @@ Nucleus is an Android library, which helps to use the [Model-View-Presenter](htt
 
 [Introduction article](http://konmik.github.io/introduction-to-model-view-presenter-on-android.html)
 
+[Javadoc](http://konmik.github.io/nucleus/)
+
 ### Include this library:
 
 ``` groovy
