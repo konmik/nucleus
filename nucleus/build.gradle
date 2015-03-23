@@ -12,7 +12,12 @@ android {
     }
 }
 
+configurations {
+    compileJavadoc
+}
+
 dependencies {
+    compileJavadoc  'io.reactivex:rxjava:1.0.8'
     compile 'io.reactivex:rxjava:1.0.8'
     compile 'com.android.support:support-annotations:21.0.3'
     compile 'com.android.support:support-v4:22.0.0'
@@ -21,4 +26,4 @@ dependencies {
     androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.0'
 }
 
-apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'
+apply from: '../gradle/gradle-mvn-push.gradle'
