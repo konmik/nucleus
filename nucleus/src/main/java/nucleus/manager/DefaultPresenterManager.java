@@ -17,17 +17,15 @@ public class DefaultPresenterManager extends PresenterManager {
 
     private HashMap<String, Presenter> idToPresenter = new HashMap<>();
     private HashMap<Presenter, String> presenterToId = new HashMap<>();
+    private int nextId;
 
     /**
      * {@inheritDoc}
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends Presenter> T provide(Object view, Bundle savedState) {
-        Class viewClass = view.getClass();
-        Class<? extends Presenter> presenterClass = findPresenterClass(viewClass);
-
-        String id = providePresenterId(presenterClass, viewClass, savedState);
+    public <T extends Presenter> T provide(Class<T> presenterClass, Bundle savedState) {
+        String id = providePresenterId(presenterClass, savedState);
         if (idToPresenter.containsKey(id))
             return (T)idToPresenter.get(id);
 
@@ -69,10 +67,9 @@ public class DefaultPresenterManager extends PresenterManager {
         }
     }
 
-    private String providePresenterId(Class<? extends Presenter> presenterClass, Class viewClass, Bundle savedState) {
+    private String providePresenterId(Class<? extends Presenter> presenterClass, Bundle savedState) {
         return savedState != null ? savedState.getString(PRESENTER_ID_KEY) :
-            presenterClass.getSimpleName() + " -> " + viewClass.getSimpleName() +
-                " (" + System.nanoTime() + "/" + (int)(Math.random() * Integer.MAX_VALUE) + ")";
+            presenterClass.getSimpleName() + " (" + nextId++ + "/" + System.nanoTime() + "/" + (int)(Math.random() * Integer.MAX_VALUE) + ")";
     }
 
     private Presenter instantiatePresenter(Class<? extends Presenter> presenterClass, String id) {
@@ -86,13 +83,5 @@ public class DefaultPresenterManager extends PresenterManager {
         idToPresenter.put(id, presenter);
         presenterToId.put(presenter, id);
         return presenter;
-    }
-
-    private Class<? extends Presenter> findPresenterClass(Class viewClass) {
-        if (!viewClass.isAnnotationPresent(RequiresPresenter.class))
-            throw new RuntimeException(RequiresPresenter.class.getName() + " annotation must present on " + viewClass.getName());
-
-        RequiresPresenter annotation = (RequiresPresenter)viewClass.getAnnotation(RequiresPresenter.class);
-        return annotation.value();
     }
 }

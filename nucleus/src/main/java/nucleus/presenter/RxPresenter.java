@@ -112,6 +112,8 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * subscribed, the restartable will be restarted on next {@link #registerRestartable} call.
      * <p/>
      * If the restartable is already subscribed then it will be unsubscribed first.
+     * <p/>
+     * The restartable will be unsubscribed during {@link #onDestroy()}
      *
      * @param restartableId id of a restartable.
      */

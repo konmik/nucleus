@@ -1,10 +1,11 @@
 package nucleus.view;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 
 import nucleus.manager.PresenterManager;
+import nucleus.manager.RequiresPresenter;
 import nucleus.presenter.Presenter;
 
 /**
@@ -14,7 +15,7 @@ import nucleus.presenter.Presenter;
  *
  * @param <PresenterType> a type of presenter to return with {@link #getPresenter}.
  */
-public class NucleusFragment<PresenterType extends Presenter> extends Fragment {
+public class NucleusSupportFragment<PresenterType extends Presenter> extends Fragment {
 
     @Override
     public void onCreate(Bundle bundle) {

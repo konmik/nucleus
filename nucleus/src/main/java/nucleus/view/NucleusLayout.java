@@ -82,7 +82,7 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
     }
 
     /**
-     * Destroys a presenter that is currently attached to the view.
+     * Destroys a presenter that is currently attached to the View.
      */
     public void destroyPresenter() {
         if (presenter != null) {
@@ -92,23 +92,34 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
     }
 
     private void requestPresenter(Bundle presenterState) {
-        if (presenter == null)
-            presenter = PresenterManager.getInstance().provide(this, presenterState);
+        if (presenter == null) {
+            Class<PresenterType> presenterClass = findPresenterClass();
+            if (presenterClass != null)
+                presenter = PresenterManager.getInstance().provide(presenterClass, presenterState);
+        }
     }
 
     private Bundle savePresenter() {
-        return PresenterManager.getInstance().save(presenter);
+        return presenter == null ? null : PresenterManager.getInstance().save(presenter);
     }
 
     private void takeView() {
         requestPresenter(null);
-        //noinspection unchecked
-        presenter.takeView(this);
+        if (presenter != null)
+            //noinspection unchecked
+            presenter.takeView(this);
     }
 
     private void dropView(Activity activity) {
-        presenter.dropView();
+        if (presenter != null)
+            presenter.dropView();
         if (activity.isFinishing())
             destroyPresenter();
+    }
+
+    private Class<PresenterType> findPresenterClass() {
+        RequiresPresenter annotation = getClass().getAnnotation(RequiresPresenter.class);
+        //noinspection unchecked
+        return annotation == null ? null : (Class<PresenterType>)annotation.value();
     }
 }

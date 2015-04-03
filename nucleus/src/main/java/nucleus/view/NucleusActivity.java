@@ -24,9 +24,9 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         if (isFinishing())
             destroyPresenter();
-        super.onDestroy();
     }
 
     @Override
@@ -74,23 +74,34 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
     }
 
     private void requestPresenter(Bundle presenterState) {
-        if (presenter == null)
-            presenter = PresenterManager.getInstance().provide(this, presenterState);
+        if (presenter == null) {
+            Class<PresenterType> presenterClass = findPresenterClass();
+            if (presenterClass != null)
+                presenter = PresenterManager.getInstance().provide(presenterClass, presenterState);
+        }
     }
 
     private Bundle savePresenter() {
-        return PresenterManager.getInstance().save(presenter);
+        return presenter == null ? null : PresenterManager.getInstance().save(presenter);
     }
 
     private void takeView() {
         requestPresenter(null);
-        //noinspection unchecked
-        presenter.takeView(this);
+        if (presenter != null)
+            //noinspection unchecked
+            presenter.takeView(this);
     }
 
     private void dropView(Activity activity) {
-        presenter.dropView();
+        if (presenter != null)
+            presenter.dropView();
         if (activity.isFinishing())
             destroyPresenter();
+    }
+
+    private Class<PresenterType> findPresenterClass() {
+        RequiresPresenter annotation = getClass().getAnnotation(RequiresPresenter.class);
+        //noinspection unchecked
+        return annotation == null ? null : (Class<PresenterType>)annotation.value();
     }
 }

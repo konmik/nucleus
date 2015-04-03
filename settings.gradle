@@ -1,1 +1,1 @@
-include ':nucleus', ':nucleusexample', ':nucleusexample_withtests'
+include ':nucleus', ':nucleus-example', ':nucleus-example-with-tests', ':nucleus-support-v4', ':nucleus-support-v7', ':nucleus-tests'

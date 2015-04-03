@@ -1,4 +1,4 @@
-nucleus
+Nucleus
 =======
 
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Nucleus-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/1379)
@@ -13,6 +13,25 @@ Nucleus is an Android library, which helps to use the [Model-View-Presenter](htt
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus:1.0.0'
+    compile 'info.android15.nucleus:nucleus:1.1.0'
 }
 ```
+
+For additional view classes `NucleusSupportFragment`, `NucleusFragmentActivity` include:
+
+``` groovy
+dependencies {
+    compile 'info.android15.nucleus:nucleus-support-v4:1.1.0'
+}
+```
+
+For additional view class `NucleusActionBarActivity` include:
+
+``` groovy
+dependencies {
+    compile 'info.android15.nucleus:nucleus-support-v7:1.1.0'
+}
+```
+
+Hint: you can just copy/paste that classes code into ANY View class
+to keep your View classes hierarchy as you like to.

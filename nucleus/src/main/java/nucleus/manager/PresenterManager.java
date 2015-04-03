@@ -40,14 +40,11 @@ public abstract class PresenterManager {
      * 2. Restoring of a view when the process has NOT been destroyed (configuration change, other activity recreation cases);
      * 3. Restoring of a view when entire process has been destroyed.
      * <p/>
-     * The default implementation {@link nucleus.manager.DefaultPresenterManager} searches a passed view for {@link RequiresPresenter}
-     * annotation to instantiate a presenter. A presenter must have default constructor.
+     * A presenter must have default constructor.
      *
      * @return a found or created presenter.
-     * The default implementation {@link nucleus.manager.DefaultPresenterManager} throws a {@link java.lang.RuntimeException}
-     * if no {@link RequiresPresenter} annotation can be found.
      */
-    public abstract <T extends Presenter> T provide(Object view, Bundle savedState);
+    public abstract <T extends Presenter> T provide(Class<T> presenterClass, Bundle savedState);
 
     /**
      * Creates a bundle that can be used to re-instantiate a presenter. Pass this bundle to {@link #provide}.

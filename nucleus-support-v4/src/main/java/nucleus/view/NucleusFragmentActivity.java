@@ -1,43 +1,52 @@
 package nucleus.view;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentActivity;
 
 import nucleus.manager.PresenterManager;
+import nucleus.manager.RequiresPresenter;
 import nucleus.presenter.Presenter;
 
 /**
- * This view is an example of how a view should control it's presenter.
+ * This class is an example of how an activity could controls it's presenter.
  * You can inherit from this class or copy/paste this class's code to
  * create your own view implementation.
  *
  * @param <PresenterType> a type of presenter to return with {@link #getPresenter}.
  */
-public class NucleusFragment<PresenterType extends Presenter> extends Fragment {
+public abstract class NucleusFragmentActivity<PresenterType extends Presenter> extends FragmentActivity {
 
     @Override
-    public void onCreate(Bundle bundle) {
-        super.onCreate(bundle);
-        requestPresenter(bundle == null ? null : bundle.getBundle(PRESENTER_STATE_KEY));
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        requestPresenter(savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
-    public void onSaveInstanceState(Bundle bundle) {
-        super.onSaveInstanceState(bundle);
-        bundle.putBundle(PRESENTER_STATE_KEY, savePresenter());
+    protected void onDestroy() {
+        if (isFinishing())
+            destroyPresenter();
+        super.onDestroy();
     }
 
     @Override
-    public void onResume() {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBundle(PRESENTER_STATE_KEY, savePresenter());
+    }
+
+    @Override
+    protected void onResume() {
         super.onResume();
         takeView();
     }
 
     @Override
-    public void onPause() {
+    protected void onPause() {
         super.onPause();
-        dropView(getActivity());
+        dropView(this);
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.

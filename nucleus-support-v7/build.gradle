@@ -17,9 +17,10 @@ configurations {
 }
 
 dependencies {
-    compile 'com.android.support:support-annotations:21.0.3'
-    compile 'io.reactivex:rxjava:1.0.8'
-    compileJavadoc 'io.reactivex:rxjava:1.0.8'
+    compile 'com.android.support:appcompat-v7:22.0.0'
+    compile 'info.android15.nucleus:nucleus:1.1.0'
+    compileJavadoc 'com.android.support:appcompat-v7:22.0.0'
+    compileJavadoc 'info.android15.nucleus:nucleus:1.1.0'
 }
 
 apply from: '../gradle/gradle-mvn-push.gradle'
