@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 
 import nucleus.manager.PresenterManager;
-import nucleus.manager.RequiresPresenter;
 import nucleus.presenter.Presenter;
 
 /**

@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBarActivity;
 
 import nucleus.manager.PresenterManager;
-import nucleus.manager.RequiresPresenter;
 import nucleus.presenter.Presenter;
 
 /**

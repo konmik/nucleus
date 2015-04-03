@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import nucleus.manager.DefaultPresenterManager;
 import nucleus.manager.PresenterManager;
-import nucleus.manager.RequiresPresenter;
 import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action0;

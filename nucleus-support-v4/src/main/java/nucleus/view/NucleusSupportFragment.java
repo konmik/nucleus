@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
 import nucleus.manager.PresenterManager;
-import nucleus.manager.RequiresPresenter;
 import nucleus.presenter.Presenter;
 
 /**

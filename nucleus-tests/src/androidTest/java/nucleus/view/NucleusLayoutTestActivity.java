@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
-import nucleus.manager.RequiresPresenter;
 import nucleus.presenter.Presenter;
 
 public class NucleusLayoutTestActivity extends Activity {

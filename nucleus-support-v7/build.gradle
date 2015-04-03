@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 3
-        versionName "1.1.0"
+        versionCode 4
+        versionName "1.1.1"
     }
 }
 
@@ -18,7 +18,7 @@ configurations {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:22.0.0'
-    compile 'info.android15.nucleus:nucleus:1.1.0'
+    compile 'info.android15.nucleus:nucleus:1.1.1'
     compileJavadoc 'com.android.support:appcompat-v7:22.0.0'
     compileJavadoc 'info.android15.nucleus:nucleus:1.1.0'
 }

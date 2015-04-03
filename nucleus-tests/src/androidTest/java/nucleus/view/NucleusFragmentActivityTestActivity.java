@@ -2,7 +2,6 @@ package nucleus.view;
 
 import android.os.Bundle;
 
-import nucleus.manager.RequiresPresenter;
 import nucleus.presenter.Presenter;
 
 @RequiresPresenter(Presenter.class)
