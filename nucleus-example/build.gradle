@@ -8,8 +8,6 @@ android {
         applicationId "info.android15.nucleusexample"
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 3
-        versionName "1.1.0"
     }
 }
 

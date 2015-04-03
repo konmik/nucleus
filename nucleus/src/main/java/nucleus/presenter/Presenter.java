@@ -1,8 +1,6 @@
 package nucleus.presenter;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -26,7 +24,7 @@ public class Presenter<ViewType> {
      * @param savedState If the presenter is being re-instantiated after a process restart then this Bundle
      *                   contains the data it supplied in {@link #onSave}.
      */
-    protected void onCreate(@Nullable Bundle savedState) {
+    protected void onCreate(Bundle savedState) {
     }
 
     /**
@@ -44,7 +42,7 @@ public class Presenter<ViewType> {
      *
      * @param state a non-null bundle which should be used to put presenter's state info.
      */
-    protected void onSave(@NonNull Bundle state) {
+    protected void onSave(Bundle state) {
     }
 
     /**

@@ -1,7 +1,6 @@
 package nucleus.presenter;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,7 +60,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * {@inheritDoc}
      */
     @Override
-    protected void onSave(@NonNull Bundle state) {
+    protected void onSave(Bundle state) {
         super.onSave(state);
         for (int i = requested.size() - 1; i >= 0; i--) {
             Integer restartableId = requested.get(i);

@@ -1,11 +1,9 @@
 package nucleus.view;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBarActivity;
 
-import nucleus.manager.PresenterManager;
 import nucleus.presenter.Presenter;
 
 /**
@@ -20,38 +18,35 @@ public abstract class NucleusActionBarActivity<PresenterType extends Presenter> 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestPresenter(savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY));
+        helper.requestPresenter(getClass(), savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         if (isFinishing())
             destroyPresenter();
-        super.onDestroy();
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBundle(PRESENTER_STATE_KEY, savePresenter());
+        outState.putBundle(PRESENTER_STATE_KEY, helper.savePresenter());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        takeView();
+        helper.takeView(this, this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        dropView(this);
+        helper.dropView();
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
-
-    private static final String PRESENTER_STATE_KEY = "presenter_state";
-    private PresenterType presenter;
 
     /**
      * Returns a current attached presenter.
@@ -61,48 +56,16 @@ public abstract class NucleusActionBarActivity<PresenterType extends Presenter> 
      * @return a current attached presenter or null.
      */
     public PresenterType getPresenter() {
-        return presenter;
+        return helper.getPresenter();
     }
 
     /**
      * Destroys a presenter that is currently attached to the View.
      */
     public void destroyPresenter() {
-        if (presenter != null) {
-            PresenterManager.getInstance().destroy(presenter);
-            presenter = null;
-        }
+        helper.destroyPresenter();
     }
 
-    private void requestPresenter(Bundle presenterState) {
-        if (presenter == null) {
-            Class<PresenterType> presenterClass = findPresenterClass();
-            if (presenterClass != null)
-                presenter = PresenterManager.getInstance().provide(presenterClass, presenterState);
-        }
-    }
-
-    private Bundle savePresenter() {
-        return presenter == null ? null : PresenterManager.getInstance().save(presenter);
-    }
-
-    private void takeView() {
-        requestPresenter(null);
-        if (presenter != null)
-            //noinspection unchecked
-            presenter.takeView(this);
-    }
-
-    private void dropView(Activity activity) {
-        if (presenter != null)
-            presenter.dropView();
-        if (activity.isFinishing())
-            destroyPresenter();
-    }
-
-    private Class<PresenterType> findPresenterClass() {
-        RequiresPresenter annotation = getClass().getAnnotation(RequiresPresenter.class);
-        //noinspection unchecked
-        return annotation == null ? null : (Class<PresenterType>)annotation.value();
-    }
+    private static final String PRESENTER_STATE_KEY = "presenter_state";
+    private PresenterHelper<PresenterType> helper = new PresenterHelper<>();
 }

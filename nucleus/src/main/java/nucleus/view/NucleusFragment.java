@@ -1,10 +1,8 @@
 package nucleus.view;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 
-import nucleus.manager.PresenterManager;
 import nucleus.presenter.Presenter;
 
 /**
@@ -19,31 +17,28 @@ public class NucleusFragment<PresenterType extends Presenter> extends Fragment {
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-        requestPresenter(bundle == null ? null : bundle.getBundle(PRESENTER_STATE_KEY));
+        helper.requestPresenter(getClass(), bundle == null ? null : bundle.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
     public void onSaveInstanceState(Bundle bundle) {
         super.onSaveInstanceState(bundle);
-        bundle.putBundle(PRESENTER_STATE_KEY, savePresenter());
+        bundle.putBundle(PRESENTER_STATE_KEY, helper.savePresenter());
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        takeView();
+        helper.takeView(this, getActivity());
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        dropView(getActivity());
+        helper.dropView();
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
-
-    private static final String PRESENTER_STATE_KEY = "presenter_state";
-    private PresenterType presenter;
 
     /**
      * Returns a current attached presenter.
@@ -53,48 +48,16 @@ public class NucleusFragment<PresenterType extends Presenter> extends Fragment {
      * @return a current attached presenter or null.
      */
     public PresenterType getPresenter() {
-        return presenter;
+        return helper.getPresenter();
     }
 
     /**
      * Destroys a presenter that is currently attached to the View.
      */
     public void destroyPresenter() {
-        if (presenter != null) {
-            PresenterManager.getInstance().destroy(presenter);
-            presenter = null;
-        }
+        helper.destroyPresenter();
     }
 
-    private void requestPresenter(Bundle presenterState) {
-        if (presenter == null) {
-            Class<PresenterType> presenterClass = findPresenterClass();
-            if (presenterClass != null)
-                presenter = PresenterManager.getInstance().provide(presenterClass, presenterState);
-        }
-    }
-
-    private Bundle savePresenter() {
-        return presenter == null ? null : PresenterManager.getInstance().save(presenter);
-    }
-
-    private void takeView() {
-        requestPresenter(null);
-        if (presenter != null)
-            //noinspection unchecked
-            presenter.takeView(this);
-    }
-
-    private void dropView(Activity activity) {
-        if (presenter != null)
-            presenter.dropView();
-        if (activity.isFinishing())
-            destroyPresenter();
-    }
-
-    private Class<PresenterType> findPresenterClass() {
-        RequiresPresenter annotation = getClass().getAnnotation(RequiresPresenter.class);
-        //noinspection unchecked
-        return annotation == null ? null : (Class<PresenterType>)annotation.value();
-    }
+    private static final String PRESENTER_STATE_KEY = "presenter_state";
+    private PresenterHelper<PresenterType> helper = new PresenterHelper<>();
 }

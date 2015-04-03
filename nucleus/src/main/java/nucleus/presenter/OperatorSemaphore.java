@@ -76,6 +76,10 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
         return new OperatorSemaphore<>(go, true, true);
     }
 
+    private OperatorSemaphore(Observable<Boolean> go) {
+        this.go = go;
+    }
+
     private OperatorSemaphore(Observable<Boolean> go, boolean latest) {
         this.go = go;
         this.latest = latest;
@@ -85,10 +89,6 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
         this.go = go;
         this.latest = latest;
         this.cache = cache;
-    }
-
-    private OperatorSemaphore(Observable<Boolean> go) {
-        this.go = go;
     }
 
     @Override

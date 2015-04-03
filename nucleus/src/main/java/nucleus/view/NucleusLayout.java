@@ -7,7 +7,6 @@ import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
-import nucleus.manager.PresenterManager;
 import nucleus.presenter.Presenter;
 
 /**
@@ -20,8 +19,6 @@ import nucleus.presenter.Presenter;
 public abstract class NucleusLayout<PresenterType extends Presenter> extends FrameLayout {
 
     private static final String PARENT_STATE_KEY = "parent_state";
-
-    private Activity activity;
 
     public NucleusLayout(Context context) {
         super(context);
@@ -38,7 +35,7 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
     @Override
     protected Parcelable onSaveInstanceState() {
         Bundle bundle = new Bundle();
-        bundle.putBundle(PRESENTER_STATE_KEY, savePresenter());
+        bundle.putBundle(PRESENTER_STATE_KEY, helper.savePresenter());
         bundle.putParcelable(PARENT_STATE_KEY, super.onSaveInstanceState());
         return bundle;
     }
@@ -47,28 +44,23 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
     protected void onRestoreInstanceState(Parcelable state) {
         Bundle bundle = (Bundle)state;
         super.onRestoreInstanceState(bundle.getParcelable(PARENT_STATE_KEY));
-        requestPresenter(bundle.getBundle(PRESENTER_STATE_KEY));
+        helper.requestPresenter(getClass(), bundle.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if (!isInEditMode()) {
-            activity = (Activity)getContext();
-            takeView();
-        }
+        if (!isInEditMode())
+            helper.takeView(this, (Activity)getContext());
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        dropView(activity);
+        helper.dropView();
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
-
-    private static final String PRESENTER_STATE_KEY = "presenter_state";
-    private PresenterType presenter;
 
     /**
      * Returns a current attached presenter.
@@ -78,48 +70,16 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
      * @return a current attached presenter or null.
      */
     public PresenterType getPresenter() {
-        return presenter;
+        return helper.getPresenter();
     }
 
     /**
      * Destroys a presenter that is currently attached to the View.
      */
     public void destroyPresenter() {
-        if (presenter != null) {
-            PresenterManager.getInstance().destroy(presenter);
-            presenter = null;
-        }
+        helper.destroyPresenter();
     }
 
-    private void requestPresenter(Bundle presenterState) {
-        if (presenter == null) {
-            Class<PresenterType> presenterClass = findPresenterClass();
-            if (presenterClass != null)
-                presenter = PresenterManager.getInstance().provide(presenterClass, presenterState);
-        }
-    }
-
-    private Bundle savePresenter() {
-        return presenter == null ? null : PresenterManager.getInstance().save(presenter);
-    }
-
-    private void takeView() {
-        requestPresenter(null);
-        if (presenter != null)
-            //noinspection unchecked
-            presenter.takeView(this);
-    }
-
-    private void dropView(Activity activity) {
-        if (presenter != null)
-            presenter.dropView();
-        if (activity.isFinishing())
-            destroyPresenter();
-    }
-
-    private Class<PresenterType> findPresenterClass() {
-        RequiresPresenter annotation = getClass().getAnnotation(RequiresPresenter.class);
-        //noinspection unchecked
-        return annotation == null ? null : (Class<PresenterType>)annotation.value();
-    }
+    private static final String PRESENTER_STATE_KEY = "presenter_state";
+    private PresenterHelper<PresenterType> helper = new PresenterHelper<>();
 }

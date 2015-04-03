@@ -1,5 +1,9 @@
 # Changelog
 
+### 03.04.2015, Version: 1.1.2
+
+* Separate PresenterHelper class for easier View class creation.
+
 ### 03.04.2015, Version: 1.1.0
 
 * Base view classes for support libraries has been extracted to separate artifacts.
