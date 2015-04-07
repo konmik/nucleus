@@ -47,8 +47,12 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
     @UiThreadTest
     public void testInit() {
         Assert.assertEquals(mockPresenter, getViewPresenter());
-        verify(mockPresenterManager, times(1)).provide(eq(getPresenterClass()), isNull(Bundle.class));
+        assertProvideOnce();
         verify(mockPresenter, times(1)).takeView(getView());
+    }
+
+    protected void assertProvideOnce() {
+        verify(mockPresenterManager, times(1)).provide(eq(getPresenterClass()), isNull(Bundle.class));
     }
 
     public void testDestroy() throws Throwable {

@@ -34,10 +34,34 @@ public class NucleusLayoutTest extends BaseViewTest<NucleusLayoutTestActivity> {
     @Override
     protected void waitForDestructionComplete() {
         super.waitForDestructionComplete();
-        waitFor(new Expression() {
+        waitFor(new Condition() {
             @Override
             public boolean call() {
                 return activity.detached;
+            }
+        });
+    }
+
+    // https://github.com/konmik/nucleus/issues/3
+    // can't reproduce
+    public void testDetachAttachShouldNotLeak() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().detachAttach();
+            }
+        });
+        waitFor(new Condition() {
+            @Override
+            public boolean call() {
+                return getActivity().detachAttachCompleted;
+            }
+        });
+        assertProvideOnce();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                assertNotNull(getView().getPresenter());
             }
         });
     }

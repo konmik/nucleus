@@ -12,12 +12,7 @@
         </activity>
         <activity android:name="nucleus.view.NucleusActivityTestActivity" />
         <activity android:name="nucleus.view.NucleusLayoutTestActivity" />
-        <activity android:name="nucleus.view.NucleusFragmentTestActivity" />
-        <activity android:name="nucleus.view.NucleusFragmentActivityTestActivity" />
-        <activity android:name="nucleus.view.NucleusSupportFragmentTestActivity" />
-        <activity
-            android:name="nucleus.view.NucleusActionBarActivityTestActivity"
-            android:theme="@style/Theme.AppCompat.Light" />
         <activity android:name="nucleus.view.NucleusActivityNoPresenterTestActivity" />
+        <activity android:name="nucleus.view.NucleusFragmentTestActivity" />
     </application>
 </manifest>

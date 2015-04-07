@@ -1,15 +1,17 @@
 package nucleus.view;
 
-import android.app.Activity;
-import android.content.Context;
-import android.os.Bundle;
+    import android.app.Activity;
+    import android.content.Context;
+    import android.os.Bundle;
+    import android.view.ViewGroup;
 
-import nucleus.presenter.Presenter;
+    import nucleus.presenter.Presenter;
 
 public class NucleusLayoutTestActivity extends Activity {
 
     public TestView view;
     public boolean detached;
+    public boolean detachAttachCompleted;
 
     @RequiresPresenter(Presenter.class)
     public static class TestView extends NucleusLayout {
@@ -30,5 +32,17 @@ public class NucleusLayoutTestActivity extends Activity {
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         detached = true;
+    }
+
+    public void detachAttach() {
+        final ViewGroup parent = (ViewGroup)view.getParent();
+        parent.removeView(view);
+        parent.post(new Runnable() {
+            @Override
+            public void run() {
+                parent.addView(view);
+                detachAttachCompleted = true;
+            }
+        });
     }
 }

@@ -33,7 +33,7 @@ public class BaseActivityTest<ActivityClass extends Activity> extends ActivityIn
         if (restarted) {
             // prevents the situation when the screen orientation is going to be changed by previous test.
             final Activity activity = launchActivity(DefaultOrientationActivity.class);
-            waitFor(new Expression() {
+            waitFor(new Condition() {
                 @Override
                 public boolean call() {
                     return activity.getResources().getConfiguration().orientation == DEFAULT_SCREEN_ORIENTATION;
@@ -43,22 +43,22 @@ public class BaseActivityTest<ActivityClass extends Activity> extends ActivityIn
         super.tearDown();
     }
 
-    public interface Expression {
+    public interface Condition {
         boolean call();
     }
 
     /**
      * Waits for expression to become true on the main thread.
      *
-     * @param expression
+     * @param condition
      */
-    public void waitFor(final Expression expression) {
+    public void waitFor(final Condition condition) {
         final AtomicBoolean done = new AtomicBoolean();
         do {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    done.set(expression.call());
+                    done.set(condition.call());
                 }
             });
         } while (!done.get());
