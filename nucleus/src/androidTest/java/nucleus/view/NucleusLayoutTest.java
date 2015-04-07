@@ -57,10 +57,10 @@ public class NucleusLayoutTest extends BaseViewTest<NucleusLayoutTestActivity> {
                 return getActivity().detachAttachCompleted;
             }
         });
-        assertProvideOnce();
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                assertProvideOnce();
                 assertNotNull(getView().getPresenter());
             }
         });
