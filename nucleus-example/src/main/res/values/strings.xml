@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Nucleus Example</string>
+    <string name="error">Error</string>
+    <string name="counter">Presenter.onTakeView count: %1$d</string>
 </resources>
