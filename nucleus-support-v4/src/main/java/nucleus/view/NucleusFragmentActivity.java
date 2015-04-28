@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 
+import nucleus.factory.PresenterFactory;
+import nucleus.factory.ReflectionPresenterFactory;
 import nucleus.presenter.Presenter;
 
 /**
@@ -18,7 +20,7 @@ public abstract class NucleusFragmentActivity<PresenterType extends Presenter> e
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        helper.requestPresenter(getClass(), savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY));
+        helper.requestPresenter(getPresenterFactory(), savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
@@ -37,7 +39,7 @@ public abstract class NucleusFragmentActivity<PresenterType extends Presenter> e
     @Override
     protected void onResume() {
         super.onResume();
-        helper.takeView(this, this);
+        helper.takeView(this, getPresenterFactory(), this);
     }
 
     @Override
@@ -47,6 +49,27 @@ public abstract class NucleusFragmentActivity<PresenterType extends Presenter> e
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
+
+    /**
+     * The factory class used to create the presenter. Defaults to
+     * {@link ReflectionPresenterFactory} to create the presenter
+     * using a no arg constructor.
+     *
+     * Subclasses can override this to provide presenters in other
+     * ways, like via their dependency injector.
+     *
+     * @return The {@link PresenterFactory} that can build a {@link Presenter}, or null.
+     */
+    public PresenterFactory<PresenterType> getPresenterFactory() {
+        Class<PresenterType> presenterClass = findPresenterClass(getClass());
+        return presenterClass == null ? null : new ReflectionPresenterFactory<>(presenterClass);
+    }
+
+    private Class<PresenterType> findPresenterClass(Class<?> viewClass) {
+        RequiresPresenter annotation = viewClass.getAnnotation(RequiresPresenter.class);
+        //noinspection unchecked
+        return annotation == null ? null : (Class<PresenterType>)annotation.value();
+    }
 
     /**
      * Returns a current attached presenter.
