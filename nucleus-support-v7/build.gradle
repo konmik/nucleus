@@ -1,8 +1,8 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
         minSdkVersion 15
@@ -10,9 +10,9 @@ android {
     }
 }
 
-repositories {
-    mavenLocal()
-}
+//repositories {
+//    mavenLocal()
+//}
 
 configurations {
     compileJavadoc
@@ -20,12 +20,9 @@ configurations {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:22.0.0'
-//    compile project(":nucleus")
-    compile "info.android15.nucleus:nucleus:${VERSION_NAME}"
-
-//    compileJavadoc project(":nucleus")
+    compile 'info.android15.nucleus:nucleus:1.1.2'
     compileJavadoc 'com.android.support:appcompat-v7:22.0.0'
-    compileJavadoc "info.android15.nucleus:nucleus:${VERSION_NAME}"
+    compileJavadoc 'info.android15.nucleus:nucleus:1.1.2'
 }
 
 apply from: '../gradle/gradle-mvn-push.gradle'
