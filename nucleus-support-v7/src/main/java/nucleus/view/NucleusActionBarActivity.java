@@ -37,13 +37,13 @@ public abstract class NucleusActionBarActivity<PresenterType extends Presenter> 
     @Override
     protected void onResume() {
         super.onResume();
-        helper.takeView(this, this);
+        helper.takeView(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        helper.dropView();
+        helper.dropView(isFinishing());
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
