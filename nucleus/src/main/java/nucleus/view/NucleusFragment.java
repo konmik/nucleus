@@ -29,13 +29,13 @@ public class NucleusFragment<PresenterType extends Presenter> extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        helper.takeView(this, getActivity());
+        helper.takeView(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        helper.dropView();
+        helper.dropView(getActivity().isFinishing());
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
