@@ -49,6 +49,8 @@ public class PresenterHelper<PresenterType extends Presenter> {
     public void dropView(boolean destroy) {
         if (presenter != null)
             presenter.dropView();
+        if (destroy)
+            destroyPresenter();
     }
 
     private Class<PresenterType> findPresenterClass(Class<?> viewClass) {
