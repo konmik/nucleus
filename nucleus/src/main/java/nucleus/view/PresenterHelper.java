@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import nucleus.manager.PresenterManager;
 import nucleus.presenter.Presenter;
+import nucleus.factory.PresenterFactory;
 
 /**
  * A helper class to control presenter's lifecycle.
@@ -30,11 +31,10 @@ public class PresenterHelper<PresenterType extends Presenter> {
         }
     }
 
-    public void requestPresenter(Class viewClass, Bundle presenterState) {
-        if (presenter == null) {
-            Class<PresenterType> presenterClass = findPresenterClass(viewClass);
-            if (presenterClass != null)
-                presenter = PresenterManager.getInstance().provide(presenterClass, presenterState);
+    public void requestPresenter(PresenterFactory<PresenterType> presenterFactory,
+            Bundle presenterState) {
+        if (presenter == null && presenterFactory != null) {
+            presenter = PresenterManager.getInstance().provide(presenterFactory, presenterState);
         }
     }
 
@@ -42,8 +42,9 @@ public class PresenterHelper<PresenterType extends Presenter> {
         return presenter == null ? null : PresenterManager.getInstance().save(presenter);
     }
 
-    public void takeView(Object view, Activity activity) {
-        requestPresenter(view.getClass(), null);
+    public void takeView(Object view, PresenterFactory<PresenterType> presenterFactory,
+            Activity activity) {
+        requestPresenter(presenterFactory, null);
         if (presenter != null)
             //noinspection unchecked
             presenter.takeView(view);
@@ -56,11 +57,5 @@ public class PresenterHelper<PresenterType extends Presenter> {
         if (activity.isFinishing())
             destroyPresenter();
         activity = null;
-    }
-
-    private Class<PresenterType> findPresenterClass(Class<?> viewClass) {
-        RequiresPresenter annotation = viewClass.getAnnotation(RequiresPresenter.class);
-        //noinspection unchecked
-        return annotation == null ? null : (Class<PresenterType>)annotation.value();
     }
 }

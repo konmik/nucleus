@@ -5,11 +5,11 @@ import android.test.UiThreadTest;
 
 import org.mockito.Mockito;
 
+import nucleus.factory.PresenterFactory;
 import nucleus.manager.PresenterManager;
 import nucleus.presenter.Presenter;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -32,7 +32,7 @@ public class NucleusActivityNoPresenterTest extends BaseActivityTest<NucleusActi
                 dexmakerWorkaround();
                 mockPresenter = Mockito.mock(Presenter.class);
                 mockPresenterManager = mock(PresenterManager.class);
-                when(mockPresenterManager.provide(eq(Presenter.class), any(Bundle.class))).thenReturn(mockPresenter);
+                when(mockPresenterManager.provide(any(PresenterFactory.class), any(Bundle.class))).thenReturn(mockPresenter);
                 PresenterManager.setInstance(mockPresenterManager);
             }
         });
@@ -41,7 +41,7 @@ public class NucleusActivityNoPresenterTest extends BaseActivityTest<NucleusActi
 
     @UiThreadTest
     public void testInit() {
-        verify(mockPresenterManager, times(0)).provide(any(Class.class), isNull(Bundle.class));
+        verify(mockPresenterManager, times(0)).provide(any(PresenterFactory.class), isNull(Bundle.class));
     }
 
     public void testDestroy() throws Throwable {
@@ -66,7 +66,7 @@ public class NucleusActivityNoPresenterTest extends BaseActivityTest<NucleusActi
             @Override
             public void run() {
                 verify(mockPresenterManager, times(0)).save(any(Presenter.class));
-                verify(mockPresenterManager, times(0)).provide(any(Class.class), isNull(Bundle.class));
+                verify(mockPresenterManager, times(0)).provide(any(PresenterFactory.class), isNull(Bundle.class));
             }
         });
     }

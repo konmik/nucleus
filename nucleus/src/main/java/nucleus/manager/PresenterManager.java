@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.util.Printer;
 
 import nucleus.presenter.Presenter;
+import nucleus.factory.PresenterFactory;
 
 /**
  * A singleton that manages presenter's creation and state persistence.
@@ -40,11 +41,11 @@ public abstract class PresenterManager {
      * 2. Restoring of a view when the process has NOT been destroyed (configuration change, other activity recreation cases);
      * 3. Restoring of a view when entire process has been destroyed.
      * <p/>
-     * A presenter must have default constructor.
      *
      * @return a found or created presenter.
      */
-    public abstract <T extends Presenter> T provide(Class<T> presenterClass, Bundle savedState);
+    public abstract <T extends Presenter> T provide(PresenterFactory<T> presenterFactory,
+            Bundle savedState);
 
     /**
      * Creates a bundle that can be used to re-instantiate a presenter. Pass this bundle to {@link #provide}.

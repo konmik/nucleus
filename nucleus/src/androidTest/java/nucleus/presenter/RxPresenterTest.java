@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import nucleus.factory.PresenterFactory;
 import nucleus.manager.DefaultPresenterManager;
 import nucleus.manager.PresenterManager;
 import rx.Observable;
@@ -30,6 +31,12 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
     static class TestView {
     }
+
+    static PresenterFactory<TestPresenter> testPresenterFactory = new PresenterFactory<TestPresenter>() {
+        @Override public TestPresenter createPresenter() {
+            return new TestPresenter();
+        }
+    };
 
     AtomicLong onNextValue = new AtomicLong();
     AtomicLong onNextCounter = new AtomicLong();
@@ -63,7 +70,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
     @UiThreadTest
     public void testImmediateQuery() throws Exception {
-        TestPresenter presenter = PresenterManager.getInstance().provide(TestPresenter.class, null);
+        TestPresenter presenter = PresenterManager.getInstance().provide(testPresenterFactory, null);
         final AtomicInteger subscriptionCount = new AtomicInteger();
         registerImmediateQuery(presenter, subscriptionCount);
         assertEquals(0, subscriptionCount.get());
@@ -72,7 +79,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
         Bundle bundle = PresenterManager.getInstance().save(presenter);
         PresenterManager.getInstance().destroy(presenter);
-        presenter = PresenterManager.getInstance().provide(TestPresenter.class, bundle);
+        presenter = PresenterManager.getInstance().provide(testPresenterFactory, bundle);
         registerImmediateQuery(presenter, subscriptionCount);
         assertEquals(1, subscriptionCount.get());
     }
@@ -90,7 +97,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
     @UiThreadTest
     public void testInfiniteQuery() throws Exception {
-        TestPresenter presenter = PresenterManager.getInstance().provide(TestPresenter.class, null);
+        TestPresenter presenter = PresenterManager.getInstance().provide(testPresenterFactory, null);
         final AtomicInteger subscriptionCount = new AtomicInteger();
         final AtomicInteger onNextCount = new AtomicInteger();
         AtomicInteger unsubscribeCounter = new AtomicInteger();
@@ -111,7 +118,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
         PresenterManager.getInstance().destroy(presenter);
         assertEquals(1, unsubscribeCounter.get());
 
-        presenter = PresenterManager.getInstance().provide(TestPresenter.class, bundle);
+        presenter = PresenterManager.getInstance().provide(testPresenterFactory, bundle);
         registerInfiniteQuery(presenter, subscriptionCount, onNextCount, unsubscribeCounter);
         assertEquals(2, subscriptionCount.get());
         assertEquals(2, onNextCount.get());
@@ -141,7 +148,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
     @UiThreadTest
     public void testDeliverLatestCache() throws Exception {
-        TestPresenter presenter = PresenterManager.getInstance().provide(TestPresenter.class, null);
+        TestPresenter presenter = PresenterManager.getInstance().provide(testPresenterFactory, null);
         PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter.<Integer>deliverLatestCache());
         bus.onNext(1);
         assertEquals(0, onNextValue.get());
@@ -194,7 +201,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
     @UiThreadTest
     public void testDeliver() {
-        TestPresenter presenter = PresenterManager.getInstance().provide(TestPresenter.class, null);
+        TestPresenter presenter = PresenterManager.getInstance().provide(testPresenterFactory, null);
 
         PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter.<Integer>deliver());
         bus.onNext(100);
@@ -209,7 +216,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
         for (int onComplete = 0; onComplete < 2; onComplete++) {
             resetCounters();
-            presenter = PresenterManager.getInstance().provide(TestPresenter.class, null);
+            presenter = PresenterManager.getInstance().provide(testPresenterFactory, null);
             bus = createBusSubscriptionWithOperator(presenter.<Integer>deliver());
             bus.onNext(100);
             bus.onNext(200);
@@ -236,7 +243,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
     @UiThreadTest
     public void testDeliverLatest() {
-        TestPresenter presenter = PresenterManager.getInstance().provide(TestPresenter.class, null);
+        TestPresenter presenter = PresenterManager.getInstance().provide(testPresenterFactory, null);
 
         PublishSubject<Integer> bus = createBusSubscriptionWithOperator(presenter.<Integer>deliverLatest());
         bus.onNext(100);
@@ -252,7 +259,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
         for (int onComplete = 0; onComplete < 2; onComplete++) {
             resetCounters();
-            presenter = PresenterManager.getInstance().provide(TestPresenter.class, null);
+            presenter = PresenterManager.getInstance().provide(testPresenterFactory, null);
             bus = createBusSubscriptionWithOperator(presenter.<Integer>deliverLatest());
             bus.onNext(100);
             bus.onNext(200);
@@ -307,7 +314,7 @@ public class RxPresenterTest extends InstrumentationTestCase {
 
             PresenterManager.setInstance(new DefaultPresenterManager());
 
-            TestPresenter presenter = PresenterManager.getInstance().provide(TestPresenter.class, null);
+            TestPresenter presenter = PresenterManager.getInstance().provide(testPresenterFactory, null);
             //noinspection unchecked
             Observable.Transformer<Integer, Integer> operator =
                 type == 0 ? presenter.<Integer>deliver() :
