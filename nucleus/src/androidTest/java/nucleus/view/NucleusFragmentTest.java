@@ -8,11 +8,6 @@ public class NucleusFragmentTest extends BaseViewTest<NucleusFragmentTestActivit
     }
 
     @Override
-    protected Class<? extends Presenter> getPresenterClass() {
-        return Presenter.class;
-    }
-
-    @Override
     protected Object getView() {
         return getActivity().fragment;
     }

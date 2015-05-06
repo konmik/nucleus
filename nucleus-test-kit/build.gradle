@@ -1,0 +1,17 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolsVersion
+
+    defaultConfig {
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
+    }
+}
+
+dependencies {
+    compile 'org.mockito:mockito-core:1.9.5'
+    compile 'com.google.dexmaker:dexmaker:1.0'
+    compile 'com.google.dexmaker:dexmaker-mockito:1.0'
+}

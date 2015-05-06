@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
 import nucleus.presenter.Presenter;
+import nucleus.factory.RequiresPresenter;
 
 public class NucleusSupportFragmentTestActivity extends FragmentActivity {
     public TestFragment fragment;

@@ -21,7 +21,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-// can't share this class because of circular dependencies, so copy/paste it to each module
 public abstract class BaseViewTest<ActivityType extends Activity> extends BaseActivityTest<ActivityType> {
 
     private Presenter mockPresenter;

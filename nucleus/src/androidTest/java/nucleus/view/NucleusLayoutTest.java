@@ -11,11 +11,6 @@ public class NucleusLayoutTest extends BaseViewTest<NucleusLayoutTestActivity> {
     }
 
     @Override
-    protected Class<? extends Presenter> getPresenterClass() {
-        return Presenter.class;
-    }
-
-    @Override
     protected NucleusLayoutTestActivity.TestView getView() {
         return getActivity().view;
     }

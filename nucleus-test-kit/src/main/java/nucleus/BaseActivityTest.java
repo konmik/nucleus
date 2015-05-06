@@ -1,4 +1,4 @@
-package nucleus.view;
+package nucleus;
 
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -7,8 +7,6 @@ import android.content.pm.ActivityInfo;
 import android.test.ActivityInstrumentationTestCase2;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import nucleus.DefaultOrientationActivity;
 
 public class BaseActivityTest<ActivityClass extends Activity> extends ActivityInstrumentationTestCase2<ActivityClass> {
 

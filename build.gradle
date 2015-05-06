@@ -18,5 +18,4 @@ ext {
     targetSdkVersion = 22
     compileSdkVersion = 22
     buildToolsVersion = '22'
-    nucleusVersion = VERSION_NAME
 }

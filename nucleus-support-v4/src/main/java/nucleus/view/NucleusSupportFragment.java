@@ -3,6 +3,7 @@ package nucleus.view;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
+import nucleus.factory.RequiresPresenter;
 import nucleus.factory.PresenterFactory;
 import nucleus.factory.ReflectionPresenterFactory;
 import nucleus.presenter.Presenter;

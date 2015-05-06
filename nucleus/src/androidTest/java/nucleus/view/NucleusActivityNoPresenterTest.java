@@ -5,6 +5,7 @@ import android.test.UiThreadTest;
 
 import org.mockito.Mockito;
 
+import nucleus.BaseActivityTest;
 import nucleus.factory.PresenterFactory;
 import nucleus.manager.PresenterManager;
 import nucleus.presenter.Presenter;

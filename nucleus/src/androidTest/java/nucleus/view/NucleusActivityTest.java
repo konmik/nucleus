@@ -9,11 +9,6 @@ public class NucleusActivityTest extends BaseViewTest<NucleusActivityTestActivit
     }
 
     @Override
-    protected Class<? extends Presenter> getPresenterClass() {
-        return Presenter.class;
-    }
-
-    @Override
     protected Object getView() {
         return getActivity();
     }

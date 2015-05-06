@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentActivity;
 
 import nucleus.factory.PresenterFactory;
 import nucleus.factory.ReflectionPresenterFactory;
+import nucleus.factory.RequiresPresenter;
 import nucleus.presenter.Presenter;
 
 /**
