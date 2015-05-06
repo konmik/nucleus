@@ -3,7 +3,6 @@ package nucleus.view;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
-import nucleus.factory.RequiresPresenter;
 import nucleus.factory.PresenterFactory;
 import nucleus.factory.ReflectionPresenterFactory;
 import nucleus.presenter.Presenter;
@@ -32,40 +31,34 @@ public class NucleusSupportFragment<PresenterType extends Presenter> extends Fra
     @Override
     public void onResume() {
         super.onResume();
-        helper.takeView(this, getPresenterFactory(), getActivity());
+        helper.takeView(this, getPresenterFactory());
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        helper.dropView();
+        helper.dropView(getActivity().isFinishing());
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
 
     /**
-     * The factory class used to create the presenter. Defaults to
-     * {@link ReflectionPresenterFactory} to create the presenter
+     * The factory class used to create the presenter. Defaults to {@link ReflectionPresenterFactory} to create the presenter
      * using a no arg constructor.
      * <p/>
-     * Subclasses can override this to provide presenters in other
-     * ways, like via their dependency injector.
+     * Subclasses can override this to provide presenters in other ways, like via their dependency injector.
+     *
+     * @return The {@link PresenterFactory} that can build a {@link Presenter}, or null.
      */
     public PresenterFactory<PresenterType> getPresenterFactory() {
-        Class<PresenterType> presenterClass = findPresenterClass(getClass());
-        return presenterClass == null ? null : new ReflectionPresenterFactory<>(presenterClass);
-    }
-
-    private Class<PresenterType> findPresenterClass(Class<?> viewClass) {
-        RequiresPresenter annotation = viewClass.getAnnotation(RequiresPresenter.class);
-        //noinspection unchecked
-        return annotation == null ? null : (Class<PresenterType>)annotation.value();
+        return ReflectionPresenterFactory.fromViewClass(getClass());
     }
 
     /**
      * Returns a current attached presenter.
      * This method is guaranteed to return a non-null value between
-     * onResume/onPause calls.
+     * onResume/onPause and onAttachedToWindow/onDetachedFromWindow calls
+     * if the presenter factory returns a non-null value.
      *
      * @return a current attached presenter or null.
      */
