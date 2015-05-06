@@ -5,9 +5,8 @@ android {
     buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        applicationId "info.android15.nucleusexample"
-        minSdkVersion 15
-        targetSdkVersion 22
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
     }
 }
 

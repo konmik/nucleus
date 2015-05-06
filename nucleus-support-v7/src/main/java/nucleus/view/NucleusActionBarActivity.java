@@ -54,7 +54,7 @@ public abstract class NucleusActionBarActivity<PresenterType extends Presenter> 
      * The factory class used to create the presenter. Defaults to
      * {@link ReflectionPresenterFactory} to create the presenter
      * using a no arg constructor.
-     *
+     * <p/>
      * Subclasses can override this to provide presenters in other
      * ways, like via their dependency injector.
      */

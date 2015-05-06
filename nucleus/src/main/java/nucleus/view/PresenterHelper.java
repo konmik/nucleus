@@ -3,9 +3,9 @@ package nucleus.view;
 import android.app.Activity;
 import android.os.Bundle;
 
+import nucleus.factory.PresenterFactory;
 import nucleus.manager.PresenterManager;
 import nucleus.presenter.Presenter;
-import nucleus.factory.PresenterFactory;
 
 /**
  * A helper class to control presenter's lifecycle.
@@ -31,19 +31,16 @@ public class PresenterHelper<PresenterType extends Presenter> {
         }
     }
 
-    public void requestPresenter(PresenterFactory<PresenterType> presenterFactory,
-            Bundle presenterState) {
-        if (presenter == null && presenterFactory != null) {
+    public void requestPresenter(PresenterFactory<PresenterType> presenterFactory, Bundle presenterState) {
+        if (presenter == null && presenterFactory != null)
             presenter = PresenterManager.getInstance().provide(presenterFactory, presenterState);
-        }
     }
 
     public Bundle savePresenter() {
         return presenter == null ? null : PresenterManager.getInstance().save(presenter);
     }
 
-    public void takeView(Object view, PresenterFactory<PresenterType> presenterFactory,
-            Activity activity) {
+    public void takeView(Object view, PresenterFactory<PresenterType> presenterFactory, Activity activity) {
         requestPresenter(presenterFactory, null);
         if (presenter != null)
             //noinspection unchecked

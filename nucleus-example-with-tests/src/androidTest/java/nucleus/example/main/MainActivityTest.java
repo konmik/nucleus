@@ -9,12 +9,12 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import nucleus.example.base.ServerAPI;
+import nucleus.factory.PresenterFactory;
 import nucleus.manager.PresenterManager;
 import nucleus.presenter.Presenter;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -37,7 +37,7 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                substitutePresenter(MainPresenter.class, mainPresenterMock = mockPresenter());
+                substitutePresenter(mainPresenterMock = mockPresenter());
             }
         });
 
@@ -70,9 +70,9 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
         return mock;
     }
 
-    private void substitutePresenter(Class<? extends Presenter> presenterClass, final Presenter mockPresenter) {
+    private void substitutePresenter(final Presenter mockPresenter) {
         PresenterManager mockManager = mock(PresenterManager.class);
-        when(mockManager.provide(eq(presenterClass), any(Bundle.class))).then(new Answer<Object>() {
+        when(mockManager.provide(any(PresenterFactory.class), any(Bundle.class))).then(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 return mockPresenter;

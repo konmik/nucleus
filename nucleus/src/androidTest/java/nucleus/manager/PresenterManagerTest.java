@@ -45,7 +45,8 @@ public class PresenterManagerTest extends ActivityInstrumentationTestCase2 {
     }
 
     PresenterFactory<TestPresenter> testPresenterFactory = new PresenterFactory<TestPresenter>() {
-        @Override public TestPresenter createPresenter() {
+        @Override
+        public TestPresenter createPresenter() {
             return new TestPresenter();
         }
     };

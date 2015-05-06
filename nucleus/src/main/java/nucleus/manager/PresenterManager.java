@@ -3,8 +3,8 @@ package nucleus.manager;
 import android.os.Bundle;
 import android.util.Printer;
 
-import nucleus.presenter.Presenter;
 import nucleus.factory.PresenterFactory;
+import nucleus.presenter.Presenter;
 
 /**
  * A singleton that manages presenter's creation and state persistence.
@@ -44,8 +44,7 @@ public abstract class PresenterManager {
      *
      * @return a found or created presenter.
      */
-    public abstract <T extends Presenter> T provide(PresenterFactory<T> presenterFactory,
-            Bundle savedState);
+    public abstract <T extends Presenter> T provide(PresenterFactory<T> presenterFactory, Bundle savedState);
 
     /**
      * Creates a bundle that can be used to re-instantiate a presenter. Pass this bundle to {@link #provide}.

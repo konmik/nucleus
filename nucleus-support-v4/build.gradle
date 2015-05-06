@@ -5,14 +5,14 @@ android {
     buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 22
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
     }
 }
 
-//repositories {
-//    mavenLocal()
-//}
+repositories {
+    mavenLocal()
+}
 
 configurations {
     compileJavadoc
@@ -20,9 +20,9 @@ configurations {
 
 dependencies {
     compile 'com.android.support:support-v4:22.0.0'
-    compile 'info.android15.nucleus:nucleus:1.1.2'
+    compile "info.android15.nucleus:nucleus:$rootProject.nucleusVersion"
     compileJavadoc 'com.android.support:support-v4:22.0.0'
-    compileJavadoc 'info.android15.nucleus:nucleus:1.1.2'
+    compileJavadoc "info.android15.nucleus:nucleus:$rootProject.nucleusVersion"
 }
 
 apply from: '../gradle/gradle-mvn-push.gradle'

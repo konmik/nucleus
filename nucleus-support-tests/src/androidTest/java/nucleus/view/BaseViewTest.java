@@ -9,12 +9,12 @@ import junit.framework.Assert;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 
+import nucleus.factory.PresenterFactory;
 import nucleus.manager.PresenterManager;
 import nucleus.presenter.Presenter;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -37,7 +37,7 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
                 dexmakerWorkaround();
                 mockPresenter = Mockito.mock(Presenter.class);
                 mockPresenterManager = Mockito.mock(PresenterManager.class);
-                when(mockPresenterManager.provide(eq(getPresenterClass()), any(Bundle.class))).thenReturn(mockPresenter);
+                when(mockPresenterManager.provide(any(PresenterFactory.class), any(Bundle.class))).thenReturn(mockPresenter);
                 PresenterManager.setInstance(mockPresenterManager);
             }
         });
@@ -52,7 +52,7 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
     }
 
     protected void assertProvideOnce() {
-        verify(mockPresenterManager, times(1)).provide(eq(getPresenterClass()), isNull(Bundle.class));
+        verify(mockPresenterManager, times(1)).provide(any(PresenterFactory.class), isNull(Bundle.class));
     }
 
     public void testDestroy() throws Throwable {
@@ -91,7 +91,7 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
             public void run() {
                 verify(mockPresenter, times(1)).takeView(getView());
                 verify(mockPresenterManager, times(1)).save(mockPresenter);
-                verify(mockPresenterManager, times(1)).provide(eq(getPresenterClass()), argThat(new ArgumentMatcher<Bundle>() {
+                verify(mockPresenterManager, times(1)).provide(any(PresenterFactory.class), argThat(new ArgumentMatcher<Bundle>() {
                     @Override
                     public boolean matches(Object o) {
                         return o != null && ((Bundle)o).getInt("1") == 1;
@@ -100,8 +100,6 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
             }
         });
     }
-
-    protected abstract Class<? extends Presenter> getPresenterClass();
 
     protected abstract Object getView();
 

@@ -4,9 +4,9 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
-import nucleus.presenter.Presenter;
 import nucleus.factory.PresenterFactory;
 import nucleus.factory.ReflectionPresenterFactory;
+import nucleus.presenter.Presenter;
 
 /**
  * This class is an example of how an activity could controls it's presenter.
@@ -20,9 +20,7 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        helper.requestPresenter(getPresenterFactory(),
-                savedInstanceState == null ? null
-                        : savedInstanceState.getBundle(PRESENTER_STATE_KEY));
+        helper.requestPresenter(getPresenterFactory(), savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
@@ -53,30 +51,22 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
     // The following section can be copy & pasted into any View class, just update their description if needed.
 
     /**
-     * The factory class used to create the presenter. Defaults to
-     * {@link ReflectionPresenterFactory} to create the presenter
+     * The factory class used to create the presenter. Defaults to {@link ReflectionPresenterFactory} to create the presenter
      * using a no arg constructor.
-     *
-     * Subclasses can override this to provide presenters in other
-     * ways, like via their dependency injector.
+     * <p/>
+     * Subclasses can override this to provide presenters in other ways, like via their dependency injector.
      *
      * @return The {@link PresenterFactory} that can build a {@link Presenter}, or null.
      */
     public PresenterFactory<PresenterType> getPresenterFactory() {
-        Class<PresenterType> presenterClass = findPresenterClass(getClass());
-        return presenterClass == null ? null : new ReflectionPresenterFactory<>(presenterClass);
-    }
-
-    private Class<PresenterType> findPresenterClass(Class<?> viewClass) {
-        RequiresPresenter annotation = viewClass.getAnnotation(RequiresPresenter.class);
-        //noinspection unchecked
-        return annotation == null ? null : (Class<PresenterType>)annotation.value();
+        return ReflectionPresenterFactory.fromViewClass(getClass());
     }
 
     /**
      * Returns a current attached presenter.
      * This method is guaranteed to return a non-null value between
-     * onResume/onPause calls.
+     * onResume/onPause and onAttachedToWindow/onDetachedFromWindow calls
+     * if the presenter factory returns a non-null value.
      *
      * @return a current attached presenter or null.
      */

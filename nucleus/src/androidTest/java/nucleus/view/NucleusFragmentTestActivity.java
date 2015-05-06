@@ -3,6 +3,7 @@ package nucleus.view;
 import android.app.Activity;
 import android.os.Bundle;
 
+import nucleus.factory.RequiresPresenter;
 import nucleus.presenter.Presenter;
 
 public class NucleusFragmentTestActivity extends Activity {

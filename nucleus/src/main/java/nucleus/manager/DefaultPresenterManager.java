@@ -6,8 +6,8 @@ import android.util.Printer;
 import java.util.HashMap;
 import java.util.Map;
 
-import nucleus.presenter.Presenter;
 import nucleus.factory.PresenterFactory;
+import nucleus.presenter.Presenter;
 
 /**
  * This is the default implementation of {@link nucleus.manager.PresenterManager}.
@@ -25,15 +25,13 @@ public class DefaultPresenterManager extends PresenterManager {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends Presenter> T provide(PresenterFactory<T> presenterFactory,
-            Bundle savedState) {
+    public <T extends Presenter> T provide(PresenterFactory<T> presenterFactory, Bundle savedState) {
+
         String id = providePresenterId(savedState);
         if (idToPresenter.containsKey(id))
             return (T)idToPresenter.get(id);
 
         Presenter presenter = presenterFactory.createPresenter();
-        if (presenter == null)
-            return null;
 
         idToPresenter.put(id, presenter);
         presenterToId.put(presenter, id);
@@ -77,19 +75,6 @@ public class DefaultPresenterManager extends PresenterManager {
 
     private String providePresenterId(Bundle savedState) {
         return savedState != null ? savedState.getString(PRESENTER_ID_KEY) :
-            "presenter (" + nextId++ + "/" + System.nanoTime() + "/" + (int)(Math.random() * Integer.MAX_VALUE) + ")";
-    }
-
-    private Presenter instantiatePresenter(Class<? extends Presenter> presenterClass, String id) {
-        Presenter presenter;
-        try {
-            presenter = presenterClass.newInstance();
-        }
-        catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        idToPresenter.put(id, presenter);
-        presenterToId.put(presenter, id);
-        return presenter;
+            "" + nextId++ + "/" + System.nanoTime() + "/" + (int)(Math.random() * Integer.MAX_VALUE);
     }
 }

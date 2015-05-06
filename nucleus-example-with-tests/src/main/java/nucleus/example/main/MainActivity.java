@@ -10,8 +10,8 @@ import android.widget.Toast;
 
 import nucleus.example.R;
 import nucleus.example.base.ServerAPI;
-import nucleus.view.RequiresPresenter;
 import nucleus.view.NucleusActivity;
+import nucleus.factory.RequiresPresenter;
 
 @RequiresPresenter(MainPresenter.class)
 public class MainActivity extends NucleusActivity<MainPresenter> {

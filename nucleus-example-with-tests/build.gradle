@@ -5,13 +5,8 @@ android {
     buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        applicationId "info.android15.nucleusexample"
-        minSdkVersion 15
-        targetSdkVersion 22
-    }
-
-    packagingOptions {
-        exclude 'LICENSE.txt'
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
     }
 }
 

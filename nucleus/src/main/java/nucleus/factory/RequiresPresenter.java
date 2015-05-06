@@ -1,4 +1,4 @@
-package nucleus.view;
+package nucleus.factory;
 
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;

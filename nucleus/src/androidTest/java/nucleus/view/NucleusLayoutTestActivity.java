@@ -1,11 +1,12 @@
 package nucleus.view;
 
-    import android.app.Activity;
-    import android.content.Context;
-    import android.os.Bundle;
-    import android.view.ViewGroup;
+import android.app.Activity;
+import android.content.Context;
+import android.os.Bundle;
+import android.view.ViewGroup;
 
-    import nucleus.presenter.Presenter;
+import nucleus.factory.RequiresPresenter;
+import nucleus.presenter.Presenter;
 
 public class NucleusLayoutTestActivity extends Activity {
 
