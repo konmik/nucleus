@@ -1,12 +1,12 @@
 # Changelog
 
-### XX.05.2015, Version: 1.3.0
+### 07.05.2015, Version: 1.3.0
 
-* An ability to instantiate presenters with custom PresenterFactory, this allows
+* An ability to instantiate presenters with custom `PresenterFactory`, this allows
   to put arguments into a presenter's constructor or to make an instance-specific
   dependency injection.
-* NucleusAppCompatActivity
-
+* `NucleusAppCompatActivity`
+* `@RequiresPresenter` has been moved to `nucleus.factory` package.
 
 ### 03.04.2015, Version: 1.1.2
 
