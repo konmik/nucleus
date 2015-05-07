@@ -6,5 +6,8 @@
         <activity
             android:name="nucleus.view.NucleusActionBarActivityTestActivity"
             android:theme="@style/Theme.AppCompat.Light" />
+        <activity
+            android:name="nucleus.view.NucleusAppCompatActivityTestActivity"
+            android:theme="@style/Theme.AppCompat.Light" />
     </application>
 </manifest>
