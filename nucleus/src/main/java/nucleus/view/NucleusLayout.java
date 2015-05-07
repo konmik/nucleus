@@ -53,15 +53,14 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (!isInEditMode())
-            helper.takeView(this, getPresenterFactory(), (Activity)getContext());
+            helper.takeView(this, getPresenterFactory());
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        helper.dropView();
+        helper.dropView(((Activity)getContext()).isFinishing());
     }
-
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
 

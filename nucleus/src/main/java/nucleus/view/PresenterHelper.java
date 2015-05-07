@@ -1,6 +1,5 @@
 package nucleus.view;
 
-import android.app.Activity;
 import android.os.Bundle;
 
 import nucleus.factory.PresenterFactory;
@@ -15,7 +14,6 @@ import nucleus.presenter.Presenter;
 public class PresenterHelper<PresenterType extends Presenter> {
 
     private PresenterType presenter;
-    private Activity activity;
 
     public PresenterType getPresenter() {
         return presenter;
@@ -40,19 +38,17 @@ public class PresenterHelper<PresenterType extends Presenter> {
         return presenter == null ? null : PresenterManager.getInstance().save(presenter);
     }
 
-    public void takeView(Object view, PresenterFactory<PresenterType> presenterFactory, Activity activity) {
+    public void takeView(Object view, PresenterFactory<PresenterType> presenterFactory) {
         requestPresenter(presenterFactory, null);
         if (presenter != null)
             //noinspection unchecked
             presenter.takeView(view);
-        this.activity = activity;
     }
 
-    public void dropView() {
+    public void dropView(boolean destroy) {
         if (presenter != null)
             presenter.dropView();
-        if (activity.isFinishing())
+        if (destroy)
             destroyPresenter();
-        activity = null;
     }
 }
