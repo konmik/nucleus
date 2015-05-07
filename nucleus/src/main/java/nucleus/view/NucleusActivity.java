@@ -39,13 +39,13 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
     @Override
     protected void onResume() {
         super.onResume();
-        helper.takeView(this, getPresenterFactory());
+        helper.takeView(this, getPresenterFactory(), this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        helper.dropView(isFinishing());
+        helper.dropView();
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
