@@ -40,42 +40,34 @@ public abstract class NucleusFragmentActivity<PresenterType extends Presenter> e
     @Override
     protected void onResume() {
         super.onResume();
-        helper.takeView(this, getPresenterFactory(), this);
+        helper.takeView(this, getPresenterFactory());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        helper.dropView();
+        helper.dropView(isFinishing());
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
 
     /**
-     * The factory class used to create the presenter. Defaults to
-     * {@link ReflectionPresenterFactory} to create the presenter
+     * The factory class used to create the presenter. Defaults to {@link ReflectionPresenterFactory} to create the presenter
      * using a no arg constructor.
      * <p/>
-     * Subclasses can override this to provide presenters in other
-     * ways, like via their dependency injector.
+     * Subclasses can override this to provide presenters in other ways, like via their dependency injector.
      *
      * @return The {@link PresenterFactory} that can build a {@link Presenter}, or null.
      */
     public PresenterFactory<PresenterType> getPresenterFactory() {
-        Class<PresenterType> presenterClass = findPresenterClass(getClass());
-        return presenterClass == null ? null : new ReflectionPresenterFactory<>(presenterClass);
-    }
-
-    private Class<PresenterType> findPresenterClass(Class<?> viewClass) {
-        RequiresPresenter annotation = viewClass.getAnnotation(RequiresPresenter.class);
-        //noinspection unchecked
-        return annotation == null ? null : (Class<PresenterType>)annotation.value();
+        return ReflectionPresenterFactory.fromViewClass(getClass());
     }
 
     /**
      * Returns a current attached presenter.
      * This method is guaranteed to return a non-null value between
-     * onResume/onPause calls.
+     * onResume/onPause and onAttachedToWindow/onDetachedFromWindow calls
+     * if the presenter factory returns a non-null value.
      *
      * @return a current attached presenter or null.
      */
