@@ -6,9 +6,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import rx.Observable;
+import rx.Subscriber;
 import rx.Subscription;
+import rx.functions.Action0;
 import rx.functions.Func0;
 import rx.subjects.BehaviorSubject;
+import rx.subscriptions.Subscriptions;
 
 /**
  * This is an extension of {@link nucleus.presenter.Presenter} which provides RxJava functionality.
@@ -135,6 +138,8 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
         requested.remove((Integer)restartableId);
     }
 
+    private ArrayList<Object> references = new ArrayList<>();
+
     /**
      * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
      * getView() is guaranteed to be != null during all emissions. This transformer can only be used on application's main thread.
@@ -146,12 +151,12 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * @return the delaying operator.
      */
     public <T> Observable.Transformer<T, T> deliver() {
-        return new Observable.Transformer<T, T>() {
+        return transform(new Func0<OperatorSemaphore<T>>() {
             @Override
-            public Observable<T> call(Observable<T> observable) {
-                return observable.lift(OperatorSemaphore.<T>semaphore(viewStatus()));
+            public OperatorSemaphore<T> call() {
+                return OperatorSemaphore.semaphore(viewStatus());
             }
-        };
+        });
     }
 
     /**
@@ -167,12 +172,12 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * @return the delaying operator.
      */
     public <T> Observable.Transformer<T, T> deliverLatest() {
-        return new Observable.Transformer<T, T>() {
+        return transform(new Func0<OperatorSemaphore<T>>() {
             @Override
-            public Observable<T> call(Observable<T> observable) {
-                return observable.lift(OperatorSemaphore.<T>semaphoreLatest(viewStatus()));
+            public OperatorSemaphore<T> call() {
+                return OperatorSemaphore.semaphoreLatest(viewStatus());
             }
-        };
+        });
     }
 
     /**
@@ -192,10 +197,32 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * @return the delaying operator.
      */
     public <T> Observable.Transformer<T, T> deliverLatestCache() {
+        return transform(new Func0<OperatorSemaphore<T>>() {
+            @Override
+            public OperatorSemaphore<T> call() {
+                return OperatorSemaphore.semaphoreLatestCache(viewStatus());
+            }
+        });
+    }
+
+    private <T> Observable.Transformer<T, T> transform(final Func0<OperatorSemaphore<T>> factory) {
         return new Observable.Transformer<T, T>() {
             @Override
             public Observable<T> call(Observable<T> observable) {
-                return observable.lift(OperatorSemaphore.<T>semaphoreLatestCache(viewStatus()));
+                return observable.lift(new Observable.Operator<T, T>() {
+                    @Override
+                    public Subscriber<? super T> call(Subscriber<? super T> subscriber) {
+                        final OperatorSemaphore<T> semaphore = factory.call();
+                        references.add(semaphore);
+                        subscriber.add(Subscriptions.create(new Action0() {
+                            @Override
+                            public void call() {
+                                references.remove(semaphore);
+                            }
+                        }));
+                        return semaphore.call(subscriber);
+                    }
+                });
             }
         };
     }

@@ -6,6 +6,7 @@ import android.test.UiThreadTest;
 import android.util.Log;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -325,23 +326,29 @@ public class RxPresenterTest extends InstrumentationTestCase {
             TestOperator<Integer> operator1 = new TestOperator<>();
             TestOperator<Integer> operator2 = new TestOperator<>();
             PublishSubject<Integer> bus = PublishSubject.create();
-            Subscription subscription = bus.lift(operator1).compose(operator).lift(operator2).subscribe(new Action1<Integer>() {
-                @Override
-                public void call(Integer o) {
-                    onNextValue.set(o);
-                    onNextCounter.incrementAndGet();
-                }
-            }, new Action1<Throwable>() {
-                @Override
-                public void call(Throwable throwable) {
-                    onErrorCounter.incrementAndGet();
-                }
-            }, new Action0() {
-                @Override
-                public void call() {
-                    onCompleteCounter.incrementAndGet();
-                }
-            });
+            Subscription subscription = bus
+                .lift(operator1)
+                .compose(operator)
+                .lift(operator2)
+                .subscribe(
+                    new Action1<Integer>() {
+                        @Override
+                        public void call(Integer o) {
+                            onNextValue.set(o);
+                            onNextCounter.incrementAndGet();
+                        }
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            onErrorCounter.incrementAndGet();
+                        }
+                    }, new Action0() {
+                        @Override
+                        public void call() {
+                            onCompleteCounter.incrementAndGet();
+                        }
+                    }
+                );
 
             assertTrue(bus.hasObservers());
             assertFalse(operator1.destinationSubscriber.isUnsubscribed());
@@ -369,5 +376,59 @@ public class RxPresenterTest extends InstrumentationTestCase {
             operator2.print("operator2");
             assertFalse(presenter.viewStatusHasObservers());
         }
+    }
+
+    @UiThreadTest
+    public void test_semaphore_not_gced() throws InterruptedException {
+        for (int type = 0; type < 3; type++) {
+            // 0 = Deliver, 1 = DeliverLatest, 2 = DeliverLatestCache
+
+            PresenterManager.setInstance(new DefaultPresenterManager());
+
+            TestPresenter presenter = PresenterManager.getInstance().provide(testPresenterFactory, null);
+
+            Observable.Transformer<Integer, Integer> operator =
+                type == 0 ? presenter.<Integer>deliver() :
+                    type == 1 ? presenter.<Integer>deliverLatest() :
+                        presenter.<Integer>deliverLatestCache();
+
+            final AtomicBoolean finalized2 = new AtomicBoolean();
+
+            TestOperator<Integer> operator2 = new TestOperator<Integer>() {
+                @Override
+                protected void finalize() throws Throwable {
+                    super.finalize();
+                    finalized2.set(true);
+                }
+            };
+
+            Observable.just(1)
+                .compose(operator)
+                .lift(operator2)
+                .subscribe();
+
+            operator = null;
+            operator2 = null;
+
+            causeGC();
+
+            assertFalse(finalized2.get());
+
+            presenter.takeView(new TestView());
+
+            causeGC();
+
+            if (type < 2)
+                assertTrue(finalized2.get());
+        }
+    }
+
+    private void causeGC() throws InterruptedException {
+        for (int i = 0; i < 100000; i++) {
+            int[] a = new int[100];
+        }
+
+        System.gc();
+        Thread.sleep(100);
     }
 }
