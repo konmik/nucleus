@@ -28,6 +28,12 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
         super(MainActivity.class);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        dexmakerWorkaround();
+    }
+
     MainPresenter mainPresenterMock;
 
     public void testOnItems() throws Throwable {
@@ -79,5 +85,10 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
             }
         });
         PresenterManager.setInstance(mockManager);
+    }
+
+    // prevents mockito exception on some devices
+    public void dexmakerWorkaround() {
+        System.setProperty("dexmaker.dexcache", getInstrumentation().getTargetContext().getCacheDir().getPath());
     }
 }
