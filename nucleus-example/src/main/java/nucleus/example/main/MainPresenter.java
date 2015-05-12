@@ -50,7 +50,7 @@ public class MainPresenter extends RxPresenter<MainActivity> {
                     }, new Action1<Throwable>() {
                         @Override
                         public void call(Throwable throwable) {
-                            getView().publishNetworkError(throwable);
+                            getView().onNetworkError(throwable);
                         }
                     });
             }
