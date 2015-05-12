@@ -2,6 +2,7 @@ package nucleus.view;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.os.Bundle;
 import android.view.ViewGroup;
 
@@ -26,7 +27,10 @@ public class NucleusLayoutTestActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(view = new TestView(this));
+
+        // Create a dummy wrapper to guarantee that NucleusLayout properly
+        // unwraps contexts before casting them to activities
+        setContentView(view = new TestView(new ContextWrapper(this)));
     }
 
     @Override

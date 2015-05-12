@@ -2,6 +2,7 @@ package nucleus.view;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -59,7 +60,17 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        helper.dropView(((Activity)getContext()).isFinishing());
+
+        Context context = getContext();
+        while (context instanceof ContextWrapper && !(context instanceof Activity)) {
+            context = ((ContextWrapper)context).getBaseContext();
+        }
+
+        if (!(context instanceof Activity)) {
+            throw new IllegalStateException("Expected an activity context, got " + context.getClass().getSimpleName());
+        }
+
+        helper.dropView(((Activity)context).isFinishing());
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
