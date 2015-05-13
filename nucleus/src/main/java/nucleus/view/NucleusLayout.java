@@ -60,17 +60,21 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        helper.dropView(getActivity().isFinishing());
+    }
 
+    /**
+     * Returns the unwrapped activity of the view or throws an exception.
+     *
+     * @return an unwrapped activity
+     */
+    public Activity getActivity() {
         Context context = getContext();
-        while (context instanceof ContextWrapper && !(context instanceof Activity)) {
+        while (!(context instanceof Activity) && context instanceof ContextWrapper)
             context = ((ContextWrapper)context).getBaseContext();
-        }
-
-        if (!(context instanceof Activity)) {
+        if (!(context instanceof Activity))
             throw new IllegalStateException("Expected an activity context, got " + context.getClass().getSimpleName());
-        }
-
-        helper.dropView(((Activity)context).isFinishing());
+        return (Activity)context;
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
