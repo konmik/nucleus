@@ -6,7 +6,6 @@ import android.support.v4.app.FragmentActivity;
 
 import nucleus.factory.PresenterFactory;
 import nucleus.factory.ReflectionPresenterFactory;
-import nucleus.factory.RequiresPresenter;
 import nucleus.presenter.Presenter;
 
 /**
@@ -21,7 +20,8 @@ public abstract class NucleusFragmentActivity<PresenterType extends Presenter> e
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        helper.requestPresenter(getPresenterFactory(), savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY));
+        if (savedInstanceState != null)
+            helper.setPresenterState(savedInstanceState.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
@@ -40,7 +40,7 @@ public abstract class NucleusFragmentActivity<PresenterType extends Presenter> e
     @Override
     protected void onResume() {
         super.onResume();
-        helper.takeView(this, getPresenterFactory());
+        helper.takeView(this);
     }
 
     @Override
@@ -69,7 +69,7 @@ public abstract class NucleusFragmentActivity<PresenterType extends Presenter> e
      * onResume/onPause and onAttachedToWindow/onDetachedFromWindow calls
      * if the presenter factory returns a non-null value.
      *
-     * @return a current attached presenter or null.
+     * @return a currently attached presenter or null.
      */
     public PresenterType getPresenter() {
         return helper.getPresenter();
@@ -83,5 +83,5 @@ public abstract class NucleusFragmentActivity<PresenterType extends Presenter> e
     }
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
-    private PresenterHelper<PresenterType> helper = new PresenterHelper<>();
+    private PresenterHelper<PresenterType> helper = new PresenterHelper<>(getPresenterFactory());
 }
