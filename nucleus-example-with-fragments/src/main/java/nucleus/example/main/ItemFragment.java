@@ -17,7 +17,6 @@ public class ItemFragment extends LoggingFragment<MainPresenter> {
 
     private static final String TEXT_KEY = "text";
 
-    TextView textView;
     String text;
 
     public ItemFragment() {
@@ -49,7 +48,7 @@ public class ItemFragment extends LoggingFragment<MainPresenter> {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        textView = (TextView)view.findViewById(android.R.id.text1);
+        TextView textView = (TextView)view.findViewById(android.R.id.text1);
         textView.setText(text);
         view.findViewById(R.id.buttonReplace).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,11 +62,5 @@ public class ItemFragment extends LoggingFragment<MainPresenter> {
                 getActivity().onBackPressed();
             }
         });
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        textView = null;
     }
 }
