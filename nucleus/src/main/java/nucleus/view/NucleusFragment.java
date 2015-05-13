@@ -19,8 +19,8 @@ public class NucleusFragment<PresenterType extends Presenter> extends Fragment {
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-        helper.requestPresenter(getPresenterFactory(),
-            bundle == null ? null : bundle.getBundle(PRESENTER_STATE_KEY));
+        if (bundle != null)
+            helper.setPresenterState(bundle.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
@@ -32,7 +32,7 @@ public class NucleusFragment<PresenterType extends Presenter> extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        helper.takeView(this, getPresenterFactory());
+        helper.takeView(this);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class NucleusFragment<PresenterType extends Presenter> extends Fragment {
      * onResume/onPause and onAttachedToWindow/onDetachedFromWindow calls
      * if the presenter factory returns a non-null value.
      *
-     * @return a current attached presenter or null.
+     * @return a currently attached presenter or null.
      */
     public PresenterType getPresenter() {
         return helper.getPresenter();
@@ -75,5 +75,5 @@ public class NucleusFragment<PresenterType extends Presenter> extends Fragment {
     }
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
-    private PresenterHelper<PresenterType> helper = new PresenterHelper<>();
+    private PresenterHelper<PresenterType> helper = new PresenterHelper<>(getPresenterFactory());
 }

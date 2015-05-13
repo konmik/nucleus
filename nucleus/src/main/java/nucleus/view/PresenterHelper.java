@@ -13,9 +13,26 @@ import nucleus.presenter.Presenter;
  */
 public class PresenterHelper<PresenterType extends Presenter> {
 
+    private PresenterFactory<PresenterType> presenterFactory;
+    private Bundle presenterState;
+
     private PresenterType presenter;
 
+    public PresenterHelper(PresenterFactory<PresenterType> presenterFactory) {
+        this.presenterFactory = presenterFactory;
+    }
+
+    public void setPresenterState(Bundle presenterState) {
+        if (presenter != null)
+            throw new IllegalArgumentException("setPresenterState() should be called before getPresenter() and before onTakeView()");
+        this.presenterState = presenterState;
+    }
+
     public PresenterType getPresenter() {
+        if (presenter == null && presenterFactory != null) {
+            presenter = PresenterManager.getInstance().provide(presenterFactory, presenterState);
+            presenterState = null;
+        }
         return presenter;
     }
 
@@ -29,17 +46,12 @@ public class PresenterHelper<PresenterType extends Presenter> {
         }
     }
 
-    public void requestPresenter(PresenterFactory<PresenterType> presenterFactory, Bundle presenterState) {
-        if (presenter == null && presenterFactory != null)
-            presenter = PresenterManager.getInstance().provide(presenterFactory, presenterState);
-    }
-
     public Bundle savePresenter() {
         return presenter == null ? null : PresenterManager.getInstance().save(presenter);
     }
 
-    public void takeView(Object view, PresenterFactory<PresenterType> presenterFactory) {
-        requestPresenter(presenterFactory, null);
+    public void takeView(Object view) {
+        getPresenter();
         if (presenter != null)
             //noinspection unchecked
             presenter.takeView(view);

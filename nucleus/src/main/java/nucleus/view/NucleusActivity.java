@@ -20,7 +20,8 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        helper.requestPresenter(getPresenterFactory(), savedInstanceState == null ? null : savedInstanceState.getBundle(PRESENTER_STATE_KEY));
+        if (savedInstanceState != null)
+            helper.setPresenterState(savedInstanceState.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
@@ -39,7 +40,7 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
     @Override
     protected void onResume() {
         super.onResume();
-        helper.takeView(this, getPresenterFactory());
+        helper.takeView(this);
     }
 
     @Override
@@ -68,7 +69,7 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
      * onResume/onPause and onAttachedToWindow/onDetachedFromWindow calls
      * if the presenter factory returns a non-null value.
      *
-     * @return a current attached presenter or null.
+     * @return a currently attached presenter or null.
      */
     public PresenterType getPresenter() {
         return helper.getPresenter();
@@ -82,5 +83,5 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
     }
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
-    private PresenterHelper<PresenterType> helper = new PresenterHelper<>();
+    private PresenterHelper<PresenterType> helper = new PresenterHelper<>(getPresenterFactory());
 }

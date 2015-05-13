@@ -47,14 +47,14 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
     protected void onRestoreInstanceState(Parcelable state) {
         Bundle bundle = (Bundle)state;
         super.onRestoreInstanceState(bundle.getParcelable(PARENT_STATE_KEY));
-        helper.requestPresenter(getPresenterFactory(), bundle.getBundle(PRESENTER_STATE_KEY));
+        helper.setPresenterState(bundle.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (!isInEditMode())
-            helper.takeView(this, getPresenterFactory());
+            helper.takeView(this);
     }
 
     @Override
@@ -93,7 +93,7 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
      * onResume/onPause and onAttachedToWindow/onDetachedFromWindow calls
      * if the presenter factory returns a non-null value.
      *
-     * @return a current attached presenter or null.
+     * @return a currently attached presenter or null.
      */
     public PresenterType getPresenter() {
         return helper.getPresenter();
@@ -107,5 +107,5 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
     }
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
-    private PresenterHelper<PresenterType> helper = new PresenterHelper<>();
+    private PresenterHelper<PresenterType> helper = new PresenterHelper<>(getPresenterFactory());
 }
