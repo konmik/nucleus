@@ -5,13 +5,13 @@ import android.support.annotation.NonNull;
 
 import nucleus.example.base.App;
 import nucleus.example.base.ServerAPI;
-import nucleus.presenter.RxPresenter;
+import nucleus.example.logging.LoggingPresenter;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func0;
 
-public class MainPresenter extends RxPresenter<MainFragment> {
+public class MainPresenter extends LoggingPresenter<MainFragment> {
 
     public static final String NAME_1 = "Chuck Norris";
     public static final String NAME_2 = "Jackie Chan";

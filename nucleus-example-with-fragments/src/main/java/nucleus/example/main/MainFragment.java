@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ListView;
@@ -12,11 +13,11 @@ import android.widget.Toast;
 
 import nucleus.example.R;
 import nucleus.example.base.ServerAPI;
+import nucleus.example.logging.LoggingFragment;
 import nucleus.factory.RequiresPresenter;
-import nucleus.view.NucleusFragment;
 
 @RequiresPresenter(MainPresenter.class)
-public class MainFragment extends NucleusFragment<MainPresenter> {
+public class MainFragment extends LoggingFragment<MainPresenter> {
 
     CheckedTextView check1;
     CheckedTextView check2;
@@ -60,6 +61,22 @@ public class MainFragment extends NucleusFragment<MainPresenter> {
 
         ListView listView = (ListView)view.findViewById(R.id.listView);
         listView.setAdapter(adapter = new ArrayAdapter<>(getActivity(), R.layout.item));
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ServerAPI.Item item = adapter.getItem(position);
+                ((MainActivity)getActivity()).push(new ItemFragment(item.text));
+            }
+        });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        check1 = null;
+        check2 = null;
+        adapter = null;
     }
 
     public void onItems(ServerAPI.Item[] items, String user) {
