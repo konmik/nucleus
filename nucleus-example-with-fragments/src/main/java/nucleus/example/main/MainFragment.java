@@ -66,7 +66,7 @@ public class MainFragment extends LoggingFragment<MainPresenter> {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ServerAPI.Item item = adapter.getItem(position);
-                ((MainActivity)getActivity()).push(new ItemFragment(item.text));
+                ((MainActivity)getActivity()).push(new ItemFragment(item.toString()));
             }
         });
     }

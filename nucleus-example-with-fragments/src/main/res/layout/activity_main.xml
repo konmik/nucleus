@@ -14,11 +14,11 @@
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="32dp" />
+            android:layout_height="16dp" />
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="80dp"
             android:gravity="center_vertical"
             android:paddingLeft="24dp"
             android:text="@string/app_name"

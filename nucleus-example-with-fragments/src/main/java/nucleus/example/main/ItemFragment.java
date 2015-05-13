@@ -51,10 +51,16 @@ public class ItemFragment extends LoggingFragment<MainPresenter> {
         super.onViewCreated(view, savedInstanceState);
         textView = (TextView)view.findViewById(android.R.id.text1);
         textView.setText(text);
-        view.setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.buttonReplace).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ((MainActivity)getActivity()).replace(new MainFragment());
+            }
+        });
+        view.findViewById(R.id.buttonBack).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().onBackPressed();
             }
         });
     }
