@@ -104,8 +104,10 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
             T nextCache;
             boolean hasCache;
 
+            boolean completed;
+
             void tick(boolean deliverCache) {
-                if (!isUnsubscribed() && isOpen) {
+                if (!child.isUnsubscribed() && isOpen && !completed) {
 
                     while (next.size() > 0) {
                         T value = next.remove(0);
@@ -122,12 +124,12 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
 
                     if (deliverCompleted) {
                         child.onCompleted();
-                        unsubscribe();
+                        completed = true;
                     }
 
                     if (deliverError) {
                         child.onError(error);
-                        unsubscribe();
+                        completed = true;
                     }
                 }
             }
@@ -135,10 +137,10 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
             @Override
             public void onStart() {
                 super.onStart();
-                add(go.subscribe(new Action1<Boolean>() {
+                child.add(go.subscribe(new Action1<Boolean>() {
                     @Override
-                    public void call(Boolean aBoolean) {
-                        isOpen = aBoolean;
+                    public void call(Boolean open) {
+                        isOpen = open;
                         tick(cache);
                     }
                 }));
@@ -151,6 +153,7 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
                     deliverCompleted = true;
                     tick(false);
                 }
+                unsubscribe();
             }
 
             @Override
@@ -158,6 +161,7 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
                 error = e;
                 deliverError = true;
                 tick(false);
+                unsubscribe();
             }
 
             @Override

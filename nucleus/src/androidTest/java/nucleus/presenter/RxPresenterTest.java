@@ -359,8 +359,8 @@ public class RxPresenterTest extends InstrumentationTestCase {
             bus.onCompleted();
 
             assertTrue(!bus.hasObservers());
-            assertFalse(operator1.destinationSubscriber.isUnsubscribed());
-            assertFalse(operator1.createdSubscriber.isUnsubscribed());
+            assertTrue(operator1.destinationSubscriber.isUnsubscribed());
+            assertTrue(operator1.createdSubscriber.isUnsubscribed());
             assertFalse(operator2.destinationSubscriber.isUnsubscribed());
             assertFalse(operator2.createdSubscriber.isUnsubscribed());
 
