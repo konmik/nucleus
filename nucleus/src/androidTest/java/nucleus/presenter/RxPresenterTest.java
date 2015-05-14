@@ -378,6 +378,50 @@ public class RxPresenterTest extends InstrumentationTestCase {
         }
     }
 
+    private static class TestSubscription implements Subscription {
+        public int unsubscribeCalls;
+        public boolean subscribed = true;
+
+        @Override
+        public void unsubscribe() {
+            subscribed = false;
+            unsubscribeCalls++;
+        }
+
+        @Override
+        public boolean isUnsubscribed() {
+            return !subscribed;
+        }
+    }
+
+    @UiThreadTest
+    public void test_add_unsubscribe() {
+        PresenterManager.setInstance(new DefaultPresenterManager());
+        TestPresenter presenter = PresenterManager.getInstance().provide(testPresenterFactory, null);
+        TestSubscription subscription = new TestSubscription();
+        presenter.add(subscription);
+
+        PresenterManager.getInstance().destroy(presenter);
+
+        assertTrue(subscription.unsubscribeCalls == 1);
+    }
+
+    @UiThreadTest
+    public void test_add_remove() {
+        PresenterManager.setInstance(new DefaultPresenterManager());
+        TestPresenter presenter = PresenterManager.getInstance().provide(testPresenterFactory, null);
+        TestSubscription subscription = new TestSubscription();
+
+        presenter.add(subscription);
+        presenter.remove(subscription);
+
+        assertTrue(subscription.unsubscribeCalls == 1);
+
+        PresenterManager.getInstance().destroy(presenter);
+
+        assertTrue(subscription.unsubscribeCalls == 1);
+    }
+
     @UiThreadTest
     public void test_semaphore_not_gced() throws InterruptedException {
         for (int type = 0; type < 3; type++) {
@@ -424,11 +468,11 @@ public class RxPresenterTest extends InstrumentationTestCase {
     }
 
     private void causeGC() throws InterruptedException {
-        for (int i = 0; i < 100000; i++) {
-            int[] a = new int[100];
+        for (int i = 0; i < 1000; i++) {
+            int[] a = new int[1000];
         }
 
         System.gc();
-        Thread.sleep(100);
+        Thread.sleep(10);
     }
 }

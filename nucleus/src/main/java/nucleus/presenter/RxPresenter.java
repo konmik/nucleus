@@ -8,6 +8,7 @@ import java.util.HashMap;
 import rx.Observable;
 import rx.Subscription;
 import rx.functions.Func0;
+import rx.internal.util.SubscriptionList;
 import rx.subjects.BehaviorSubject;
 
 /**
@@ -21,9 +22,10 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
     private ArrayList<Integer> requested = new ArrayList<>();
     private HashMap<Integer, Func0<Subscription>> factories = new HashMap<>();
-    private HashMap<Integer, Subscription> subscriptions = new HashMap<>();
+    private HashMap<Integer, Subscription> restartableSubscriptions = new HashMap<>();
 
     private BehaviorSubject<Boolean> viewStatusSubject = BehaviorSubject.create();
+    private SubscriptionList subscriptions = new SubscriptionList();
 
     /**
      * Returns an observable that emits current status of a view.
@@ -51,9 +53,10 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        for (Subscription subs : subscriptions.values())
+        for (Subscription subs : restartableSubscriptions.values())
             subs.unsubscribe();
         viewStatusSubject.onCompleted();
+        subscriptions.unsubscribe();
     }
 
     /**
@@ -64,9 +67,9 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
         super.onSave(state);
         for (int i = requested.size() - 1; i >= 0; i--) {
             Integer restartableId = requested.get(i);
-            if (subscriptions.get(restartableId).isUnsubscribed()) {
+            if (restartableSubscriptions.get(restartableId).isUnsubscribed()) {
                 requested.remove(i);
-                subscriptions.remove(restartableId);
+                restartableSubscriptions.remove(restartableId);
             }
         }
         state.putIntegerArrayList(REQUESTED_KEY, requested);
@@ -102,7 +105,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     public void registerRestartable(int restartableId, Func0<Subscription> factory) {
         factories.put(restartableId, factory);
         if (requested.contains(restartableId))
-            subscriptions.put(restartableId, factories.get(restartableId).call());
+            restartableSubscriptions.put(restartableId, factories.get(restartableId).call());
     }
 
     /**
@@ -119,7 +122,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     public void subscribeRestartable(int restartableId) {
         unsubscribeRestartable(restartableId);
         requested.add(restartableId);
-        subscriptions.put(restartableId, factories.get(restartableId).call());
+        restartableSubscriptions.put(restartableId, factories.get(restartableId).call());
     }
 
     /**
@@ -128,11 +131,31 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * @param restartableId id of a restartable.
      */
     public void unsubscribeRestartable(int restartableId) {
-        if (subscriptions.containsKey(restartableId)) {
-            subscriptions.get(restartableId).unsubscribe();
-            subscriptions.remove(restartableId);
+        if (restartableSubscriptions.containsKey(restartableId)) {
+            restartableSubscriptions.get(restartableId).unsubscribe();
+            restartableSubscriptions.remove(restartableId);
         }
         requested.remove((Integer)restartableId);
+    }
+
+    /**
+     * Registers a subscription to automatically unsubscribe it during onDestroy.
+     * See {@link SubscriptionList#add(Subscription) for details.}
+     *
+     * @param subscription a subscription to add.
+     */
+    public void add(Subscription subscription) {
+        subscriptions.add(subscription);
+    }
+
+    /**
+     * Removes and unsubscribes a subscription that has been registered with {@link #add} previously.
+     * See {@link SubscriptionList#remove(Subscription) for details.}
+     *
+     * @param subscription a subscription to remove.
+     */
+    public void remove(Subscription subscription) {
+        subscriptions.remove(subscription);
     }
 
     /**
