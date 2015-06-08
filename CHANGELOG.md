@@ -1,5 +1,11 @@
 # Changelog
 
+### 09.06.2015, Version: 1.3.1
+
+* Lazy presenter creation before the actual `onTakeView` call. In some cases this allows to initialize
+  presenter dependencies before initializing presenter itself.
+* `RxPresenter.add(Subscription)` method to automatically unsubscribe subscriptions on presenter destruction.
+
 ### 07.05.2015, Version: 1.3.0
 
 * An ability to instantiate presenters with custom `PresenterFactory`, this allows

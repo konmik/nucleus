@@ -104,7 +104,7 @@ public class OperatorSemaphore<T> implements Observable.Operator<T, T> {
             T nextCache;
             boolean hasCache;
 
-            boolean completed;
+            boolean completed; // should SafeSubscriber be used instead?
 
             void tick(boolean deliverCache) {
                 if (!child.isUnsubscribed() && isOpen && !completed) {

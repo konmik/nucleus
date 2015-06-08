@@ -93,7 +93,7 @@ public class Presenter<ViewType> {
     private CopyOnWriteArrayList<OnDestroyListener> onDestroyListeners = new CopyOnWriteArrayList<>();
 
     /**
-     * Returns a current view attached to presenter.
+     * Returns a current view attached to the presenter.
      *
      * @return a current attached view.
      */
