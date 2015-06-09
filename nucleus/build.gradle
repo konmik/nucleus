@@ -16,9 +16,9 @@ configurations {
 
 dependencies {
     compile 'com.android.support:support-annotations:21.0.3'
-    compile 'io.reactivex:rxjava:1.0.8'
+    compile 'io.reactivex:rxjava:1.0.11'
     compileJavadoc 'com.android.support:support-annotations:21.0.3'
-    compileJavadoc 'io.reactivex:rxjava:1.0.8'
+    compileJavadoc 'io.reactivex:rxjava:1.0.11'
     androidTestCompile project(':nucleus-test-kit')
 }
 

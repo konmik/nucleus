@@ -1,5 +1,10 @@
 # Changelog
 
+### 09.06.2015, Version: 1.3.3
+
+* Jar library release of core library to provide sources in IntelliJ IDEA.
+ Support libraries are still in aar format because of scary compilation warnings. :D
+
 ### 09.06.2015, Version: 1.3.1
 
 * Lazy presenter creation before the actual `onTakeView` call. In some cases this allows to initialize

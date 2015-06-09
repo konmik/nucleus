@@ -19,5 +19,5 @@ How to build support libraries
 
 * Restore `settings.gradle`.
 
-* Now you can build and run support libraries tests.
+* Now you can build support libraries and run tests.
 
