@@ -13,7 +13,7 @@ Nucleus is an Android library, which helps to use the [Model-View-Presenter](htt
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus:1.3.0'
+    compile 'info.android15.nucleus:nucleus:1.3.3'
 }
 ```
 
@@ -21,7 +21,7 @@ For additional view classes `NucleusSupportFragment`, `NucleusFragmentActivity` 
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus-support-v4:1.3.0'
+    compile 'info.android15.nucleus:nucleus-support-v4:1.3.3'
 }
 ```
 
@@ -29,7 +29,7 @@ For additional view classes `NucleusActionBarActivity`, `NucleusAppCompatActivit
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus-support-v7:1.3.0'
+    compile 'info.android15.nucleus:nucleus-support-v7:1.3.3'
 }
 ```
 
