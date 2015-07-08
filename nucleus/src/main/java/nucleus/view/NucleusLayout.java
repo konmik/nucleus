@@ -19,9 +19,13 @@ import nucleus.presenter.Presenter;
  *
  * @param <PresenterType> a type of presenter to return with {@link #getPresenter}.
  */
-public abstract class NucleusLayout<PresenterType extends Presenter> extends FrameLayout {
+public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout implements ViewWithPresenter<PresenterType> {
 
     private static final String PARENT_STATE_KEY = "parent_state";
+    private static final String PRESENTER_STATE_KEY = "presenter_state";
+
+    private PresenterLifecycleDelegate<PresenterType> presenterDelegate =
+        new PresenterLifecycleDelegate<>(ReflectionPresenterFactory.<PresenterType>fromViewClass(getClass()));
 
     public NucleusLayout(Context context) {
         super(context);
@@ -35,10 +39,39 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
         super(context, attrs, defStyle);
     }
 
+    /**
+     * TODO
+     *
+     * @param presenterFactory
+     */
+    @Override
+    public void setPresenterFactory(PresenterFactory<PresenterType> presenterFactory) {
+        presenterDelegate.setPresenterFactory(presenterFactory);
+    }
+
+    /**
+     * TODO
+     */
+    public PresenterFactory<PresenterType> getPresenterFactory() {
+        return presenterDelegate.getPresenterFactory();
+    }
+
+    /**
+     * Returns a current attached presenter.
+     * This method is guaranteed to return a non-null value between
+     * onResume/onPause and onAttachedToWindow/onDetachedFromWindow calls
+     * if the presenter factory returns a non-null value.
+     *
+     * @return a currently attached presenter or null.
+     */
+    public PresenterType getPresenter() {
+        return presenterDelegate.getPresenter();
+    }
+
     @Override
     protected Parcelable onSaveInstanceState() {
         Bundle bundle = new Bundle();
-        bundle.putBundle(PRESENTER_STATE_KEY, helper.savePresenter());
+        bundle.putBundle(PRESENTER_STATE_KEY, presenterDelegate.onSaveInstanceState());
         bundle.putParcelable(PARENT_STATE_KEY, super.onSaveInstanceState());
         return bundle;
     }
@@ -47,20 +80,20 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
     protected void onRestoreInstanceState(Parcelable state) {
         Bundle bundle = (Bundle)state;
         super.onRestoreInstanceState(bundle.getParcelable(PARENT_STATE_KEY));
-        helper.setPresenterState(bundle.getBundle(PRESENTER_STATE_KEY));
+        presenterDelegate.onRestoreInstanceState(bundle.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (!isInEditMode())
-            helper.takeView(this);
+            presenterDelegate.onResume(this);
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        helper.dropView(getActivity().isFinishing());
+        presenterDelegate.onPause(getActivity().isFinishing());
     }
 
     /**
@@ -76,40 +109,4 @@ public abstract class NucleusLayout<PresenterType extends Presenter> extends Fra
             throw new IllegalStateException("Expected an activity context, got " + context.getClass().getSimpleName());
         return (Activity)context;
     }
-
-    // The following section can be copy & pasted into any View class, just update their description if needed.
-
-    /**
-     * The factory class used to create the presenter. Defaults to {@link ReflectionPresenterFactory} to create the presenter
-     * using a no arg constructor.
-     * <p/>
-     * Subclasses can override this to provide presenters in other ways, like via their dependency injector.
-     *
-     * @return The {@link PresenterFactory} that can build a {@link Presenter}, or null.
-     */
-    public PresenterFactory<PresenterType> getPresenterFactory() {
-        return ReflectionPresenterFactory.fromViewClass(getClass());
-    }
-
-    /**
-     * Returns a current attached presenter.
-     * This method is guaranteed to return a non-null value between
-     * onResume/onPause and onAttachedToWindow/onDetachedFromWindow calls
-     * if the presenter factory returns a non-null value.
-     *
-     * @return a currently attached presenter or null.
-     */
-    public PresenterType getPresenter() {
-        return helper.getPresenter();
-    }
-
-    /**
-     * Destroys a presenter that is currently attached to the View.
-     */
-    public void destroyPresenter() {
-        helper.destroyPresenter();
-    }
-
-    private static final String PRESENTER_STATE_KEY = "presenter_state";
-    private PresenterHelper<PresenterType> helper = new PresenterHelper<>(getPresenterFactory());
 }

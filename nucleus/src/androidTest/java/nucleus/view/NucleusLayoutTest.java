@@ -1,10 +1,6 @@
 package nucleus.view;
 
-import nucleus.presenter.Presenter;
-
 public class NucleusLayoutTest extends BaseViewTest<NucleusLayoutTestActivity> {
-
-    private NucleusLayoutTestActivity activity;
 
     public NucleusLayoutTest() {
         super(NucleusLayoutTestActivity.class);
@@ -16,19 +12,15 @@ public class NucleusLayoutTest extends BaseViewTest<NucleusLayoutTestActivity> {
     }
 
     @Override
-    protected Presenter getViewPresenter() {
-        return getView().getPresenter();
-    }
-
-    @Override
     public void setUp() throws Exception {
         super.setUp();
-        activity = getActivity();
+        getActivity();
     }
 
     @Override
     protected void waitForDestructionComplete() {
         super.waitForDestructionComplete();
+        final NucleusLayoutTestActivity activity = getActivity();
         waitFor(new Condition() {
             @Override
             public boolean call() {
@@ -55,7 +47,6 @@ public class NucleusLayoutTest extends BaseViewTest<NucleusLayoutTestActivity> {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                assertProvideOnce();
                 assertNotNull(getView().getPresenter());
             }
         });

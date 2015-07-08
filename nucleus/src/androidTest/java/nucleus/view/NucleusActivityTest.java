@@ -1,7 +1,5 @@
 package nucleus.view;
 
-import nucleus.presenter.Presenter;
-
 public class NucleusActivityTest extends BaseViewTest<NucleusActivityTestActivity> {
 
     public NucleusActivityTest() {
@@ -9,12 +7,7 @@ public class NucleusActivityTest extends BaseViewTest<NucleusActivityTestActivit
     }
 
     @Override
-    protected Object getView() {
+    protected ViewWithPresenter getView() {
         return getActivity();
-    }
-
-    @Override
-    protected Presenter getViewPresenter() {
-        return getActivity().getPresenter();
     }
 }

@@ -15,41 +15,44 @@ import nucleus.presenter.Presenter;
  *
  * @param <PresenterType> a type of presenter to return with {@link #getPresenter}.
  */
-public abstract class NucleusActivity<PresenterType extends Presenter> extends Activity {
+public class NucleusActivity<PresenterType extends Presenter> extends Activity implements ViewWithPresenter<PresenterType> {
+
+    private static final String PRESENTER_STATE_KEY = "presenter_state";
+
+    private PresenterLifecycleDelegate<PresenterType> presenterDelegate =
+        new PresenterLifecycleDelegate<>(ReflectionPresenterFactory.<PresenterType>fromViewClass(getClass()));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null)
-            helper.setPresenterState(savedInstanceState.getBundle(PRESENTER_STATE_KEY));
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (isFinishing())
-            destroyPresenter();
+            presenterDelegate.onRestoreInstanceState(savedInstanceState.getBundle(PRESENTER_STATE_KEY));
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBundle(PRESENTER_STATE_KEY, helper.savePresenter());
+        outState.putBundle(PRESENTER_STATE_KEY, presenterDelegate.onSaveInstanceState());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        helper.takeView(this);
+        presenterDelegate.onResume(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        helper.dropView(isFinishing());
+        presenterDelegate.onPause(isFinishing());
     }
 
     // The following section can be copy & pasted into any View class, just update their description if needed.
+
+    @Override
+    public void setPresenterFactory(PresenterFactory<PresenterType> presenterFactory) {
+        presenterDelegate.setPresenterFactory(presenterFactory);
+    }
 
     /**
      * The factory class used to create the presenter. Defaults to {@link ReflectionPresenterFactory} to create the presenter
@@ -60,7 +63,7 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
      * @return The {@link PresenterFactory} that can build a {@link Presenter}, or null.
      */
     public PresenterFactory<PresenterType> getPresenterFactory() {
-        return ReflectionPresenterFactory.fromViewClass(getClass());
+        return presenterDelegate.getPresenterFactory();
     }
 
     /**
@@ -72,16 +75,6 @@ public abstract class NucleusActivity<PresenterType extends Presenter> extends A
      * @return a currently attached presenter or null.
      */
     public PresenterType getPresenter() {
-        return helper.getPresenter();
+        return presenterDelegate.getPresenter();
     }
-
-    /**
-     * Destroys a presenter that is currently attached to the View.
-     */
-    public void destroyPresenter() {
-        helper.destroyPresenter();
-    }
-
-    private static final String PRESENTER_STATE_KEY = "presenter_state";
-    private PresenterHelper<PresenterType> helper = new PresenterHelper<>(getPresenterFactory());
 }
