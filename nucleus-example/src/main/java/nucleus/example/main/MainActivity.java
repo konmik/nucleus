@@ -5,13 +5,12 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import nucleus.example.R;
 import nucleus.example.base.ServerAPI;
-import nucleus.view.NucleusActivity;
 import nucleus.factory.RequiresPresenter;
+import nucleus.view.NucleusActivity;
 
 @RequiresPresenter(MainPresenter.class)
 public class MainActivity extends NucleusActivity<MainPresenter> {
@@ -61,10 +60,5 @@ public class MainActivity extends NucleusActivity<MainPresenter> {
 
     public void onNetworkError(Throwable throwable) {
         Toast.makeText(this, throwable.getMessage(), Toast.LENGTH_LONG).show();
-    }
-
-    public void onCounter(int i) {
-        TextView counter = (TextView)findViewById(R.id.counter);
-        counter.setText("" + i);
     }
 }

@@ -11,7 +11,6 @@ public final class PresenterLifecycleDelegate<PresenterType extends Presenter> {
     @Nullable private PresenterFactory<PresenterType> presenterFactory;
     @Nullable private PresenterType presenter;
     @Nullable private Bundle presenterState;
-    private boolean isResumed;
 
     public PresenterLifecycleDelegate(@Nullable PresenterFactory<PresenterType> presenterFactory) {
         this.presenterFactory = presenterFactory;
@@ -42,7 +41,6 @@ public final class PresenterLifecycleDelegate<PresenterType extends Presenter> {
     }
 
     public void onResume(Object view) {
-        isResumed = true;
         getPresenter();
         if (presenter != null)
             //noinspection unchecked
@@ -57,12 +55,9 @@ public final class PresenterLifecycleDelegate<PresenterType extends Presenter> {
                 presenter = null;
             }
         }
-        isResumed = false;
     }
 
     public PresenterType getPresenter() {
-        if (!isResumed)
-            throw new IllegalStateException("getPresenter() can be called only between onResume()/onPause()");
         if (presenter == null && presenterFactory != null) {
             presenter = presenterFactory.providePresenter(presenterState);
             presenterState = null;
