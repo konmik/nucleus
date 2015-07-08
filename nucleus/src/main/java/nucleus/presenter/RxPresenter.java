@@ -41,7 +41,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * {@inheritDoc}
      */
     @Override
-    protected void onCreate(Bundle savedState) {
+    public void onCreate(Bundle savedState) {
         if (savedState != null)
             requested = savedState.getIntegerArrayList(REQUESTED_KEY);
         viewStatusSubject.onNext(false);
@@ -51,7 +51,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * {@inheritDoc}
      */
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         super.onDestroy();
         for (Subscription subs : restartableSubscriptions.values())
             subs.unsubscribe();
@@ -63,7 +63,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * {@inheritDoc}
      */
     @Override
-    protected void onSave(Bundle state) {
+    public void onSave(Bundle state) {
         super.onSave(state);
         for (int i = requested.size() - 1; i >= 0; i--) {
             Integer restartableId = requested.get(i);
@@ -79,7 +79,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * {@inheritDoc}
      */
     @Override
-    protected void onTakeView(ViewType view) {
+    public void onTakeView(ViewType view) {
         super.onTakeView(view);
         viewStatusSubject.onNext(true);
     }
@@ -88,7 +88,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * {@inheritDoc}
      */
     @Override
-    protected void onDropView() {
+    public void onDropView() {
         super.onDropView();
         viewStatusSubject.onNext(false);
     }

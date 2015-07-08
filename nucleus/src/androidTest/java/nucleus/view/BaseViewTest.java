@@ -8,7 +8,11 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import nucleus.BaseActivityTest;
+import nucleus.factory.PresenterFactory;
+import nucleus.presenter.Presenter;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -38,7 +42,7 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
     @UiThreadTest
     public void testInit() {
         assertNotNull(getView().getPresenter());
-        verify(getView().getPresenter(), times(1)).takeView(getView());
+        verify(getView().getPresenter(), times(1)).onTakeView(getView());
     }
 
     public void testDestroy() throws Throwable {
@@ -54,7 +58,7 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
             public void run() {
                 IllegalStateException exception = null;
                 try {
-                    verify(getView().getPresenter(), times(1)).destroy();
+                    verify(getView().getPresenter(), times(1)).onDestroy();
                 }
                 catch (IllegalStateException ex) {
                     exception = ex;
@@ -70,6 +74,8 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
     }
 
     public void testRestart() throws Throwable {
+        final AtomicReference<Presenter> firstPresenter = new AtomicReference<>();
+        final AtomicReference<PresenterFactory> firstPresenterFactory = new AtomicReference<>();
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -84,14 +90,16 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
                     }
                 }).when(getView().getPresenterFactory())
                     .savePresenter(eq(getView().getPresenter()), any(Bundle.class));
+                firstPresenter.set(getView().getPresenter());
+                firstPresenterFactory.set(getView().getPresenterFactory());
             }
         });
         restartActivity();
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                verify(getView().getPresenter(), times(1)).takeView(getView());
-//                verify(getViewPresenter(), times(1)).save(any(Bundle.class));
+                verify(getView().getPresenter(), times(1)).onTakeView(getView());
+                verify(firstPresenterFactory.get(), times(1)).savePresenter(eq(firstPresenter.get()), any(Bundle.class));
                 verify(getView().getPresenterFactory(), times(1)).providePresenter(argThat(new ArgumentMatcher<Bundle>() {
                     @Override
                     public boolean matches(Object o) {

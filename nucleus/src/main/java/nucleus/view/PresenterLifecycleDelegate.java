@@ -13,7 +13,7 @@ public final class PresenterLifecycleDelegate<PresenterType extends Presenter> {
     @Nullable private Bundle presenterState;
     private boolean isResumed;
 
-    public PresenterLifecycleDelegate(PresenterFactory<PresenterType> presenterFactory) {
+    public PresenterLifecycleDelegate(@Nullable PresenterFactory<PresenterType> presenterFactory) {
         this.presenterFactory = presenterFactory;
     }
 
@@ -46,14 +46,14 @@ public final class PresenterLifecycleDelegate<PresenterType extends Presenter> {
         getPresenter();
         if (presenter != null)
             //noinspection unchecked
-            presenter.takeView(view);
+            presenter.onTakeView(view);
     }
 
     public void onPause(boolean destroy) {
         if (presenter != null) {
-            presenter.dropView();
+            presenter.onDropView();
             if (destroy) {
-                presenter.destroy();
+                presenter.onDestroy();
                 presenter = null;
             }
         }

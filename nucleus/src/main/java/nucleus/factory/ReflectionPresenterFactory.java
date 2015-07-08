@@ -49,14 +49,14 @@ public class ReflectionPresenterFactory<PresenterType extends Presenter> impleme
             }
         });
 
-        presenter.create(savedState);
+        presenter.onCreate(savedState);
         return presenter;
     }
 
     @Override
     public void savePresenter(Presenter presenter, @NonNull Bundle bundle) {
         bundle.putString(PRESENTER_ID_KEY, presenterToId.get(presenter));
-        presenter.save(bundle);
+        presenter.onSave(bundle);
     }
 
     private static <PresenterType extends Presenter> PresenterType instantiatePresenter(Class<PresenterType> presenterClass) {
