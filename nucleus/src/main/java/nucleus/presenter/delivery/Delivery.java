@@ -1,0 +1,42 @@
+package nucleus.presenter.delivery;
+
+import android.support.annotation.Nullable;
+
+import rx.Notification;
+import rx.functions.Action2;
+
+public final class Delivery<ViewType, T> {
+
+    private final ViewType view;
+    private final Notification<T> notification;
+
+    public Delivery(ViewType view, Notification<T> notification) {
+        this.view = view;
+        this.notification = notification;
+    }
+
+    public void split(Action2<ViewType, T> onNext, @Nullable Action2<ViewType, Throwable> onError) {
+        if (notification.getKind() == Notification.Kind.OnNext)
+            onNext.call(view, notification.getValue());
+        else if (onError != null && notification.getKind() == Notification.Kind.OnError)
+            onError.call(view, notification.getThrowable());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Delivery<?, ?> delivery = (Delivery<?, ?>)o;
+
+        if (view != null ? !view.equals(delivery.view) : delivery.view != null) return false;
+        return !(notification != null ? !notification.equals(delivery.notification) : delivery.notification != null);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = view != null ? view.hashCode() : 0;
+        result = 31 * result + (notification != null ? notification.hashCode() : 0);
+        return result;
+    }
+}
