@@ -4,18 +4,18 @@ import android.os.Bundle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 import rx.Notification;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
+import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Action2;
 import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.internal.util.SubscriptionList;
+import rx.subjects.AsyncSubject;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
@@ -166,11 +166,65 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
         subscriptions.remove(subscription);
     }
 
+    /**
+     * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
+     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on application's main thread.
+     * <p/>
+     * Use this operator if you need to deliver *all* emissions to a view, in example when you're sending items
+     * into adapter one by one.
+     *
+     * @param <T> a type of onNext value.
+     * @return the delaying operator.
+     */
+    public <T> Observable.Transformer<T, Delivery<T>> deliver(final DeliveryRule rule) {
+        return new DeliveryTransformer<>(rule);
+    }
+
+    public class DeliveryTransformer<T> implements Observable.Transformer<T, Delivery<T>> {
+
+        private DeliveryRule rule;
+
+        public DeliveryTransformer(DeliveryRule rule) {
+            this.rule = rule;
+        }
+
+        @Override
+        public Observable<Delivery<T>> call(Observable<T> observable1) {
+            Subject<T, T> subject = AsyncSubject.create();
+
+            final Observable<T> source = rule == DeliveryRule.CACHE ? subject.cache() :
+                rule == DeliveryRule.REPLAY ? subject.replay() : subject;
+
+            final Subscription subscription = observable1.subscribe(subject);
+
+            return view
+                .switchMap(new Func1<ViewType, Observable<Delivery<T>>>() {
+                    @Override
+                    public Observable<Delivery<T>> call(final ViewType view) {
+                        return view == null ? Observable.<Delivery<T>>empty() :
+                            source.materialize()
+                                .map(new Func1<Notification<T>, Delivery<T>>() {
+                                    @Override
+                                    public Delivery<T> call(Notification<T> t) {
+                                        return new Delivery<>(view, t);
+                                    }
+                                });
+                    }
+                })
+                .doOnUnsubscribe(new Action0() {
+                    @Override
+                    public void call() {
+                        subscription.unsubscribe();
+                    }
+                });
+        }
+    }
+
     public enum DeliveryRule {PUBLISH, CACHE, REPLAY}
 
-    private class Delivery<T> {
-        private final ViewType view;
-        private final Notification<T> notification;
+    public class Delivery<T> {
+        final ViewType view;
+        final Notification<T> notification;
 
         private Delivery(ViewType view, Notification<T> notification) {
             this.view = view;
@@ -178,9 +232,9 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
         }
 
         public void split(Action2<ViewType, T> onNext, Action2<ViewType, Throwable> onError) {
-            if (notification.isOnNext())
+            if (notification.getKind() == Notification.Kind.OnNext)
                 onNext.call(view, notification.getValue());
-            else if (notification.isOnError())
+            else if (notification.getKind() == Notification.Kind.OnError)
                 onError.call(view, notification.getThrowable());
         }
     }
@@ -188,16 +242,15 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     public class Deliver<T> implements Observer<T> {
 
         private Subject<Notification<T>, Notification<T>> subject;
+        private final Subscription viewSubscription;
 
-        public Deliver(final DeliveryRule rule, final Action2<ViewType, T> onNext, final Action2<ViewType, Throwable> onError) {
+        public Deliver(DeliveryRule rule, final Action2<ViewType, T> onNext, final Action2<ViewType, Throwable> onError) {
             this.subject = PublishSubject.create();
 
             final Observable<Notification<T>> source = rule == DeliveryRule.CACHE ? subject.cache() :
                 rule == DeliveryRule.REPLAY ? subject.replay() : subject;
 
-            final AtomicBoolean unsubscribeViewNow = new AtomicBoolean(false);
-            final AtomicReference<Subscription> viewSubscription = new AtomicReference<>();
-            viewSubscription.set(view
+            viewSubscription = view
                 .switchMap(new Func1<ViewType, Observable<Delivery<T>>>() {
                     @Override
                     public Observable<Delivery<T>> call(final ViewType view) {
@@ -212,18 +265,10 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
                 })
                 .subscribe(new Action1<Delivery<T>>() {
                     @Override
-                    public void call(Delivery<T> delivery) {
-                        delivery.split(onNext, onError);
-                        if (rule == DeliveryRule.PUBLISH) {
-                            if (viewSubscription.get() != null)
-                                viewSubscription.get().unsubscribe();
-                            else
-                                unsubscribeViewNow.set(true);
-                        }
+                    public void call(Delivery<T> tDelivery) {
+                        tDelivery.split(onNext, onError);
                     }
-                }));
-            if (unsubscribeViewNow.get())
-                viewSubscription.get().unsubscribe();
+                });
         }
 
         @Override
@@ -239,6 +284,30 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
         @Override
         public void onNext(T t) {
             subject.onNext(Notification.createOnNext(t));
+        }
+    }
+
+    public class DeliverDelivery<T> implements Observer<Delivery<T>> {
+
+        private Action2<ViewType, T> onNext;
+        private Action2<ViewType, Throwable> onError;
+
+        public DeliverDelivery(final Action2<ViewType, T> onNext, final Action2<ViewType, Throwable> onError) {
+            this.onNext = onNext;
+            this.onError = onError;
+        }
+
+        @Override
+        public void onCompleted() {
+        }
+
+        @Override
+        public void onError(Throwable e) {
+        }
+
+        @Override
+        public void onNext(Delivery<T> tDelivery) {
+            tDelivery.split(onNext, onError);
         }
     }
 }
