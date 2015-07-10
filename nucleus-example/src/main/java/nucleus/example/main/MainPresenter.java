@@ -31,9 +31,9 @@ public class MainPresenter extends RxPresenter<MainActivity> {
             name = savedState.getString(NAME_KEY);
 
         restartable(REQUEST_ITEMS)
-            .switchMap(new Func1<Integer, Observable<ServerAPI.Response>>() {
+            .switchMap(new Func1<String, Observable<ServerAPI.Response>>() {
                 @Override
-                public Observable<ServerAPI.Response> call(Integer integer) {
+                public Observable<ServerAPI.Response> call(String integer) {
                     return App.getServerAPI()
                         .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
                         .observeOn(AndroidSchedulers.mainThread());
@@ -64,6 +64,6 @@ public class MainPresenter extends RxPresenter<MainActivity> {
 
     public void request(String name) {
         this.name = name;
-        subscribeRestartable(REQUEST_ITEMS);
+        start(REQUEST_ITEMS);
     }
 }

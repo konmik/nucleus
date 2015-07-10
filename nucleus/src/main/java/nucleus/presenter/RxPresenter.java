@@ -109,25 +109,19 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     }
 
     /**
-     * A restartable is any RxJava query/request that can be started (subscribed) and
-     * should be automatically restarted (re-subscribed) after a process restart.
-     * <p/>
-     * Registers a factory for a restartable. Re-subscribes the restartable after a process restart.
+     * Creates a subject that emits a value every time {@link #start(int)} is called
+     * -OR-
+     * right during {@link #restartable(int)} call if the process has been restarted having unfinished (subscribed)
+     * observer.
      *
-     * @param restartableId id of a restartable.
-     * @param factory       a factory that will create an actual rxjava subscription when requested.
+     * @param restartableId restartable id to use with {@link #start(int)}
+     * @return a subject that emits a value every time the restartable should be (re)started
      */
-    public void registerRestartable(int restartableId, Func0<Subscription> factory) {
-        factories.put(restartableId, factory);
-        if (requested.contains(restartableId))
-            restartableSubscriptions.put(restartableId, factories.get(restartableId).call());
-    }
-
-    public Observable<Integer> restartable(final int restartableId) {
-        PublishSubject<Integer> subject = PublishSubject.create();
+    public Observable<String> restartable(final int restartableId) {
+        PublishSubject<String> subject = PublishSubject.create();
         triggers.put(restartableId, subject);
         if (requested.contains(restartableId))
-            subscribeRestartable(restartableId);
+            start(restartableId);
         return subject.doOnUnsubscribe(new Action0() {
             @Override
             public void call() {
@@ -137,9 +131,9 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     }
 
     /**
-     * Subscribes (runs) a restartable using a factory method provided with {@link #registerRestartable}.
+     * Subscribes (runs) a restartable using an id provided with {@link #restartable(int)}.
      * If a presenter gets lost during a process restart while a restartable is still
-     * subscribed, the restartable will be restarted on next {@link #registerRestartable} call.
+     * subscribed, the restartable will be started again on next {@link #restartable(int)} call.
      * <p/>
      * If the restartable is already subscribed then it will be unsubscribed first.
      * <p/>
@@ -147,13 +141,13 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      *
      * @param restartableId id of a restartable.
      */
-    public void subscribeRestartable(int restartableId) {
+    public void start(int restartableId) {
         unsubscribeRestartable(restartableId);
         requested.add(restartableId);
         if (factories.containsKey(restartableId))
             restartableSubscriptions.put(restartableId, factories.get(restartableId).call());
         else
-            triggers.get(restartableId).onNext(restartableId);
+            triggers.get(restartableId).onNext(String.format("Restartable - id: %d, now: %d", restartableId, System.nanoTime()));
     }
 
     /**
