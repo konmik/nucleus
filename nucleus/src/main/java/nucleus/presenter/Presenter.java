@@ -8,9 +8,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * This is a base class for all presenters. Subclasses can override
  * {@link #onCreate}, {@link #onDestroy}, {@link #onSave},
  * {@link #onTakeView}, {@link #onDropView}.
- * <p/>
- * {@link nucleus.presenter.Presenter.OnDestroyListener} can also be used by external classes
- * to be notified about the need of freeing resources.
+ *
+ * A developer should normally not use this class directly, use {@link RxPresenter} instead.
  *
  * @param <ViewType> a type of view to receive with {@link #onTakeView}}.
  */
