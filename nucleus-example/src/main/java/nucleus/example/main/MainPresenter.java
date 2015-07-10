@@ -6,10 +6,10 @@ import android.support.annotation.NonNull;
 import nucleus.example.base.App;
 import nucleus.example.base.ServerAPI;
 import nucleus.presenter.RxPresenter;
-import rx.Subscription;
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action2;
-import rx.functions.Func0;
+import rx.functions.Func1;
 
 public class MainPresenter extends RxPresenter<MainActivity> {
 
@@ -30,29 +30,30 @@ public class MainPresenter extends RxPresenter<MainActivity> {
         if (savedState != null)
             name = savedState.getString(NAME_KEY);
 
-        registerRestartable(REQUEST_ITEMS, new Func0<Subscription>() {
-            @Override
-            public Subscription call() {
-                final String name1 = name;
-                return App.getServerAPI()
-                    .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .compose(MainPresenter.this.<ServerAPI.Response>delivery(CACHE))
-                    .subscribe(MainPresenter.this.deliver(
-                        new Action2<MainActivity, ServerAPI.Response>() {
-                            @Override
-                            public void call(MainActivity activity, ServerAPI.Response response) {
-                                activity.onItems(response.items, name1);
-                            }
-                        },
-                        new Action2<MainActivity, Throwable>() {
-                            @Override
-                            public void call(MainActivity activity, Throwable throwable) {
-                                activity.onNetworkError(throwable);
-                            }
-                        }));
-            }
-        });
+        restartable(REQUEST_ITEMS)
+            .switchMap(new Func1<Integer, Observable<ServerAPI.Response>>() {
+                @Override
+                public Observable<ServerAPI.Response> call(Integer integer) {
+                    return App.getServerAPI()
+                        .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
+                        .observeOn(AndroidSchedulers.mainThread());
+                }
+            })
+            .compose(MainPresenter.this.<ServerAPI.Response>delivery(CACHE))
+            .subscribe(deliver(
+                new Action2<MainActivity, ServerAPI.Response>() {
+                    @Override
+                    public void call(MainActivity activity, ServerAPI.Response response) {
+                        activity.onItems(response.items, name);
+                    }
+                },
+                new Action2<MainActivity, Throwable>() {
+                    @Override
+                    public void call(MainActivity activity, Throwable throwable) {
+                        activity.onNetworkError(throwable);
+                    }
+                }
+            ));
     }
 
     @Override

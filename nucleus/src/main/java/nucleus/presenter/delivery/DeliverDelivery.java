@@ -2,13 +2,17 @@ package nucleus.presenter.delivery;
 
 import android.support.annotation.Nullable;
 
-import rx.Observer;
+import rx.functions.Action1;
 import rx.functions.Action2;
 
-public final class DeliverDelivery<ViewType, T> implements Observer<Delivery<ViewType, T>> {
+public final class DeliverDelivery<ViewType, T> implements Action1<Delivery<ViewType, T>> {
 
     private final Action2<ViewType, T> onNext;
     @Nullable private final Action2<ViewType, Throwable> onError;
+
+    public DeliverDelivery(Action2<ViewType, T> onNext) {
+        this(onNext, null);
+    }
 
     public DeliverDelivery(Action2<ViewType, T> onNext, @Nullable Action2<ViewType, Throwable> onError) {
         this.onNext = onNext;
@@ -16,15 +20,7 @@ public final class DeliverDelivery<ViewType, T> implements Observer<Delivery<Vie
     }
 
     @Override
-    public void onCompleted() {
-    }
-
-    @Override
-    public void onError(Throwable e) {
-    }
-
-    @Override
-    public void onNext(Delivery<ViewType, T> tDelivery) {
-        tDelivery.split(onNext, onError);
+    public void call(Delivery<ViewType, T> delivery) {
+        delivery.split(onNext, onError);
     }
 }

@@ -7,14 +7,20 @@ import java.util.HashMap;
 
 import nucleus.presenter.delivery.DeliverDelivery;
 import nucleus.presenter.delivery.Delivery;
-import nucleus.presenter.delivery.DeliveryTransformer;
+import nucleus.presenter.delivery.DeliveryCacheTransformer;
+import nucleus.presenter.delivery.DeliveryOnceTransformer;
+import nucleus.presenter.delivery.DeliveryReplayTransformer;
+import nucleus.presenter.delivery.DeliveryRule;
 import rx.Observable;
-import rx.Observer;
 import rx.Subscription;
+import rx.functions.Action0;
+import rx.functions.Action1;
 import rx.functions.Action2;
 import rx.functions.Func0;
 import rx.internal.util.SubscriptionList;
 import rx.subjects.BehaviorSubject;
+import rx.subjects.PublishSubject;
+import rx.subjects.Subject;
 
 /**
  * This is an extension of {@link nucleus.presenter.Presenter} which provides RxJava functionality.
@@ -25,12 +31,13 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
     private static final String REQUESTED_KEY = RxPresenter.class.getName() + "#requested";
 
-    public static final DeliveryTransformer.DeliveryRule ONCE = DeliveryTransformer.DeliveryRule.ONCE;
-    public static final DeliveryTransformer.DeliveryRule CACHE = DeliveryTransformer.DeliveryRule.CACHE;
-    public static final DeliveryTransformer.DeliveryRule REPLAY = DeliveryTransformer.DeliveryRule.REPLAY;
+    public static final DeliveryRule ONCE = DeliveryRule.ONCE;
+    public static final DeliveryRule CACHE = DeliveryRule.CACHE;
+    public static final DeliveryRule REPLAY = DeliveryRule.REPLAY;
 
     private ArrayList<Integer> requested = new ArrayList<>();
     private HashMap<Integer, Func0<Subscription>> factories = new HashMap<>();
+    private HashMap<Integer, Subject> triggers = new HashMap<>();
     private HashMap<Integer, Subscription> restartableSubscriptions = new HashMap<>();
 
     private BehaviorSubject<ViewType> view = BehaviorSubject.create();
@@ -116,6 +123,19 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
             restartableSubscriptions.put(restartableId, factories.get(restartableId).call());
     }
 
+    public Observable<Integer> restartable(final int restartableId) {
+        PublishSubject<Integer> subject = PublishSubject.create();
+        triggers.put(restartableId, subject);
+        if (requested.contains(restartableId))
+            subscribeRestartable(restartableId);
+        return subject.doOnUnsubscribe(new Action0() {
+            @Override
+            public void call() {
+                unsubscribeRestartable(restartableId);
+            }
+        });
+    }
+
     /**
      * Subscribes (runs) a restartable using a factory method provided with {@link #registerRestartable}.
      * If a presenter gets lost during a process restart while a restartable is still
@@ -130,7 +150,10 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     public void subscribeRestartable(int restartableId) {
         unsubscribeRestartable(restartableId);
         requested.add(restartableId);
-        restartableSubscriptions.put(restartableId, factories.get(restartableId).call());
+        if (factories.containsKey(restartableId))
+            restartableSubscriptions.put(restartableId, factories.get(restartableId).call());
+        else
+            triggers.get(restartableId).onNext(restartableId);
     }
 
     /**
@@ -176,12 +199,17 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
      * @param <T> a type of onNext value.
      * @return the delaying operator.
      */
-    public <T> Observable.Transformer<T, Delivery<ViewType, T>> delivery(DeliveryTransformer.DeliveryRule rule) {
-        return new DeliveryTransformer<>(view, rule);
+    public <T> Observable.Transformer<T, Delivery<ViewType, T>> delivery(DeliveryRule rule) {
+        return rule == ONCE ? new DeliveryOnceTransformer<ViewType, T>(view) :
+            rule == CACHE ? new DeliveryCacheTransformer<ViewType, T>(view) :
+                new DeliveryReplayTransformer<ViewType, T>(view);
     }
 
-    public <T> Observer<Delivery<ViewType, T>> deliver(Action2<ViewType, T> onNext, Action2<ViewType, Throwable> onError) {
+    public <T> Action1<Delivery<ViewType, T>> deliver(Action2<ViewType, T> onNext, Action2<ViewType, Throwable> onError) {
         return new DeliverDelivery<>(onNext, onError);
     }
 
+    public <T> Action1<Delivery<ViewType, T>> deliver(Action2<ViewType, T> onNext) {
+        return new DeliverDelivery<>(onNext);
+    }
 }

@@ -46,9 +46,11 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
     }
 
     public void testDestroy() throws Throwable {
+        final AtomicReference<Presenter> presenterRef = new AtomicReference<>();
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
+                presenterRef.set(getView().getPresenter());
                 getActivity().finish();
             }
         });
@@ -56,14 +58,7 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                IllegalStateException exception = null;
-                try {
-                    verify(getView().getPresenter(), times(1)).onDestroy();
-                }
-                catch (IllegalStateException ex) {
-                    exception = ex;
-                }
-                assertNotNull(exception);
+                verify(presenterRef.get(), times(1)).onDestroy();
             }
         });
     }

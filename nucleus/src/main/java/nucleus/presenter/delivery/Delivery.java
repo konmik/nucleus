@@ -39,4 +39,12 @@ public final class Delivery<ViewType, T> {
         result = 31 * result + (notification != null ? notification.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Delivery{" +
+            "view=" + view +
+            ", notification=" + notification +
+            '}';
+    }
 }
