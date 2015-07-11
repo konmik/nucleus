@@ -9,7 +9,7 @@ import nucleus.presenter.RxPresenter;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action2;
-import rx.functions.Func1;
+import rx.functions.Func0;
 
 public class MainPresenter extends RxPresenter<MainActivity> {
 
@@ -23,37 +23,50 @@ public class MainPresenter extends RxPresenter<MainActivity> {
 
     private String name = DEFAULT_NAME;
 
+
     @Override
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
 
+//        restartable(REQUEST_ITEMS,
+//            new Func0<Observable<Integer>>() {
+//            @Override
+//            public Observable<Integer> call() {
+//                return Observable.just(1)
+//                    .delay(1, TimeUnit.SECONDS, AndroidSchedulers.mainThread()).publish();
+//            }
+//        },
+//                new Action2<MainActivity, Integer>() {
+//                    @Override
+//                    public void call(MainActivity activity, Integer response) {
+//                        activity.onItem(response);
+//                    }
+//                }
+//            ));
+
         if (savedState != null)
             name = savedState.getString(NAME_KEY);
 
-        restartable(REQUEST_ITEMS)
-            .switchMap(new Func1<String, Observable<ServerAPI.Response>>() {
+        restartableOnce(REQUEST_ITEMS, new Func0<Observable<ServerAPI.Response>>() {
                 @Override
-                public Observable<ServerAPI.Response> call(String integer) {
+                public Observable<ServerAPI.Response> call() {
                     return App.getServerAPI()
                         .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
                         .observeOn(AndroidSchedulers.mainThread());
                 }
-            })
-            .compose(MainPresenter.this.<ServerAPI.Response>delivery(CACHE))
-            .subscribe(deliver(
-                new Action2<MainActivity, ServerAPI.Response>() {
-                    @Override
-                    public void call(MainActivity activity, ServerAPI.Response response) {
-                        activity.onItems(response.items, name);
-                    }
-                },
-                new Action2<MainActivity, Throwable>() {
-                    @Override
-                    public void call(MainActivity activity, Throwable throwable) {
-                        activity.onNetworkError(throwable);
-                    }
+            },
+            new Action2<MainActivity, ServerAPI.Response>() {
+                @Override
+                public void call(MainActivity activity, ServerAPI.Response response) {
+                    activity.onItems(response.items, name);
                 }
-            ));
+            },
+            new Action2<MainActivity, Throwable>() {
+                @Override
+                public void call(MainActivity activity, Throwable throwable) {
+                    activity.onNetworkError(throwable);
+                }
+            });
     }
 
     @Override
