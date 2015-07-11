@@ -1,8 +1,8 @@
 package nucleus.presenter.restartable;
 
 import rx.Subscription;
+import rx.functions.Func0;
 
-public abstract class Restartable {
-    // the implementing class is obligated to unsubscribe all subscriptions once this subscription in unsubscribed
-    public abstract Subscription start();
+public interface Restartable extends Func0<Subscription> {
+    // the implementing class is obligated to unsubscribe all subscriptions once returned subscription in unsubscribed
 }

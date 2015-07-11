@@ -6,14 +6,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import nucleus.presenter.delivery.DeliveryRule;
-import nucleus.presenter.delivery.DeliverySubscriber;
 import nucleus.presenter.restartable.Restartable;
 import nucleus.presenter.restartable.RestartableCache;
 import nucleus.presenter.restartable.RestartableOnce;
 import nucleus.presenter.restartable.RestartableReplay;
 import rx.Observable;
-import rx.Subscriber;
 import rx.Subscription;
 import rx.functions.Action2;
 import rx.functions.Func0;
@@ -29,17 +26,12 @@ public class RxPresenter<View> extends Presenter<View> {
 
     private static final String STARTED_KEY = RxPresenter.class.getName() + "#started";
 
-    public static final DeliveryRule ONCE = DeliveryRule.ONCE;
-    public static final DeliveryRule CACHE = DeliveryRule.CACHE;
-    public static final DeliveryRule REPLAY = DeliveryRule.REPLAY;
+    private final BehaviorSubject<View> view = BehaviorSubject.create();
+    private final SubscriptionList subscriptions = new SubscriptionList();
 
-
-    private BehaviorSubject<View> view = BehaviorSubject.create();
-    private SubscriptionList subscriptions = new SubscriptionList();
-
-    private ArrayList<Integer> started = new ArrayList<>();
-    private HashMap<Integer, Restartable> restartables = new HashMap<>();
-    private HashMap<Integer, Subscription> restartableSubscriptions = new HashMap<>();
+    private final HashMap<Integer, Restartable> restartables = new HashMap<>();
+    private final HashMap<Integer, Subscription> restartableSubscriptions = new HashMap<>();
+    private final ArrayList<Integer> started = new ArrayList<>();
 
     /**
      * Returns an observable that emits current status of a view.
@@ -57,7 +49,7 @@ public class RxPresenter<View> extends Presenter<View> {
     @Override
     public void onCreate(Bundle savedState) {
         if (savedState != null)
-            started = savedState.getIntegerArrayList(STARTED_KEY);
+            started.addAll(savedState.getIntegerArrayList(STARTED_KEY));
     }
 
     /**
@@ -119,7 +111,7 @@ public class RxPresenter<View> extends Presenter<View> {
     public void start(int restartableId) {
         stop(restartableId);
         started.add(restartableId);
-        restartableSubscriptions.put(restartableId, restartables.get(restartableId).start());
+        restartableSubscriptions.put(restartableId, restartables.get(restartableId).call());
     }
 
     /**
@@ -158,13 +150,5 @@ public class RxPresenter<View> extends Presenter<View> {
      */
     public void remove(Subscription subscription) {
         subscriptions.remove(subscription);
-    }
-
-    public <T> Subscriber<T> delivery(DeliveryRule rule, Action2<View, T> onNext, Action2<View, Throwable> onError) {
-        return new DeliverySubscriber<>(view, rule, onNext, onError);
-    }
-
-    public <T> Subscriber<T> delivery(DeliveryRule rule, Action2<View, T> onNext) {
-        return new DeliverySubscriber<>(view, rule, onNext);
     }
 }

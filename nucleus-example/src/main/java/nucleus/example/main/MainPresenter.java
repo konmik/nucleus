@@ -19,35 +19,18 @@ public class MainPresenter extends RxPresenter<MainActivity> {
 
     private static final int REQUEST_ITEMS = 1;
 
-    private static final String NAME_KEY = "name";
+    private static final String NAME_KEY = MainPresenter.class.getName() + "#name";
 
     private String name = DEFAULT_NAME;
-
 
     @Override
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
 
-//        restartable(REQUEST_ITEMS,
-//            new Func0<Observable<Integer>>() {
-//            @Override
-//            public Observable<Integer> call() {
-//                return Observable.just(1)
-//                    .delay(1, TimeUnit.SECONDS, AndroidSchedulers.mainThread()).publish();
-//            }
-//        },
-//                new Action2<MainActivity, Integer>() {
-//                    @Override
-//                    public void call(MainActivity activity, Integer response) {
-//                        activity.onItem(response);
-//                    }
-//                }
-//            ));
-
         if (savedState != null)
             name = savedState.getString(NAME_KEY);
 
-        restartableOnce(REQUEST_ITEMS, new Func0<Observable<ServerAPI.Response>>() {
+        restartableCache(REQUEST_ITEMS, new Func0<Observable<ServerAPI.Response>>() {
                 @Override
                 public Observable<ServerAPI.Response> call() {
                     return App.getServerAPI()

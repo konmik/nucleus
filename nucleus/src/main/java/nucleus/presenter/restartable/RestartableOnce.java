@@ -1,6 +1,5 @@
 package nucleus.presenter.restartable;
 
-import nucleus.presenter.delivery.Delivery;
 import rx.Notification;
 import rx.Observable;
 import rx.Subscription;
@@ -10,7 +9,7 @@ import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.functions.Func2;
 
-public class RestartableOnce<View, T> extends Restartable {
+public class RestartableOnce<View, T> implements Restartable {
 
     private final Observable<View> view;
     private final Func0<Observable<T>> factory;
@@ -24,7 +23,8 @@ public class RestartableOnce<View, T> extends Restartable {
         this.onError = onError;
     }
 
-    public Subscription start() {
+    @Override
+    public Subscription call() {
         return Observable
             .combineLatest(
                 view,

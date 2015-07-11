@@ -1,6 +1,5 @@
 package nucleus.presenter.restartable;
 
-import nucleus.presenter.delivery.Delivery;
 import rx.Notification;
 import rx.Observable;
 import rx.Subscription;
@@ -10,7 +9,7 @@ import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.functions.Func2;
 
-public class RestartableCache<View, T> extends Restartable {
+public class RestartableCache<View, T> implements Restartable {
 
     private final Observable<View> view;
     private final Func0<Observable<T>> factory;
@@ -25,7 +24,7 @@ public class RestartableCache<View, T> extends Restartable {
     }
 
     @Override
-    public Subscription start() {
+    public Subscription call() {
         return Observable
             .combineLatest(
                 view,

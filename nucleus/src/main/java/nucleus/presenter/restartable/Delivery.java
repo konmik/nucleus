@@ -1,4 +1,4 @@
-package nucleus.presenter.delivery;
+package nucleus.presenter.restartable;
 
 import android.support.annotation.Nullable;
 

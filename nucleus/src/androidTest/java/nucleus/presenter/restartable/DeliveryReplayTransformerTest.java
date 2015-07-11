@@ -1,11 +1,14 @@
-package nucleus.presenter.delivery;
+package nucleus.presenter.restartable;
 
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
 
 import rx.Notification;
+import rx.Observable;
 import rx.Subscription;
+import rx.functions.Action2;
+import rx.functions.Func0;
 import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
 
@@ -13,14 +16,30 @@ public class DeliveryReplayTransformerTest extends TestCase {
 
     public void testReplay() throws Exception {
         PublishSubject<Object> view = PublishSubject.create();
-        TestSubscriber<Delivery<Object, Integer>> testSubscriber = new TestSubscriber<>();
-        ArrayList<Delivery<Object, Integer>> deliveries = new ArrayList<>();
+        final TestSubscriber<Delivery<Object, Integer>> testSubscriber = new TestSubscriber<>();
+        final ArrayList<Delivery<Object, Integer>> deliveries = new ArrayList<>();
 
-        DeliveryReplayTransformer<Object, Integer> transformer = new DeliveryReplayTransformer<>(view);
-        PublishSubject<Integer> subject = PublishSubject.create();
-        Subscription subscription = subject
-            .compose(transformer)
-            .subscribe(testSubscriber);
+        final PublishSubject<Integer> subject = PublishSubject.create();
+        RestartableReplay<Object, Integer> restartable = new RestartableReplay<>(view,
+            new Func0<Observable<Integer>>() {
+                @Override
+                public Observable<Integer> call() {
+                    return subject;
+                }
+            },
+            new Action2<Object, Integer>() {
+                @Override
+                public void call(Object o, Integer integer) {
+                    testSubscriber.onNext(new Delivery<>(o, Notification.createOnNext(integer)));
+                }
+            },
+            new Action2<Object, Throwable>() {
+                @Override
+                public void call(Object o, Throwable throwable) {
+                    testSubscriber.onNext(new Delivery<>(o, Notification.<Integer>createOnError(throwable)));
+                }
+            });
+        Subscription subscription = restartable.call();
 
         // 1-3 values are delivered
         subject.onNext(1);
