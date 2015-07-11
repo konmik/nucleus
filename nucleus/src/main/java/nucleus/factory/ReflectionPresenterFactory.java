@@ -8,14 +8,14 @@ import java.util.HashMap;
 
 import nucleus.presenter.Presenter;
 
-public class ReflectionPresenterFactory<PresenterType extends Presenter> implements PresenterFactory<PresenterType> {
+public class ReflectionPresenterFactory<P extends Presenter> implements PresenterFactory<P> {
 
     private static final String PRESENTER_ID_KEY = "presenter_id";
 
     private static HashMap<String, Presenter> idToPresenter = new HashMap<>();
     private static HashMap<Presenter, String> presenterToId = new HashMap<>();
 
-    private Class<PresenterType> presenterClass;
+    private Class<P> presenterClass;
 
     @Nullable
     public static <PresenterType extends Presenter> PresenterFactory<PresenterType> fromViewClass(Class<?> viewClass) {
@@ -25,19 +25,19 @@ public class ReflectionPresenterFactory<PresenterType extends Presenter> impleme
         return presenterClass == null ? null : new ReflectionPresenterFactory<>(presenterClass);
     }
 
-    public ReflectionPresenterFactory(Class<PresenterType> presenterClass) {
+    public ReflectionPresenterFactory(Class<P> presenterClass) {
         this.presenterClass = presenterClass;
     }
 
     @Override
-    public PresenterType providePresenter(Bundle savedState) {
+    public P providePresenter(Bundle savedState) {
         String id = providePresenterId(presenterClass.getSimpleName(), savedState);
 
         if (idToPresenter.containsKey(id))
             //noinspection unchecked
-            return (PresenterType)idToPresenter.get(id);
+            return (P)idToPresenter.get(id);
 
-        final PresenterType presenter = instantiatePresenter(presenterClass);
+        final P presenter = instantiatePresenter(presenterClass);
 
         idToPresenter.put(id, presenter);
         presenterToId.put(presenter, id);
@@ -59,7 +59,7 @@ public class ReflectionPresenterFactory<PresenterType extends Presenter> impleme
         presenter.onSave(bundle);
     }
 
-    private static <PresenterType extends Presenter> PresenterType instantiatePresenter(Class<PresenterType> presenterClass) {
+    private static <P extends Presenter> P instantiatePresenter(Class<P> presenterClass) {
         try {
             return presenterClass.newInstance();
         }

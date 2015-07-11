@@ -4,18 +4,18 @@ import nucleus.factory.PresenterFactory;
 import nucleus.factory.ReflectionPresenterFactory;
 import nucleus.presenter.Presenter;
 
-public interface ViewWithPresenter<PresenterType extends Presenter> {
+public interface ViewWithPresenter<P extends Presenter> {
 
     /**
      * Sets a presenter factory. Call it before onCreate/onFinishInflate to override default {@link ReflectionPresenterFactory} presenter factory.
      * Use this method for testing purposes or for presenters dependency injection.
      */
-    void setPresenterFactory(PresenterFactory<PresenterType> presenterFactory);
+    void setPresenterFactory(PresenterFactory<P> presenterFactory);
 
     /**
      * Returns a current presenter.
      */
-    PresenterFactory<PresenterType> getPresenterFactory();
+    PresenterFactory<P> getPresenterFactory();
 
     /**
      * Returns a current attached presenter.
@@ -25,5 +25,5 @@ public interface ViewWithPresenter<PresenterType extends Presenter> {
      *
      * @return a currently attached presenter or null.
      */
-    PresenterType getPresenter();
+    P getPresenter();
 }

@@ -6,7 +6,7 @@ import android.support.annotation.Nullable;
 
 import nucleus.presenter.Presenter;
 
-public interface PresenterFactory<T extends Presenter> {
-    T providePresenter(@Nullable Bundle bundle);
+public interface PresenterFactory<P extends Presenter> {
+    P providePresenter(@Nullable Bundle bundle);
     void savePresenter(Presenter presenter, @NonNull Bundle bundle);
 }

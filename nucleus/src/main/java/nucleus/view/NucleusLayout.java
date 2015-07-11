@@ -17,15 +17,15 @@ import nucleus.presenter.Presenter;
  * You can inherit from this class or copy/paste this class's code to
  * create your own view implementation.
  *
- * @param <PresenterType> a type of presenter to return with {@link #getPresenter}.
+ * @param <P> a type of presenter to return with {@link #getPresenter}.
  */
-public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout implements ViewWithPresenter<PresenterType> {
+public class NucleusLayout<P extends Presenter> extends FrameLayout implements ViewWithPresenter<P> {
 
     private static final String PARENT_STATE_KEY = "parent_state";
     private static final String PRESENTER_STATE_KEY = "presenter_state";
 
-    private PresenterLifecycleDelegate<PresenterType> presenterDelegate =
-        new PresenterLifecycleDelegate<>(ReflectionPresenterFactory.<PresenterType>fromViewClass(getClass()));
+    private PresenterLifecycleDelegate<P> presenterDelegate =
+        new PresenterLifecycleDelegate<>(ReflectionPresenterFactory.<P>fromViewClass(getClass()));
 
     public NucleusLayout(Context context) {
         super(context);
@@ -45,14 +45,14 @@ public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout 
      * @param presenterFactory
      */
     @Override
-    public void setPresenterFactory(PresenterFactory<PresenterType> presenterFactory) {
+    public void setPresenterFactory(PresenterFactory<P> presenterFactory) {
         presenterDelegate.setPresenterFactory(presenterFactory);
     }
 
     /**
      * TODO
      */
-    public PresenterFactory<PresenterType> getPresenterFactory() {
+    public PresenterFactory<P> getPresenterFactory() {
         return presenterDelegate.getPresenterFactory();
     }
 
@@ -64,7 +64,7 @@ public class NucleusLayout<PresenterType extends Presenter> extends FrameLayout 
      *
      * @return a currently attached presenter or null.
      */
-    public PresenterType getPresenter() {
+    public P getPresenter() {
         return presenterDelegate.getPresenter();
     }
 

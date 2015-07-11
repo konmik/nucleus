@@ -6,22 +6,22 @@ import android.support.annotation.Nullable;
 import nucleus.factory.PresenterFactory;
 import nucleus.presenter.Presenter;
 
-public final class PresenterLifecycleDelegate<PresenterType extends Presenter> {
+public final class PresenterLifecycleDelegate<P extends Presenter> {
 
-    @Nullable private PresenterFactory<PresenterType> presenterFactory;
-    @Nullable private PresenterType presenter;
+    @Nullable private PresenterFactory<P> presenterFactory;
+    @Nullable private P presenter;
     @Nullable private Bundle presenterState;
 
-    public PresenterLifecycleDelegate(@Nullable PresenterFactory<PresenterType> presenterFactory) {
+    public PresenterLifecycleDelegate(@Nullable PresenterFactory<P> presenterFactory) {
         this.presenterFactory = presenterFactory;
     }
 
     @Nullable
-    public PresenterFactory<PresenterType> getPresenterFactory() {
+    public PresenterFactory<P> getPresenterFactory() {
         return presenterFactory;
     }
 
-    public void setPresenterFactory(@Nullable PresenterFactory<PresenterType> presenterFactory) {
+    public void setPresenterFactory(@Nullable PresenterFactory<P> presenterFactory) {
         if (presenter != null)
             throw new IllegalArgumentException("setPresenterFactory() should be called before onResume()");
         this.presenterFactory = presenterFactory;
@@ -57,7 +57,7 @@ public final class PresenterLifecycleDelegate<PresenterType extends Presenter> {
         }
     }
 
-    public PresenterType getPresenter() {
+    public P getPresenter() {
         if (presenter == null && presenterFactory != null) {
             presenter = presenterFactory.providePresenter(presenterState);
             presenterState = null;
