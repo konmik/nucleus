@@ -33,6 +33,45 @@ public class RxPresenter<View> extends Presenter<View> {
     private final HashMap<Integer, Subscription> restartableSubscriptions = new HashMap<>();
     private final ArrayList<Integer> started = new ArrayList<>();
 
+    public <T> void restartableOnce(int restartableId, Func0<Observable<T>> factory,
+        Action2<View, T> onNext, Action2<View, Throwable> onError) {
+        restartable(restartableId, new RestartableOnce<>(view, factory, onNext, onError));
+    }
+
+    public <T> void restartableCache(int restartableId, Func0<Observable<T>> factory,
+        Action2<View, T> onNext, Action2<View, Throwable> onError) {
+        restartable(restartableId, new RestartableCache<>(view, factory, onNext, onError));
+    }
+
+    public <T> void restartableReplay(int restartableId, Func0<Observable<T>> factory,
+        Action2<View, T> onNext, Action2<View, Throwable> onError) {
+        restartable(restartableId, new RestartableReplay<>(view, factory, onNext, onError));
+    }
+
+    public void start(int restartableId) {
+        stop(restartableId);
+        started.add(restartableId);
+        restartableSubscriptions.put(restartableId, restartables.get(restartableId).call());
+    }
+
+    /**
+     * Unsubscribes a restartable
+     *
+     * @param restartableId id of a restartable.
+     */
+    public void stop(int restartableId) {
+        started.remove((Integer)restartableId);
+        Subscription subscription = restartableSubscriptions.get(restartableId);
+        if (subscription != null)
+            subscription.unsubscribe();
+    }
+
+    public void restartable(int restartableId, Restartable restartable) {
+        restartables.put(restartableId, restartable);
+        if (started.contains(restartableId))
+            start(restartableId);
+    }
+
     /**
      * Returns an observable that emits current status of a view.
      * True - a view is attached, False - a view is detached.
@@ -91,45 +130,6 @@ public class RxPresenter<View> extends Presenter<View> {
     public void onDropView() {
         super.onDropView();
         view.onNext(null);
-    }
-
-    public <T> void restartableOnce(int restartableId, Func0<Observable<T>> factory,
-        Action2<View, T> onNext, Action2<View, Throwable> onError) {
-        restartable(restartableId, new RestartableOnce<>(view, factory, onNext, onError));
-    }
-
-    public <T> void restartableCache(int restartableId, Func0<Observable<T>> factory,
-        Action2<View, T> onNext, Action2<View, Throwable> onError) {
-        restartable(restartableId, new RestartableCache<>(view, factory, onNext, onError));
-    }
-
-    public <T> void restartableReplay(int restartableId, Func0<Observable<T>> factory,
-        Action2<View, T> onNext, Action2<View, Throwable> onError) {
-        restartable(restartableId, new RestartableReplay<>(view, factory, onNext, onError));
-    }
-
-    public void start(int restartableId) {
-        stop(restartableId);
-        started.add(restartableId);
-        restartableSubscriptions.put(restartableId, restartables.get(restartableId).call());
-    }
-
-    /**
-     * Unsubscribes a restartable
-     *
-     * @param restartableId id of a restartable.
-     */
-    public void stop(int restartableId) {
-        started.remove((Integer)restartableId);
-        Subscription subscription = restartableSubscriptions.get(restartableId);
-        if (subscription != null)
-            subscription.unsubscribe();
-    }
-
-    private void restartable(int restartableId, Restartable restartable) {
-        restartables.put(restartableId, restartable);
-        if (started.contains(restartableId))
-            start(restartableId);
     }
 
     /**

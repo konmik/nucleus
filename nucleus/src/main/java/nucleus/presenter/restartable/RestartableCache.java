@@ -38,8 +38,8 @@ public class RestartableCache<View, T> implements Restartable {
                     }),
                 new Func2<View, Notification<T>, Delivery<View, T>>() {
                     @Override
-                    public Delivery<View, T> call(View view, Notification<T> tNotification) {
-                        return view == null ? null : new Delivery<>(view, tNotification);
+                    public Delivery<View, T> call(View view, Notification<T> notification) {
+                        return view == null ? null : new Delivery<>(view, notification);
                     }
                 })
             .filter(new Func1<Delivery<View, T>, Boolean>() {
