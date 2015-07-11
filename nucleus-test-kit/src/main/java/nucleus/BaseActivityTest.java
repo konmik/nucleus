@@ -2,6 +2,7 @@ package nucleus;
 
 import android.app.Activity;
 import android.test.ActivityInstrumentationTestCase2;
+import android.util.Log;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -35,7 +36,8 @@ public class BaseActivityTest<ActivityClass extends Activity> extends ActivityIn
                     done.set(condition.call());
                 }
             });
-        } while (!done.get());
+        }
+        while (!done.get());
     }
 
     public void restartActivity() {
@@ -47,7 +49,18 @@ public class BaseActivityTest<ActivityClass extends Activity> extends ActivityIn
             }
         });
         setActivity(null);
-        getActivity();
+        getActivity(); // DOES NOT WORK ON LOLLIPOP - has some bug in instrumentation
+    }
+
+    private void sleep(String description, final int ms) {
+        final long time1 = System.nanoTime();
+        waitFor(new Condition() {
+            @Override
+            public boolean call() {
+                return (System.nanoTime() - time1) / 1000000 > ms;
+            }
+        });
+        Log.v(getClass().getSimpleName(), "WAIT " + description + " COMPLETE");
     }
 
     public void runOnUiThread(final Runnable runnable) {
