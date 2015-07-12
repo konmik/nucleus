@@ -1,7 +1,8 @@
 package nucleus.presenter.restartable;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
+import nucleus.presenter.delivery.Delivery;
 import rx.Notification;
 import rx.functions.Action2;
 
@@ -10,7 +11,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-public class DeliveryTest extends TestCase {
+public class DeliveryTest {
 
     private void testWithOnNextOnError(Action2<Action2, Action2> test) {
         Action2 onNext = mock(Action2.class);
@@ -22,6 +23,7 @@ public class DeliveryTest extends TestCase {
         verifyNoMoreInteractions(onError);
     }
 
+    @Test
     public void testSplitOnNext() throws Exception {
         testWithOnNextOnError(new Action2<Action2, Action2>() {
             @Override
@@ -32,6 +34,7 @@ public class DeliveryTest extends TestCase {
         });
     }
 
+    @Test
     public void testSplitOnError() throws Exception {
         testWithOnNextOnError(new Action2<Action2, Action2>() {
             @Override
@@ -43,6 +46,7 @@ public class DeliveryTest extends TestCase {
         });
     }
 
+    @Test
     public void testSplitOnComplete() throws Exception {
         testWithOnNextOnError(new Action2<Action2, Action2>() {
             @Override

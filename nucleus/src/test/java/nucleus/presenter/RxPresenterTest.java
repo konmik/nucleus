@@ -3,15 +3,13 @@ package nucleus.presenter;
 import android.os.Bundle;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import mock.BundleMock;
-import nucleus.presenter.restartable.Restartable;
 import rx.Subscription;
+import rx.functions.Func0;
 import rx.observers.TestSubscriber;
 
 import static org.mockito.Mockito.mock;
@@ -20,7 +18,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-@RunWith(PowerMockRunner.class)
 public class RxPresenterTest {
 
     @Test
@@ -28,7 +25,7 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.onCreate(null);
 
-        Restartable restartable = mock(Restartable.class);
+        Func0<Subscription> restartable = mock(Func0.class);
         Subscription subscription = mock(Subscription.class);
         when(restartable.call()).thenReturn(subscription);
         when(subscription.isUnsubscribed()).thenReturn(false);
@@ -57,7 +54,7 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.onCreate(null);
 
-        Restartable restartable = mock(Restartable.class);
+        Func0<Subscription> restartable = mock(Func0.class);
         Subscription subscription = mock(Subscription.class);
         when(restartable.call()).thenReturn(subscription);
         when(subscription.isUnsubscribed()).thenReturn(false);
@@ -85,7 +82,7 @@ public class RxPresenterTest {
 
     @Test
     public void testCompletedRestartable() throws Exception {
-        Restartable restartable = mock(Restartable.class);
+        Func0<Subscription> restartable = mock(Func0.class);
         Subscription subscription = mock(Subscription.class);
 
         RxPresenter presenter = new RxPresenter();

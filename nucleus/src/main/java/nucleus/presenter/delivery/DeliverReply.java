@@ -1,33 +1,24 @@
-package nucleus.presenter.restartable;
+package nucleus.presenter.delivery;
 
 import rx.Notification;
 import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.functions.Action2;
-import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.subjects.ReplaySubject;
 
-public class RestartableReplay<View, T> implements Restartable {
+public class DeliverReply<View, T> implements Observable.Transformer<T, Delivery<View, T>> {
 
     private final Observable<View> view;
-    private final Func0<Observable<T>> factory;
-    private final Action2<View, T> onNext;
-    private final Action2<View, Throwable> onError;
 
-    public RestartableReplay(Observable<View> view, Func0<Observable<T>> factory, Action2<View, T> onNext, Action2<View, Throwable> onError) {
+    public DeliverReply(Observable<View> view) {
         this.view = view;
-        this.factory = factory;
-        this.onNext = onNext;
-        this.onError = onError;
     }
 
     @Override
-    public Subscription call() {
+    public Observable<Delivery<View, T>> call(Observable<T> observable) {
         final ReplaySubject<Notification<T>> subject = ReplaySubject.create();
-        final Subscription subscription = factory.call()
+        final Subscription subscription = observable
             .materialize()
             .filter(new Func1<Notification<T>, Boolean>() {
                 @Override
@@ -59,12 +50,6 @@ public class RestartableReplay<View, T> implements Restartable {
                 @Override
                 public void call() {
                     subscription.unsubscribe();
-                }
-            })
-            .subscribe(new Action1<Delivery<View, T>>() {
-                @Override
-                public void call(Delivery<View, T> delivery) {
-                    delivery.split(onNext, onError);
                 }
             });
     }

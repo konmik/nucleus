@@ -1,21 +1,22 @@
-package nucleus.presenter.restartable;
+package nucleus.presenter.delivery;
 
 import android.support.annotation.Nullable;
 
 import rx.Notification;
+import rx.functions.Action1;
 import rx.functions.Action2;
 
-public final class Delivery<ViewType, T> {
+public final class Delivery<View, T> {
 
-    private final ViewType view;
+    private final View view;
     private final Notification<T> notification;
 
-    public Delivery(ViewType view, Notification<T> notification) {
+    public Delivery(View view, Notification<T> notification) {
         this.view = view;
         this.notification = notification;
     }
 
-    public void split(Action2<ViewType, T> onNext, @Nullable Action2<ViewType, Throwable> onError) {
+    public void split(Action2<View, T> onNext, @Nullable Action2<View, Throwable> onError) {
         if (notification.getKind() == Notification.Kind.OnNext)
             onNext.call(view, notification.getValue());
         else if (onError != null && notification.getKind() == Notification.Kind.OnError)

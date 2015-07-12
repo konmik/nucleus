@@ -1,45 +1,52 @@
 package nucleus.presenter.restartable;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.util.ArrayList;
 
+import nucleus.presenter.delivery.DeliverLatestCache;
+import nucleus.presenter.delivery.Delivery;
 import rx.Notification;
 import rx.Observable;
 import rx.Subscription;
+import rx.functions.Action1;
 import rx.functions.Action2;
 import rx.functions.Func0;
 import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
 
-public class DeliveryCacheTransformerTest extends TestCase {
+import static org.junit.Assert.assertFalse;
 
+public class RestartableCacheTest {
+
+    @Test
     public void testCache() throws Exception {
         PublishSubject<Object> view = PublishSubject.create();
         final TestSubscriber<Delivery<Object, Integer>> testSubscriber = new TestSubscriber<>();
         final ArrayList<Delivery<Object, Integer>> deliveries = new ArrayList<>();
 
         final PublishSubject<Integer> subject = PublishSubject.create();
-        RestartableCache<Object, Integer> restartable = new RestartableCache<>(view,
-            new Func0<Observable<Integer>>() {
+        DeliverLatestCache<Object, Integer> restartable = new DeliverLatestCache<>(view);
+        Subscription subscription = restartable.call(subject)
+            .subscribe(new Action1<Delivery<Object, Integer>>() {
                 @Override
-                public Observable<Integer> call() {
-                    return subject;
-                }
-            },
-            new Action2<Object, Integer>() {
-                @Override
-                public void call(Object o, Integer integer) {
-                    testSubscriber.onNext(new Delivery<>(o, Notification.createOnNext(integer)));
-                }
-            },
-            new Action2<Object, Throwable>() {
-                @Override
-                public void call(Object o, Throwable throwable) {
-                    testSubscriber.onNext(new Delivery<>(o, Notification.<Integer>createOnError(throwable)));
+                public void call(Delivery<Object, Integer> delivery) {
+                    delivery.split(
+                        new Action2<Object, Integer>() {
+                            @Override
+                            public void call(Object o, Integer integer) {
+                                testSubscriber.onNext(new Delivery<>(o, Notification.createOnNext(integer)));
+                            }
+                        },
+                        new Action2<Object, Throwable>() {
+                            @Override
+                            public void call(Object o, Throwable throwable) {
+                                testSubscriber.onNext(new Delivery<>(o, Notification.<Integer>createOnError(throwable)));
+                            }
+                        }
+                    );
                 }
             });
-        Subscription subscription = restartable.call();
 
         // only latest value is delivered
         subject.onNext(1);
