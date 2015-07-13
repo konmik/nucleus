@@ -1,4 +1,4 @@
-package mock;
+package mocks;
 
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -7,7 +7,6 @@ import android.util.SparseArray;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
 
 import java.io.Serializable;
 import java.util.ArrayList;

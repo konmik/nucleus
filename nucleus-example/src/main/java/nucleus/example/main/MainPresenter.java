@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import nucleus.example.base.App;
 import nucleus.example.base.ServerAPI;
 import nucleus.presenter.RxPresenter;
+import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action2;
@@ -30,29 +31,27 @@ public class MainPresenter extends RxPresenter<MainActivity> {
         if (savedState != null)
             name = savedState.getString(NAME_KEY);
 
-        restartable(REQUEST_ITEMS, new Func0<Subscription>() {
-            @Override
-            public Subscription call() {
-                return App.getServerAPI()
-                    .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .compose(MainPresenter.this.<ServerAPI.Response>deliverFirst())
-                    .subscribe(split(
-                        new Action2<MainActivity, ServerAPI.Response>() {
-                            @Override
-                            public void call(MainActivity activity, ServerAPI.Response response) {
-                                activity.onItems(response.items, name);
-                            }
-                        },
-                        new Action2<MainActivity, Throwable>() {
-                            @Override
-                            public void call(MainActivity activity, Throwable throwable) {
-                                activity.onNetworkError(throwable);
-                            }
-                        }
-                    ));
-            }
-        });
+        restartableCache(REQUEST_ITEMS,
+            new Func0<Observable<ServerAPI.Response>>() {
+                @Override
+                public Observable<ServerAPI.Response> call() {
+                    return App.getServerAPI()
+                        .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
+                        .observeOn(AndroidSchedulers.mainThread());
+                }
+            },
+            new Action2<MainActivity, ServerAPI.Response>() {
+                @Override
+                public void call(MainActivity activity, ServerAPI.Response response) {
+                    activity.onItems(response.items, name);
+                }
+            },
+            new Action2<MainActivity, Throwable>() {
+                @Override
+                public void call(MainActivity activity, Throwable throwable) {
+                    activity.onNetworkError(throwable);
+                }
+            });
 
         if (savedState == null)
             start(REQUEST_ITEMS);

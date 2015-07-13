@@ -1,7 +1,6 @@
 package nucleus.presenter;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +12,6 @@ import nucleus.presenter.delivery.DeliverReply;
 import nucleus.presenter.delivery.Delivery;
 import rx.Observable;
 import rx.Subscription;
-import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Action2;
 import rx.functions.Func0;
@@ -27,14 +25,14 @@ import rx.subscriptions.CompositeSubscription;
  */
 public class RxPresenter<View> extends Presenter<View> {
 
-    private static final String STARTED_KEY = RxPresenter.class.getName() + "#started";
+    private static final String REQUESTED_KEY = RxPresenter.class.getName() + "#requested";
 
     private final BehaviorSubject<View> view = BehaviorSubject.create();
     private final CompositeSubscription subscriptions = new CompositeSubscription();
 
     private final HashMap<Integer, Func0<Subscription>> restartables = new HashMap<>();
     private final HashMap<Integer, Subscription> restartableSubscriptions = new HashMap<>();
-    private final ArrayList<Integer> started = new ArrayList<>();
+    private final ArrayList<Integer> requested = new ArrayList<>();
 
     /**
      * Returns an observable that emits the current attached view during {@link #onTakeView(Object)}
@@ -67,7 +65,7 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
-     * A restartable is any RxJava observable that can be started (subscribed) and
+     * A restartable is any RxJava observable that can be requested (subscribed) and
      * should be automatically restarted (re-subscribed) after a process restart if
      * it was still subscribed at the moment of saving presenter's state.
      *
@@ -78,7 +76,7 @@ public class RxPresenter<View> extends Presenter<View> {
      */
     public void restartable(int restartableId, Func0<Subscription> factory) {
         restartables.put(restartableId, factory);
-        if (started.contains(restartableId))
+        if (requested.contains(restartableId))
             start(restartableId);
     }
 
@@ -89,7 +87,7 @@ public class RxPresenter<View> extends Presenter<View> {
      */
     public void start(int restartableId) {
         stop(restartableId);
-        started.add(restartableId);
+        requested.add(restartableId);
         restartableSubscriptions.put(restartableId, restartables.get(restartableId).call());
     }
 
@@ -99,25 +97,39 @@ public class RxPresenter<View> extends Presenter<View> {
      * @param restartableId id of a restartable.
      */
     public void stop(int restartableId) {
-        started.remove((Integer)restartableId);
+        requested.remove((Integer)restartableId);
         Subscription subscription = restartableSubscriptions.get(restartableId);
         if (subscription != null)
             subscription.unsubscribe();
     }
 
-    public <T> void restartable(final int restartableId, final Func0<Observable<Delivery<View, T>>> factory,
-        final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {
+    public <T> void restartableFirst(int restartableId, Func0<Observable<T>> observableFactory,
+        Action2<View, T> onNext, Action2<View, Throwable> onError) {
+
+        restartable(restartableId, observableFactory, new DeliverFirst<View, T>(view), onNext, onError);
+    }
+
+    public <T> void restartableCache(int restartableId, Func0<Observable<T>> observableFactory,
+        Action2<View, T> onNext, Action2<View, Throwable> onError) {
+
+        restartable(restartableId, observableFactory, new DeliverLatestCache<View, T>(view), onNext, onError);
+    }
+
+    public <T> void restartableReplay(int restartableId, Func0<Observable<T>> observableFactory,
+        Action2<View, T> onNext, Action2<View, Throwable> onError) {
+
+        restartable(restartableId, observableFactory, new DeliverReply<View, T>(view), onNext, onError);
+    }
+
+    public <T> void restartable(final int restartableId, final Func0<Observable<T>> observableFactory,
+        final Observable.Transformer<T, Delivery<View, T>> transformer,
+        final Action2<View, T> onNext, final Action2<View, Throwable> onError) {
 
         restartable(restartableId, new Func0<Subscription>() {
             @Override
             public Subscription call() {
-                return factory.call()
-                    .doOnUnsubscribe(new Action0() {
-                        @Override
-                        public void call() {
-                            started.remove((Integer)restartableId);
-                        }
-                    })
+                return observableFactory.call()
+                    .compose(transformer)
                     .subscribe(new Action1<Delivery<View, T>>() {
                         @Override
                         public void call(Delivery<View, T> delivery) {
@@ -128,38 +140,13 @@ public class RxPresenter<View> extends Presenter<View> {
         });
     }
 
-    public <T> Observable.Transformer<T, Delivery<View, T>> deliverFirst() {
-        return new DeliverFirst<>(view);
-    }
-
-    public <T> Observable.Transformer<T, Delivery<View, T>> deliverLatestCache() {
-        return new DeliverLatestCache<>(view);
-    }
-
-    public <T> Observable.Transformer<T, Delivery<View, T>> deliverReply() {
-        return new DeliverReply<>(view);
-    }
-
-    public <T> Action1<Delivery<View, T>> split(Action2<View, T> onNext) {
-        return split(onNext, null);
-    }
-
-    public <T> Action1<Delivery<View, T>> split(final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {
-        return new Action1<Delivery<View, T>>() {
-            @Override
-            public void call(Delivery<View, T> delivery) {
-                delivery.split(onNext, onError);
-            }
-        };
-    }
-
     /**
      * {@inheritDoc}
      */
     @Override
     public void onCreate(Bundle savedState) {
         if (savedState != null)
-            started.addAll(savedState.getIntegerArrayList(STARTED_KEY));
+            requested.addAll(savedState.getIntegerArrayList(REQUESTED_KEY));
     }
 
     /**
@@ -180,7 +167,12 @@ public class RxPresenter<View> extends Presenter<View> {
     @Override
     public void onSave(Bundle state) {
         super.onSave(state);
-        state.putIntegerArrayList(STARTED_KEY, started);
+        for (int i = requested.size() - 1; i >= 0; i--) {
+            Subscription subscription = restartableSubscriptions.get(i);
+            if (subscription != null && subscription.isUnsubscribed())
+                requested.remove((Integer)i);
+        }
+        state.putIntegerArrayList(REQUESTED_KEY, requested);
     }
 
     /**

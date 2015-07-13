@@ -3,15 +3,17 @@ package nucleus.presenter;
 import android.os.Bundle;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import mock.BundleMock;
+import mocks.BundleMock;
 import rx.Subscription;
 import rx.functions.Func0;
 import rx.observers.TestSubscriber;
 
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -19,6 +21,31 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class RxPresenterTest {
+
+    @Test
+    public void testAdd()  throws Exception {
+        RxPresenter presenter = new RxPresenter();
+        Subscription mock = Mockito.mock(Subscription.class);
+        when(mock.isUnsubscribed()).thenReturn(false);
+        presenter.add(mock);
+        presenter.onDestroy();
+        verify(mock, times(1)).unsubscribe();
+        verify(mock, atLeastOnce()).isUnsubscribed();
+        verifyNoMoreInteractions(mock);
+    }
+
+    @Test
+    public void testAddRemove()  throws Exception {
+        RxPresenter presenter = new RxPresenter();
+        Subscription mock = Mockito.mock(Subscription.class);
+        when(mock.isUnsubscribed()).thenReturn(false);
+        presenter.add(mock);
+        presenter.remove(mock);
+        verify(mock, atLeastOnce()).isUnsubscribed();
+        verify(mock, times(1)).unsubscribe();
+        presenter.onDestroy();
+        verifyNoMoreInteractions(mock);
+    }
 
     @Test
     public void testRestartable() throws Exception {
