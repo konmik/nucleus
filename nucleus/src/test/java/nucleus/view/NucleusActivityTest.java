@@ -7,8 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -21,7 +19,6 @@ import nucleus.presenter.Presenter;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -29,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
+import static org.powermock.api.support.membermodification.MemberModifier.stub;
 import static org.powermock.api.support.membermodification.MemberModifier.suppress;
 
 @RunWith(PowerMockRunner.class)
@@ -56,8 +54,13 @@ public class NucleusActivityTest {
     public void setUp() throws Exception {
         mockPresenter = mock(TestPresenter.class);
 
+        mockDelegate = mock(PresenterLifecycleDelegate.class);
+        PowerMockito.whenNew(PresenterLifecycleDelegate.class).withAnyArguments().thenReturn(mockDelegate);
+        when(mockDelegate.getPresenter()).thenReturn(mockPresenter);
+
         mockFactory = mock(ReflectionPresenterFactory.class);
         when(mockFactory.providePresenter(null)).thenReturn(mockPresenter);
+
         PowerMockito.mockStatic(ReflectionPresenterFactory.class);
         when(ReflectionPresenterFactory.fromViewClass(any(Class.class))).thenReturn(mockFactory);
 
@@ -66,6 +69,7 @@ public class NucleusActivityTest {
         suppress(method(Activity.class, "onSaveInstanceState", Bundle.class));
         suppress(method(Activity.class, "onResume"));
         suppress(method(Activity.class, "onPause"));
+        stub(method(Activity.class, "isFinishing")).toReturn(false);
     }
 
     @Test
@@ -79,29 +83,34 @@ public class NucleusActivityTest {
                 return TestActivity.class.isAssignableFrom((Class)argument);
             }
         }));
-        verify(mockFactory, times(1)).providePresenter(null);
-        verifyNoMoreInteractions(mockPresenter, mockFactory);
+        verify(mockDelegate, times(1)).getPresenter();
+        verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
     }
 
     @Test
-    public void testSave() throws Exception {
+    public void testLifecycle() throws Exception {
         tested.onCreate(null);
         tested.onResume();
-//        PowerMockito.whenNew(Bundle.class).withAnyArguments().thenAnswer(new Answer<Bundle>() {
-//            @Override
-//            public Bundle answer(InvocationOnMock invocation) throws Throwable {
-//                return BundleMock.mock();
-//            }
-//        });
-//        tested.onPause();
-//        Bundle bundle = BundleMock.mock();
-//        tested.onSaveInstanceState(bundle);
-//        verify(mockFactory, times(1)).savePresenter(eq(mockPresenter), any(Bundle.class));
-//        tested.onDestroy();
+        verify(mockDelegate, times(1)).onResume(tested);
+        tested.onPause();
+        verify(mockDelegate, times(1)).onPause(false);
+        tested.onSaveInstanceState(BundleMock.mock());
+        verify(mockDelegate, times(1)).onSaveInstanceState();
+        verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
+    }
 
-//        tested = spy(TestActivity.class);
-//        tested.onCreate(bundle);
-//        tested.onResume();
-//        verify(mockFactory, times(1)).providePresenter(bundle);
+    @Test
+    public void testSaveRestore() throws Exception {
+        Bundle presenterBundle = BundleMock.mock();
+        when(mockDelegate.onSaveInstanceState()).thenReturn(presenterBundle);
+
+        tested.onCreate(null);
+
+        Bundle state = BundleMock.mock();
+        tested.onSaveInstanceState(state);
+
+        tested = spy(TestActivity.class);
+        tested.onCreate(state);
+        verify(mockDelegate).onRestoreInstanceState(presenterBundle);
     }
 }

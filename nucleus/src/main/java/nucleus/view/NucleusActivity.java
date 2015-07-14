@@ -15,12 +15,41 @@ import nucleus.presenter.Presenter;
  *
  * @param <P> a type of presenter to return with {@link #getPresenter}.
  */
-public class NucleusActivity<P extends Presenter> extends Activity implements ViewWithPresenter<P> {
+public abstract class NucleusActivity<P extends Presenter> extends Activity implements ViewWithPresenter<P> {
 
     private static final String PRESENTER_STATE_KEY = "presenter_state";
 
     private PresenterLifecycleDelegate<P> presenterDelegate =
         new PresenterLifecycleDelegate<>(ReflectionPresenterFactory.<P>fromViewClass(getClass()));
+
+    /**
+     * Returns a current presenter factory.
+     */
+    public PresenterFactory<P> getPresenterFactory() {
+        return presenterDelegate.getPresenterFactory();
+    }
+
+    /**
+     * Sets a presenter factory.
+     * Call this method before onCreate/onFinishInflate to override default {@link ReflectionPresenterFactory} presenter factory.
+     * Use this method for presenter dependency injection.
+     */
+    @Override
+    public void setPresenterFactory(PresenterFactory<P> presenterFactory) {
+        presenterDelegate.setPresenterFactory(presenterFactory);
+    }
+
+    /**
+     * Returns a current attached presenter.
+     * This method is guaranteed to return a non-null value between
+     * onResume/onPause and onAttachedToWindow/onDetachedFromWindow calls
+     * if the presenter factory returns a non-null value.
+     *
+     * @return a currently attached presenter or null.
+     */
+    public P getPresenter() {
+        return presenterDelegate.getPresenter();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,36 +74,5 @@ public class NucleusActivity<P extends Presenter> extends Activity implements Vi
     protected void onPause() {
         super.onPause();
         presenterDelegate.onPause(isFinishing());
-    }
-
-    // The following section can be copy & pasted into any View class, just update their description if needed.
-
-    @Override
-    public void setPresenterFactory(PresenterFactory<P> presenterFactory) {
-        presenterDelegate.setPresenterFactory(presenterFactory);
-    }
-
-    /**
-     * The factory class used to create the presenter. Defaults to {@link ReflectionPresenterFactory} to create the presenter
-     * using a no arg constructor.
-     * <p/>
-     * Subclasses can override this to provide presenters in other ways, like via their dependency injector.
-     *
-     * @return The {@link PresenterFactory} that can build a {@link Presenter}, or null.
-     */
-    public PresenterFactory<P> getPresenterFactory() {
-        return presenterDelegate.getPresenterFactory();
-    }
-
-    /**
-     * Returns a current attached presenter.
-     * This method is guaranteed to return a non-null value between
-     * onResume/onPause and onAttachedToWindow/onDetachedFromWindow calls
-     * if the presenter factory returns a non-null value.
-     *
-     * @return a currently attached presenter or null.
-     */
-    public P getPresenter() {
-        return presenterDelegate.getPresenter();
     }
 }

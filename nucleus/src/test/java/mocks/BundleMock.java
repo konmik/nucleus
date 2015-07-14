@@ -30,7 +30,10 @@ import static org.mockito.Mockito.when;
 public final class BundleMock {
 
     public static Bundle mock() {
-        final HashMap<String, Object> map = new HashMap<>();
+        return mock(new HashMap<String, Object>());
+    }
+
+    public static Bundle mock(final HashMap<String, Object> map) {
 
         Answer unsupported = new Answer() {
             @Override

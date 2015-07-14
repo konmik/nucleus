@@ -6,6 +6,11 @@ import android.support.annotation.Nullable;
 import nucleus.factory.PresenterFactory;
 import nucleus.presenter.Presenter;
 
+/**
+ * This class delivers View events to Presenter.
+ *
+ * @param <P> a type of the presenter.
+ */
 public final class PresenterLifecycleDelegate<P extends Presenter> {
 
     @Nullable private PresenterFactory<P> presenterFactory;
@@ -25,6 +30,14 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
         if (presenter != null)
             throw new IllegalArgumentException("setPresenterFactory() should be called before onResume()");
         this.presenterFactory = presenterFactory;
+    }
+
+    public P getPresenter() {
+        if (presenter == null && presenterFactory != null) {
+            presenter = presenterFactory.providePresenter(presenterState);
+            presenterState = null;
+        }
+        return presenter;
     }
 
     public Bundle onSaveInstanceState() {
@@ -55,13 +68,5 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
                 presenter = null;
             }
         }
-    }
-
-    public P getPresenter() {
-        if (presenter == null && presenterFactory != null) {
-            presenter = presenterFactory.providePresenter(presenterState);
-            presenterState = null;
-        }
-        return presenter;
     }
 }

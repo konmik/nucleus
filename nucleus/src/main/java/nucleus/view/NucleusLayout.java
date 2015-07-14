@@ -40,20 +40,20 @@ public class NucleusLayout<P extends Presenter> extends FrameLayout implements V
     }
 
     /**
-     * TODO
-     *
-     * @param presenterFactory
+     * Returns a current presenter factory.
+     */
+    public PresenterFactory<P> getPresenterFactory() {
+        return presenterDelegate.getPresenterFactory();
+    }
+
+    /**
+     * Sets a presenter factory.
+     * Call this method before onCreate/onFinishInflate to override default {@link ReflectionPresenterFactory} presenter factory.
+     * Use this method for presenter dependency injection.
      */
     @Override
     public void setPresenterFactory(PresenterFactory<P> presenterFactory) {
         presenterDelegate.setPresenterFactory(presenterFactory);
-    }
-
-    /**
-     * TODO
-     */
-    public PresenterFactory<P> getPresenterFactory() {
-        return presenterDelegate.getPresenterFactory();
     }
 
     /**
@@ -66,6 +66,20 @@ public class NucleusLayout<P extends Presenter> extends FrameLayout implements V
      */
     public P getPresenter() {
         return presenterDelegate.getPresenter();
+    }
+
+    /**
+     * Returns the unwrapped activity of the view or throws an exception.
+     *
+     * @return an unwrapped activity
+     */
+    public Activity getActivity() {
+        Context context = getContext();
+        while (!(context instanceof Activity) && context instanceof ContextWrapper)
+            context = ((ContextWrapper)context).getBaseContext();
+        if (!(context instanceof Activity))
+            throw new IllegalStateException("Expected an activity context, got " + context.getClass().getSimpleName());
+        return (Activity)context;
     }
 
     @Override
@@ -94,19 +108,5 @@ public class NucleusLayout<P extends Presenter> extends FrameLayout implements V
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         presenterDelegate.onPause(getActivity().isFinishing());
-    }
-
-    /**
-     * Returns the unwrapped activity of the view or throws an exception.
-     *
-     * @return an unwrapped activity
-     */
-    public Activity getActivity() {
-        Context context = getContext();
-        while (!(context instanceof Activity) && context instanceof ContextWrapper)
-            context = ((ContextWrapper)context).getBaseContext();
-        if (!(context instanceof Activity))
-            throw new IllegalStateException("Expected an activity context, got " + context.getClass().getSimpleName());
-        return (Activity)context;
     }
 }
