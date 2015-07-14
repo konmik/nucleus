@@ -7,10 +7,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import mocks.BundleMock;
 import nucleus.factory.ReflectionPresenterFactory;
 import nucleus.factory.RequiresPresenter;
 import nucleus.presenter.Presenter;
@@ -29,7 +32,7 @@ import static org.powermock.api.support.membermodification.MemberMatcher.method;
 import static org.powermock.api.support.membermodification.MemberModifier.suppress;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({NucleusActivityTest.TestActivity.class, ReflectionPresenterFactory.class})
+@PrepareForTest({NucleusActivityTest.TestActivity.class, PresenterLifecycleDelegate.class, ReflectionPresenterFactory.class})
 public class NucleusActivityTest {
 
     public static class TestPresenter extends Presenter {
@@ -38,10 +41,14 @@ public class NucleusActivityTest {
 
     @RequiresPresenter(TestPresenter.class)
     public static class TestActivity extends NucleusActivity {
-
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+        }
     }
 
     private TestPresenter mockPresenter;
+    private PresenterLifecycleDelegate mockDelegate;
     private ReflectionPresenterFactory mockFactory;
     private TestActivity tested;
 
@@ -74,5 +81,27 @@ public class NucleusActivityTest {
         }));
         verify(mockFactory, times(1)).providePresenter(null);
         verifyNoMoreInteractions(mockPresenter, mockFactory);
+    }
+
+    @Test
+    public void testSave() throws Exception {
+        tested.onCreate(null);
+        tested.onResume();
+//        PowerMockito.whenNew(Bundle.class).withAnyArguments().thenAnswer(new Answer<Bundle>() {
+//            @Override
+//            public Bundle answer(InvocationOnMock invocation) throws Throwable {
+//                return BundleMock.mock();
+//            }
+//        });
+//        tested.onPause();
+//        Bundle bundle = BundleMock.mock();
+//        tested.onSaveInstanceState(bundle);
+//        verify(mockFactory, times(1)).savePresenter(eq(mockPresenter), any(Bundle.class));
+//        tested.onDestroy();
+
+//        tested = spy(TestActivity.class);
+//        tested.onCreate(bundle);
+//        tested.onResume();
+//        verify(mockFactory, times(1)).providePresenter(bundle);
     }
 }

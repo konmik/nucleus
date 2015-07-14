@@ -15,13 +15,13 @@ configurations {
 }
 
 dependencies {
-    compile 'com.android.support:support-annotations:22.2.0'
-    compile 'io.reactivex:rxjava:1.0.11'
-    compileJavadoc 'com.android.support:support-annotations:21.0.3'
-    compileJavadoc 'io.reactivex:rxjava:1.0.12'
+    compile "com.android.support:support-annotations:$rootProject.supportLibraryVersion"
+    compile "io.reactivex:rxjava:$rootProject.rxVersion"
+    compileJavadoc "com.android.support:support-annotations:$rootProject.supportLibraryVersion"
+    compileJavadoc "io.reactivex:rxjava:$rootProject.rxVersion"
 
     testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:2.0.5-beta'
+    testCompile 'org.mockito:mockito-all:1.10.19' // mockito is no supported by powermock starting from 2.0.21-beta
     testCompile ('org.powermock:powermock-api-mockito:1.6.2') {
         exclude module: 'hamcrest-core'
         exclude module: 'objenesis'
