@@ -4,143 +4,49 @@ import android.os.Bundle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
+import nucleus.presenter.delivery.DeliverFirst;
+import nucleus.presenter.delivery.DeliverLatestCache;
+import nucleus.presenter.delivery.DeliverReply;
+import nucleus.presenter.delivery.Delivery;
 import rx.Observable;
 import rx.Subscription;
+import rx.functions.Action1;
+import rx.functions.Action2;
 import rx.functions.Func0;
-import rx.internal.util.SubscriptionList;
 import rx.subjects.BehaviorSubject;
+import rx.subscriptions.CompositeSubscription;
 
 /**
  * This is an extension of {@link nucleus.presenter.Presenter} which provides RxJava functionality.
  *
- * @param <ViewType> a type of view
+ * @param <View> a type of view
  */
-public class RxPresenter<ViewType> extends Presenter<ViewType> {
+public class RxPresenter<View> extends Presenter<View> {
 
     private static final String REQUESTED_KEY = RxPresenter.class.getName() + "#requested";
 
-    private ArrayList<Integer> requested = new ArrayList<>();
-    private HashMap<Integer, Func0<Subscription>> factories = new HashMap<>();
-    private HashMap<Integer, Subscription> restartableSubscriptions = new HashMap<>();
+    private final BehaviorSubject<View> view = BehaviorSubject.create();
+    private final CompositeSubscription subscriptions = new CompositeSubscription();
 
-    private BehaviorSubject<Boolean> viewStatusSubject = BehaviorSubject.create();
-    private SubscriptionList subscriptions = new SubscriptionList();
+    private final HashMap<Integer, Func0<Subscription>> restartables = new HashMap<>();
+    private final HashMap<Integer, Subscription> restartableSubscriptions = new HashMap<>();
+    private final ArrayList<Integer> requested = new ArrayList<>();
 
     /**
-     * Returns an observable that emits current status of a view.
-     * True - a view is attached, False - a view is detached.
+     * Returns an observable that emits the current attached view during {@link #onTakeView(Object)}
+     * and null during {@link #onDropView()}.
      *
-     * @return an observable that emits current status of a view.
+     * @return an observable that emits the current attached view or null.
      */
-    public Observable<Boolean> viewStatus() {
-        return viewStatusSubject;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void onCreate(Bundle savedState) {
-        if (savedState != null)
-            requested = savedState.getIntegerArrayList(REQUESTED_KEY);
-        viewStatusSubject.onNext(false);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        for (Subscription subs : restartableSubscriptions.values())
-            subs.unsubscribe();
-        viewStatusSubject.onCompleted();
-        subscriptions.unsubscribe();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void onSave(Bundle state) {
-        super.onSave(state);
-        for (int i = requested.size() - 1; i >= 0; i--) {
-            Integer restartableId = requested.get(i);
-            if (restartableSubscriptions.get(restartableId).isUnsubscribed()) {
-                requested.remove(i);
-                restartableSubscriptions.remove(restartableId);
-            }
-        }
-        state.putIntegerArrayList(REQUESTED_KEY, requested);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void onTakeView(ViewType view) {
-        super.onTakeView(view);
-        viewStatusSubject.onNext(true);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void onDropView() {
-        super.onDropView();
-        viewStatusSubject.onNext(false);
-    }
-
-    /**
-     * A restartable is any RxJava query/request that can be started (subscribed) and
-     * should be automatically restarted (re-subscribed) after a process restart.
-     * <p/>
-     * Registers a factory for a restartable. Re-subscribes the restartable after a process restart.
-     *
-     * @param restartableId id of a restartable.
-     * @param factory       a factory that will create an actual rxjava subscription when requested.
-     */
-    public void registerRestartable(int restartableId, Func0<Subscription> factory) {
-        factories.put(restartableId, factory);
-        if (requested.contains(restartableId))
-            restartableSubscriptions.put(restartableId, factories.get(restartableId).call());
-    }
-
-    /**
-     * Subscribes (runs) a restartable using a factory method provided with {@link #registerRestartable}.
-     * If a presenter gets lost during a process restart while a restartable is still
-     * subscribed, the restartable will be restarted on next {@link #registerRestartable} call.
-     * <p/>
-     * If the restartable is already subscribed then it will be unsubscribed first.
-     * <p/>
-     * The restartable will be unsubscribed during {@link #onDestroy()}
-     *
-     * @param restartableId id of a restartable.
-     */
-    public void subscribeRestartable(int restartableId) {
-        unsubscribeRestartable(restartableId);
-        requested.add(restartableId);
-        restartableSubscriptions.put(restartableId, factories.get(restartableId).call());
-    }
-
-    /**
-     * Unsubscribes a restartable
-     *
-     * @param restartableId id of a restartable.
-     */
-    public void unsubscribeRestartable(int restartableId) {
-        if (restartableSubscriptions.containsKey(restartableId)) {
-            restartableSubscriptions.get(restartableId).unsubscribe();
-            restartableSubscriptions.remove(restartableId);
-        }
-        requested.remove((Integer)restartableId);
+    public Observable<View> view() {
+        return view;
     }
 
     /**
      * Registers a subscription to automatically unsubscribe it during onDestroy.
-     * See {@link SubscriptionList#add(Subscription) for details.}
+     * See {@link CompositeSubscription#add(Subscription) for details.}
      *
      * @param subscription a subscription to add.
      */
@@ -150,7 +56,7 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
 
     /**
      * Removes and unsubscribes a subscription that has been registered with {@link #add} previously.
-     * See {@link SubscriptionList#remove(Subscription) for details.}
+     * See {@link CompositeSubscription#remove(Subscription)} for details.
      *
      * @param subscription a subscription to remove.
      */
@@ -159,74 +65,131 @@ public class RxPresenter<ViewType> extends Presenter<ViewType> {
     }
 
     /**
-     * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on application's main thread.
-     * <p/>
-     * Use this operator if you need to deliver *all* emissions to a view, in example when you're sending items
-     * into adapter one by one.
+     * A restartable is any RxJava observable that can be requested (subscribed) and
+     * should be automatically restarted (re-subscribed) after a process restart if
+     * it was still subscribed at the moment of saving presenter's state.
      *
-     * @param <T> a type of onNext value.
-     * @return the delaying operator.
+     * Registers a factory. Re-subscribes the restartable after the process restart.
+     *
+     * @param restartableId id of the restartable
+     * @param factory       factory of the restartable
      */
-    public <T> Observable.Transformer<T, T> deliver() {
-        return new Observable.Transformer<T, T>() {
-            @Override
-            public Observable<T> call(Observable<T> observable) {
-                return observable.lift(OperatorSemaphore.<T>semaphore(viewStatus()));
-            }
-        };
+    public void restartable(int restartableId, Func0<Subscription> factory) {
+        restartables.put(restartableId, factory);
+        if (requested.contains(restartableId))
+            start(restartableId);
     }
 
     /**
-     * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on application's main thread.
-     * <p/>
-     * If this transformer receives a next value while the previous value has not been delivered, the
-     * previous value will be dropped.
-     * <p/>
-     * Use this operator when you need to show updatable data.
+     * Starts the given restartable.
      *
-     * @param <T> a type of onNext value.
-     * @return the delaying operator.
+     * @param restartableId id of the restartable
      */
-    public <T> Observable.Transformer<T, T> deliverLatest() {
-        return new Observable.Transformer<T, T>() {
-            @Override
-            public Observable<T> call(Observable<T> observable) {
-                return observable.lift(OperatorSemaphore.<T>semaphoreLatest(viewStatus()));
-            }
-        };
+    public void start(int restartableId) {
+        stop(restartableId);
+        requested.add(restartableId);
+        restartableSubscriptions.put(restartableId, restartables.get(restartableId).call());
     }
 
     /**
-     * Returns a transformer that will delay onNext, onError and onComplete emissions unless a view become available.
-     * getView() is guaranteed to be != null during all emissions. This transformer can only be used on application's main thread.
-     * <p/>
-     * If the transformer receives a next value while the previous value has not been delivered, the
-     * previous value will be dropped.
-     * <p/>
-     * The transformer will duplicate the latest onNext emission in case if a view has been reattached.
-     * <p/>
-     * This operator ignores onComplete emission and never sends one.
-     * <p/>
-     * Use this operator when you need to show updatable data that needs to be cached in memory.
+     * Unsubscribes a restartable
      *
-     * @param <T> a type of onNext value.
-     * @return the delaying operator.
+     * @param restartableId id of a restartable.
      */
-    public <T> Observable.Transformer<T, T> deliverLatestCache() {
-        return new Observable.Transformer<T, T>() {
+    public void stop(int restartableId) {
+        requested.remove((Integer)restartableId);
+        Subscription subscription = restartableSubscriptions.get(restartableId);
+        if (subscription != null)
+            subscription.unsubscribe();
+    }
+
+    public <T> void restartableFirst(int restartableId, Func0<Observable<T>> observableFactory,
+        Action2<View, T> onNext, Action2<View, Throwable> onError) {
+
+        restartable(restartableId, observableFactory, new DeliverFirst<View, T>(view), onNext, onError);
+    }
+
+    public <T> void restartableCache(int restartableId, Func0<Observable<T>> observableFactory,
+        Action2<View, T> onNext, Action2<View, Throwable> onError) {
+
+        restartable(restartableId, observableFactory, new DeliverLatestCache<View, T>(view), onNext, onError);
+    }
+
+    public <T> void restartableReplay(int restartableId, Func0<Observable<T>> observableFactory,
+        Action2<View, T> onNext, Action2<View, Throwable> onError) {
+
+        restartable(restartableId, observableFactory, new DeliverReply<View, T>(view), onNext, onError);
+    }
+
+    public <T> void restartable(final int restartableId, final Func0<Observable<T>> observableFactory,
+        final Observable.Transformer<T, Delivery<View, T>> transformer,
+        final Action2<View, T> onNext, final Action2<View, Throwable> onError) {
+
+        restartable(restartableId, new Func0<Subscription>() {
             @Override
-            public Observable<T> call(Observable<T> observable) {
-                return observable.lift(OperatorSemaphore.<T>semaphoreLatestCache(viewStatus()));
+            public Subscription call() {
+                return observableFactory.call()
+                    .compose(transformer)
+                    .subscribe(new Action1<Delivery<View, T>>() {
+                        @Override
+                        public void call(Delivery<View, T> delivery) {
+                            delivery.split(onNext, onError);
+                        }
+                    });
             }
-        };
+        });
     }
 
     /**
-     * @hide testing facility
+     * {@inheritDoc}
      */
-    public boolean viewStatusHasObservers() {
-        return viewStatusSubject.hasObservers();
+    @Override
+    public void onCreate(Bundle savedState) {
+        if (savedState != null)
+            requested.addAll(savedState.getIntegerArrayList(REQUESTED_KEY));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        view.onCompleted();
+        subscriptions.unsubscribe();
+        for (Map.Entry<Integer, Subscription> entry : restartableSubscriptions.entrySet())
+            entry.getValue().unsubscribe();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onSave(Bundle state) {
+        super.onSave(state);
+        for (int i = requested.size() - 1; i >= 0; i--) {
+            Subscription subscription = restartableSubscriptions.get(i);
+            if (subscription != null && subscription.isUnsubscribed())
+                requested.remove((Integer)i);
+        }
+        state.putIntegerArrayList(REQUESTED_KEY, requested);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onTakeView(View view) {
+        super.onTakeView(view);
+        this.view.onNext(view);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onDropView() {
+        super.onDropView();
+        view.onNext(null);
     }
 }

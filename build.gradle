@@ -18,4 +18,6 @@ ext {
     targetSdkVersion = 22
     compileSdkVersion = 22
     buildToolsVersion = '22.0.1'
+    supportLibraryVersion = '22.2.0'
+    rxVersion = '1.0.12'
 }

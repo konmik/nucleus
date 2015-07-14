@@ -4,28 +4,25 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.test.UiThreadTest;
 
-import junit.framework.Assert;
-
 import org.mockito.ArgumentMatcher;
-import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 import nucleus.BaseActivityTest;
 import nucleus.factory.PresenterFactory;
-import nucleus.manager.PresenterManager;
 import nucleus.presenter.Presenter;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.isNull;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 // can't share this class because of circular dependencies, so copy/paste it to each module
 public abstract class BaseViewTest<ActivityType extends Activity> extends BaseActivityTest<ActivityType> {
-
-    private Presenter mockPresenter;
-    private PresenterManager mockPresenterManager;
 
     public BaseViewTest(Class<ActivityType> activityClass) {
         super(activityClass);
@@ -37,10 +34,6 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
             @Override
             public void run() {
                 dexmakerWorkaround();
-                mockPresenter = Mockito.mock(Presenter.class);
-                mockPresenterManager = Mockito.mock(PresenterManager.class);
-                when(mockPresenterManager.provide(any(PresenterFactory.class), any(Bundle.class))).thenReturn(mockPresenter);
-                PresenterManager.setInstance(mockPresenterManager);
             }
         });
         super.setUp();
@@ -48,19 +41,16 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
 
     @UiThreadTest
     public void testInit() {
-        Assert.assertEquals(mockPresenter, getViewPresenter());
-        assertProvideOnce();
-        verify(mockPresenter, times(1)).takeView(getView());
-    }
-
-    protected void assertProvideOnce() {
-        verify(mockPresenterManager, times(1)).provide(any(PresenterFactory.class), isNull(Bundle.class));
+        assertNotNull(getView().getPresenter());
+        verify(getView().getPresenter(), times(1)).onTakeView(getView());
     }
 
     public void testDestroy() throws Throwable {
+        final AtomicReference<Presenter> presenterRef = new AtomicReference<>();
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
+                presenterRef.set(getView().getPresenter());
                 getActivity().finish();
             }
         });
@@ -68,7 +58,7 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                verify(mockPresenterManager, times(1)).destroy(mockPresenter);
+                verify(presenterRef.get(), times(1)).onDestroy();
             }
         });
     }
@@ -79,21 +69,33 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
     }
 
     public void testRestart() throws Throwable {
+        final AtomicReference<Presenter> firstPresenter = new AtomicReference<>();
+        final AtomicReference<PresenterFactory> firstPresenterFactory = new AtomicReference<>();
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 Bundle state = new Bundle();
                 state.putInt("1", 1);
-                when(mockPresenterManager.save(any(Presenter.class))).thenReturn(state);
+                doAnswer(new Answer() {
+                    @Override
+                    public Object answer(InvocationOnMock invocation) throws Throwable {
+                        Bundle bundle = (Bundle)invocation.getArguments()[1];
+                        bundle.putInt("1", 1);
+                        return null;
+                    }
+                }).when(getView().getPresenterFactory())
+                    .savePresenter(eq(getView().getPresenter()), any(Bundle.class));
+                firstPresenter.set(getView().getPresenter());
+                firstPresenterFactory.set(getView().getPresenterFactory());
             }
         });
         restartActivity();
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                verify(mockPresenter, times(1)).takeView(getView());
-                verify(mockPresenterManager, times(1)).save(mockPresenter);
-                verify(mockPresenterManager, times(1)).provide(any(PresenterFactory.class), argThat(new ArgumentMatcher<Bundle>() {
+                verify(getView().getPresenter(), times(1)).onTakeView(getView());
+                verify(firstPresenterFactory.get(), times(1)).savePresenter(eq(firstPresenter.get()), any(Bundle.class));
+                verify(getView().getPresenterFactory(), times(1)).providePresenter(argThat(new ArgumentMatcher<Bundle>() {
                     @Override
                     public boolean matches(Object o) {
                         return o != null && ((Bundle)o).getInt("1") == 1;
@@ -103,7 +105,5 @@ public abstract class BaseViewTest<ActivityType extends Activity> extends BaseAc
         });
     }
 
-    protected abstract Object getView();
-
-    protected abstract Presenter getViewPresenter();
+    protected abstract ViewWithPresenter getView();
 }

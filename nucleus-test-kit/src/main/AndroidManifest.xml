@@ -1,13 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="info.android15.nucleustestkit">
 
     <application android:allowBackup="true">
-        <activity android:name="nucleus.DefaultOrientationActivity" />
-        <activity android:name="nucleus.TestActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>

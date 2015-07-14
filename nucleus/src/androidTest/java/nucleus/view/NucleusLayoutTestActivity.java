@@ -6,6 +6,7 @@ import android.content.ContextWrapper;
 import android.os.Bundle;
 import android.view.ViewGroup;
 
+import nucleus.PresenterFactoryMock;
 import nucleus.factory.RequiresPresenter;
 import nucleus.presenter.Presenter;
 
@@ -30,7 +31,9 @@ public class NucleusLayoutTestActivity extends Activity {
 
         // Create a dummy wrapper to guarantee that NucleusLayout properly
         // unwraps contexts before casting them to activities
-        setContentView(view = new TestView(new ContextWrapper(this)));
+        view = new TestView(new ContextWrapper(this));
+        view.setPresenterFactory(PresenterFactoryMock.mock());
+        setContentView(view);
     }
 
     @Override

@@ -1,9 +1,0 @@
-<manifest
-    package="info.android15.nucleus_support_tests"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <application>
-        <activity android:name="nucleus.view.NucleusFragmentActivityTestActivity" />
-        <activity android:name="nucleus.view.NucleusSupportFragmentTestActivity" />
-    </application>
-</manifest>

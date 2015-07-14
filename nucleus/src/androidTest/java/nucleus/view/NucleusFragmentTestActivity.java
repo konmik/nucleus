@@ -3,6 +3,7 @@ package nucleus.view;
 import android.app.Activity;
 import android.os.Bundle;
 
+import nucleus.PresenterFactoryMock;
 import nucleus.factory.RequiresPresenter;
 import nucleus.presenter.Presenter;
 
@@ -20,5 +21,10 @@ public class NucleusFragmentTestActivity extends Activity {
 
     @RequiresPresenter(Presenter.class)
     public static class TestFragment extends NucleusFragment {
+        @Override
+        public void onCreate(Bundle bundle) {
+            setPresenterFactory(PresenterFactoryMock.mock());
+            super.onCreate(bundle);
+        }
     }
 }

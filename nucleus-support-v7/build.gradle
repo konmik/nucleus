@@ -19,11 +19,10 @@ configurations {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:22.2.0'
-    compile 'info.android15.nucleus:nucleus:' + VERSION_NAME
-    compileJavadoc 'com.android.support:appcompat-v7:22.2.0'
-    compileJavadoc 'info.android15.nucleus:nucleus:' + VERSION_NAME
-    androidTestCompile project(':nucleus-test-kit')
+    compile "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
+    compile "info.android15.nucleus:nucleus:$VERSION_NAME"
+    compileJavadoc "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
+    compileJavadoc "info.android15.nucleus:nucleus:$VERSION_NAME"
 }
 
 apply from: '../gradle/gradle-mvn-push.gradle'
