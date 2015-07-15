@@ -13,9 +13,9 @@ public class PresenterTest {
     public void testOnDestroy() throws Exception {
         Presenter.OnDestroyListener listener = mock(Presenter.OnDestroyListener.class);
         Presenter presenter = new Presenter();
-        presenter.onCreate(null);
+        presenter.create(null);
         presenter.addOnDestroyListener(listener);
-        presenter.onDestroy();
+        presenter.destroy();
         verify(listener, times(1)).onDestroy();
         verifyNoMoreInteractions(listener);
     }
@@ -24,10 +24,10 @@ public class PresenterTest {
     public void testOnNoDestroy() throws Exception {
         Presenter.OnDestroyListener listener = mock(Presenter.OnDestroyListener.class);
         Presenter presenter = new Presenter();
-        presenter.onCreate(null);
+        presenter.create(null);
         presenter.addOnDestroyListener(listener);
         presenter.removeOnDestroyListener(listener);
-        presenter.onDestroy();
+        presenter.destroy();
         verifyNoMoreInteractions(listener);
     }
 }

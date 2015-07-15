@@ -4,7 +4,6 @@ import android.os.Bundle;
 
 import org.junit.Test;
 
-import mocks.BundleMock;
 import nucleus.presenter.Presenter;
 
 import static org.junit.Assert.assertEquals;

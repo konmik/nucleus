@@ -1,5 +1,7 @@
 package nucleus.presenter;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
@@ -9,69 +11,76 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * This is a base class for all presenters. Subclasses can override
  * {@link #onCreate}, {@link #onDestroy}, {@link #onSave},
  * {@link #onTakeView}, {@link #onDropView}.
+ * <p/>
+ * {@link Presenter.OnDestroyListener} can also be used by external classes
+ * to be notified about the need of freeing resources.
  *
- * A developer should normally not use this class directly, use {@link RxPresenter} instead.
- *
- * @param <ViewType> a type of view to receive with {@link #onTakeView}}.
+ * @param <View> a type of view to return with {@link #getView()}.
  */
-public class Presenter<ViewType> {
+public class Presenter<View> {
 
+    @Nullable private View view;
     private CopyOnWriteArrayList<OnDestroyListener> onDestroyListeners = new CopyOnWriteArrayList<>();
+
+    /**
+     * This method is called after presenter construction.
+     *
+     * This method is intended for overriding.
+     *
+     * @param savedState If the presenter is being re-instantiated after a process restart then this Bundle
+     *                   contains the data it supplied in {@link #onSave}.
+     */
+    protected void onCreate(@Nullable Bundle savedState) {
+    }
+
+    /**
+     * This method is being called when a user leaves view.
+     *
+     * This method is intended for overriding.
+     */
+    protected void onDestroy() {
+    }
+
+    /**
+     * A returned state is the state that will be passed to {@link #onCreate} for a new presenter instance after a process restart.
+     *
+     * This method is intended for overriding.
+     *
+     * @param state a non-null bundle which should be used to put presenter's state into.
+     */
+    protected void onSave(Bundle state) {
+    }
+
+    /**
+     * This method is being called when a view gets attached to it.
+     * Normally this happens during {@link Activity#onResume()}, {@link android.app.Fragment#onResume()}
+     * and {@link android.view.View#onAttachedToWindow()}.
+     *
+     * This method is intended for overriding.
+     *
+     * @param view a view that should be taken
+     */
+    protected void onTakeView(View view) {
+    }
+
+    /**
+     * This method is being called when a view gets detached from the presenter.
+     * Normally this happens during {@link Activity#onPause()} ()}, {@link Fragment#onPause()} ()}
+     * and {@link android.view.View#onDetachedFromWindow()}.
+     *
+     * This method is intended for overriding.
+     */
+    protected void onDropView() {
+    }
 
     /**
      * A callback to be invoked when a presenter is about to be destroyed.
      */
     public interface OnDestroyListener {
         /**
-         * Called before {@link Presenter#onDestroy}.
+         * Called before {@link Presenter#onDestroy()}.
          */
         void onDestroy();
-    }
-
-    /**
-     * This method is intended for overriding.
-     * It is being called by {@link nucleus.factory.PresenterFactory}
-     * method after construction completes.
-     *
-     * @param savedState If the presenter is being re-instantiated after a process restart then this Bundle
-     *                   contains the data it supplied in {@link #onSave}.
-     */
-    public void onCreate(@Nullable Bundle savedState) {
-    }
-
-    /**
-     * This method is intended for overriding.
-     * This method should be called by View during it's final destruction.
-     * The method can also be called by a view manager in case if the presenter will never become attached again.
-     */
-    public void onDestroy() {
-        for (OnDestroyListener listener : onDestroyListeners)
-            listener.onDestroy();
-    }
-
-    /**
-     * This method is intended for overriding.
-     * The returned state is the state that will be passed to {@link #onCreate} for a new presenter instance after a process restart.
-     *
-     * @param state a non-null bundle which should be used to put presenter's state into.
-     */
-    public void onSave(Bundle state) {
-    }
-
-    /**
-     * This method is intended for overriding.
-     * It is being called by parent presenter class, when a view
-     * calls {@link nucleus.presenter.Presenter#onTakeView}
-     *
-     * @param view a view that should be taken
-     */
-    public void onTakeView(ViewType view) {
-    }
-
-    /**
-     * This method is intended for overriding. Use it to be notified about a view is going to be destroyed.
-     */
-    public void onDropView() {
     }
 
     /**
@@ -90,5 +99,56 @@ public class Presenter<ViewType> {
      */
     public void removeOnDestroyListener(OnDestroyListener listener) {
         onDestroyListeners.remove(listener);
+    }
+
+    /**
+     * Returns a current view attached to the presenter or null.
+     *
+     * @return a current attached view.
+     */
+    @Nullable
+    public View getView() {
+        return view;
+    }
+
+    /**
+     * Initializes the presenter.
+     */
+    public void create(Bundle bundle) {
+        onCreate(bundle);
+    }
+
+    /**
+     * Destroys the presenter, calling all {@link Presenter.OnDestroyListener} callbacks.
+     */
+    public void destroy() {
+        for (OnDestroyListener listener : onDestroyListeners)
+            listener.onDestroy();
+        onDestroy();
+    }
+
+    /**
+     * Saves the presenter.
+     */
+    public void save(Bundle state) {
+        onSave(state);
+    }
+
+    /**
+     * Attaches a view to the presenter.
+     *
+     * @param view a view to attach.
+     */
+    public void takeView(View view) {
+        this.view = view;
+        onTakeView(view);
+    }
+
+    /**
+     * Detaches the presenter from a view.
+     */
+    public void dropView() {
+        onDropView();
+        this.view = null;
     }
 }

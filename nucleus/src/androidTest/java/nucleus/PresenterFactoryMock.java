@@ -4,8 +4,8 @@ import android.os.Bundle;
 
 import org.mockito.Mockito;
 
-import nucleus.factory.PresenterFactory;
 import nucleus.presenter.Presenter;
+import nucleus.factory.PresenterFactory;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;

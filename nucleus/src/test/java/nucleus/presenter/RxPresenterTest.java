@@ -50,7 +50,7 @@ public class RxPresenterTest {
     @Test
     public void testRestartable() throws Exception {
         RxPresenter presenter = new RxPresenter();
-        presenter.onCreate(null);
+        presenter.create(null);
 
         Func0<Subscription> restartable = mock(Func0.class);
         Subscription subscription = mock(Subscription.class);
@@ -69,7 +69,7 @@ public class RxPresenterTest {
         presenter.onSave(bundle);
 
         presenter = new RxPresenter();
-        presenter.onCreate(bundle);
+        presenter.create(bundle);
         presenter.restartable(1, restartable);
 
         verify(restartable, times(2)).call();
@@ -113,7 +113,7 @@ public class RxPresenterTest {
         Subscription subscription = mock(Subscription.class);
 
         RxPresenter presenter = new RxPresenter();
-        presenter.onCreate(null);
+        presenter.create(null);
 
         when(restartable.call()).thenReturn(subscription);
         when(subscription.isUnsubscribed()).thenReturn(true);

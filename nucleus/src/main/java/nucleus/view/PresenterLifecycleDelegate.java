@@ -37,14 +37,14 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
     }
 
     public P getPresenter() {
-        if (presenterFactory != null && presenter == null) {
-            if (bundle != null)
+        if (presenterFactory != null) {
+            if (presenter == null && bundle != null)
                 presenter = PresenterStorage.INSTANCE.get(bundle.getString(PRESENTER_ID_KEY));
 
             if (presenter == null) {
                 presenter = presenterFactory.createPresenter();
                 PresenterStorage.INSTANCE.add(presenter);
-                presenter.onCreate(bundle == null ? null : bundle.getBundle(PRESENTER_KEY));
+                presenter.create(bundle == null ? null : bundle.getBundle(PRESENTER_KEY));
             }
             bundle = null;
         }
@@ -55,7 +55,7 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
         Bundle bundle = new Bundle();
         if (presenterFactory != null && presenter != null) {
             Bundle presenterBundle = new Bundle();
-            presenter.onSave(presenterBundle);
+            presenter.save(presenterBundle);
             bundle.putBundle(PRESENTER_KEY, presenterBundle);
             bundle.putString(PRESENTER_ID_KEY, PresenterStorage.INSTANCE.getPresenterId(presenter));
         }
@@ -72,14 +72,14 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
         getPresenter();
         if (presenter != null)
             //noinspection unchecked
-            presenter.onTakeView(view);
+            presenter.takeView(view);
     }
 
     public void onPause(boolean destroy) {
         if (presenter != null) {
-            presenter.onDropView();
+            presenter.dropView();
             if (destroy) {
-                presenter.onDestroy();
+                presenter.destroy();
                 presenter = null;
             }
         }

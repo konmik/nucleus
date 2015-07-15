@@ -19,7 +19,7 @@ public class PresenterStorageTest {
 
         assertEquals(presenter, PresenterStorage.INSTANCE.get(id));
 
-        presenter.onDestroy();
+        presenter.destroy();
         assertNull(PresenterStorage.INSTANCE.get(id));
     }
 

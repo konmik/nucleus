@@ -1,1 +1,1 @@
-include ':nucleus', ':nucleus-support-v7', ':nucleus-support-v4'//, ':nucleus-example'//, ':nucleusexampleshort' //':nucleus-test-kit', //, ':nucleus-example-with-tests', ':nucleus-example-with-fragments',
+include ':nucleus', ':nucleus-support-v7', ':nucleus-support-v4', ':nucleus-example'////, ':nucleusexampleshort' //':nucleus-test-kit', //, ':nucleus-example-with-tests', ':nucleus-example-with-fragments',
