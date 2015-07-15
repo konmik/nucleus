@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 public class PresenterFactoryMock {
     public static PresenterFactory mock(Presenter presenter) {
         PresenterFactory mock = Mockito.mock(PresenterFactory.class);
-        when(mock.providePresenter(any(Bundle.class))).thenReturn(presenter);
+        when(mock.createPresenter(any(Bundle.class))).thenReturn(presenter);
         return mock;
     }
 

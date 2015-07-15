@@ -59,7 +59,7 @@ public class NucleusActivityTest {
         when(mockDelegate.getPresenter()).thenReturn(mockPresenter);
 
         mockFactory = mock(ReflectionPresenterFactory.class);
-        when(mockFactory.providePresenter(null)).thenReturn(mockPresenter);
+        when(mockFactory.createPresenter()).thenReturn(mockPresenter);
 
         PowerMockito.mockStatic(ReflectionPresenterFactory.class);
         when(ReflectionPresenterFactory.fromViewClass(any(Class.class))).thenReturn(mockFactory);

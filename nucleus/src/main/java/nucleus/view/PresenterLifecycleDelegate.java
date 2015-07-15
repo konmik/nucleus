@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import nucleus.factory.PresenterFactory;
+import nucleus.factory.PresenterStorage;
 import nucleus.presenter.Presenter;
 
 /**
@@ -13,9 +14,12 @@ import nucleus.presenter.Presenter;
  */
 public final class PresenterLifecycleDelegate<P extends Presenter> {
 
+    private static final String PRESENTER_KEY = "presenter";
+    private static final String PRESENTER_ID_KEY = "presenter_id";
+
     @Nullable private PresenterFactory<P> presenterFactory;
     @Nullable private P presenter;
-    @Nullable private Bundle presenterState;
+    @Nullable private Bundle bundle;
 
     public PresenterLifecycleDelegate(@Nullable PresenterFactory<P> presenterFactory) {
         this.presenterFactory = presenterFactory;
@@ -33,24 +37,35 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
     }
 
     public P getPresenter() {
-        if (presenter == null && presenterFactory != null) {
-            presenter = presenterFactory.providePresenter(presenterState);
-            presenterState = null;
+        if (presenterFactory != null && presenter == null) {
+            if (bundle != null)
+                presenter = PresenterStorage.INSTANCE.get(bundle.getString(PRESENTER_ID_KEY));
+
+            if (presenter == null) {
+                presenter = presenterFactory.createPresenter();
+                PresenterStorage.INSTANCE.add(presenter);
+                presenter.onCreate(bundle == null ? null : bundle.getBundle(PRESENTER_KEY));
+            }
+            bundle = null;
         }
         return presenter;
     }
 
     public Bundle onSaveInstanceState() {
-        Bundle presenterBundle = new Bundle();
-        if (presenterFactory != null && presenter != null)
-            presenterFactory.savePresenter(presenter, presenterBundle);
-        return presenterBundle;
+        Bundle bundle = new Bundle();
+        if (presenterFactory != null && presenter != null) {
+            Bundle presenterBundle = new Bundle();
+            presenter.onSave(presenterBundle);
+            bundle.putBundle(PRESENTER_KEY, presenterBundle);
+            bundle.putString(PRESENTER_ID_KEY, PresenterStorage.INSTANCE.getPresenterId(presenter));
+        }
+        return bundle;
     }
 
     public void onRestoreInstanceState(Bundle presenterState) {
         if (presenter != null)
             throw new IllegalArgumentException("onRestoreInstanceState() should be called before onResume()");
-        this.presenterState = presenterState;
+        this.bundle = presenterState;
     }
 
     public void onResume(Object view) {
