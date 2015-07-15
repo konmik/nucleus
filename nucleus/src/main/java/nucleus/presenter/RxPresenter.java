@@ -1,6 +1,7 @@
 package nucleus.presenter;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -106,19 +107,19 @@ public class RxPresenter<View> extends Presenter<View> {
     public <T> void restartableFirst(int restartableId, Func0<Observable<T>> observableFactory,
         Action2<View, T> onNext, Action2<View, Throwable> onError) {
 
-        restartable(restartableId, observableFactory, new DeliverFirst<View, T>(view), onNext, onError);
+        restartable(restartableId, observableFactory, this.<T>deliverFirst(), onNext, onError);
     }
 
     public <T> void restartableCache(int restartableId, Func0<Observable<T>> observableFactory,
         Action2<View, T> onNext, Action2<View, Throwable> onError) {
 
-        restartable(restartableId, observableFactory, new DeliverLatestCache<View, T>(view), onNext, onError);
+        restartable(restartableId, observableFactory, this.<T>deliverLatestCache(), onNext, onError);
     }
 
     public <T> void restartableReplay(int restartableId, Func0<Observable<T>> observableFactory,
         Action2<View, T> onNext, Action2<View, Throwable> onError) {
 
-        restartable(restartableId, observableFactory, new DeliverReply<View, T>(view), onNext, onError);
+        restartable(restartableId, observableFactory, this.<T>deliverReply(), onNext, onError);
     }
 
     public <T> void restartable(final int restartableId, final Func0<Observable<T>> observableFactory,
@@ -138,6 +139,31 @@ public class RxPresenter<View> extends Presenter<View> {
                     });
             }
         });
+    }
+
+    public <T> DeliverLatestCache<View, T> deliverLatestCache() {
+        return new DeliverLatestCache<>(view);
+    }
+
+    public <T> DeliverFirst<View, T> deliverFirst() {
+        return new DeliverFirst<>(view);
+    }
+
+    public <T> DeliverReply<View, T> deliverReply() {
+        return new DeliverReply<>(view);
+    }
+
+    public <T> Action1<Delivery<View, T>> split(final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {
+        return new Action1<Delivery<View, T>>() {
+            @Override
+            public void call(Delivery<View, T> delivery) {
+                delivery.split(onNext, onError);
+            }
+        };
+    }
+
+    public <T> Action1<Delivery<View, T>> split(Action2<View, T> onNext) {
+        return split(onNext, null);
     }
 
     /**

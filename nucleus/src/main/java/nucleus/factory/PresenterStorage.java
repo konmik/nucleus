@@ -15,7 +15,7 @@ public enum PresenterStorage {
     private HashMap<Presenter, String> presenterToId = new HashMap<>();
 
     /**
-     * Returns a presenter from saved state or null if such presenter does not exist.
+     * Returns a presenter by id or null if such presenter does not exist.
      *
      * @param id  id of a presenter that has been received by calling {@link #getPresenterId(Presenter)}
      * @param <P> a type of presenter
