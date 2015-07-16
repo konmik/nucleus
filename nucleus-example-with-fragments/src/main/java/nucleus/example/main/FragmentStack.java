@@ -64,6 +64,6 @@ public class FragmentStack {
 
     private void destroyPresenter(Fragment top) {
         if (top instanceof NucleusFragment)
-            ((NucleusFragment)top).destroyPresenter();
+            ((NucleusFragment)top).getPresenter().destroy();
     }
 }

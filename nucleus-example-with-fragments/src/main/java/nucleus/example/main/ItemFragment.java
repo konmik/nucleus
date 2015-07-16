@@ -1,5 +1,6 @@
 package nucleus.example.main;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -22,6 +23,7 @@ public class ItemFragment extends LoggingFragment<MainPresenter> {
     public ItemFragment() {
     }
 
+    @SuppressLint("ValidFragment")
     public ItemFragment(String text) {
         this.text = text;
     }

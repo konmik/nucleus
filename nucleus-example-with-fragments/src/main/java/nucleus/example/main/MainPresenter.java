@@ -6,9 +6,9 @@ import android.support.annotation.NonNull;
 import nucleus.example.base.App;
 import nucleus.example.base.ServerAPI;
 import nucleus.example.logging.LoggingPresenter;
-import rx.Subscription;
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
+import rx.functions.Action2;
 import rx.functions.Func0;
 
 public class MainPresenter extends LoggingPresenter<MainFragment> {
@@ -24,33 +24,36 @@ public class MainPresenter extends LoggingPresenter<MainFragment> {
     private String name = DEFAULT_NAME;
 
     @Override
-    protected void onCreate(Bundle savedState) {
+    public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
 
         if (savedState != null)
             name = savedState.getString(NAME_KEY);
 
-        registerRestartable(REQUEST_ITEMS, new Func0<Subscription>() {
-            @Override
-            public Subscription call() {
-                final String name1 = name;
-                return App.getServerAPI()
-                    .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .compose(MainPresenter.this.<ServerAPI.Response>deliverLatestCache())
-                    .subscribe(new Action1<ServerAPI.Response>() {
-                        @Override
-                        public void call(ServerAPI.Response response) {
-                            getView().onItems(response.items, name1);
-                        }
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable throwable) {
-                            getView().onNetworkError(throwable);
-                        }
-                    });
-            }
-        });
+        restartableCache(REQUEST_ITEMS,
+            new Func0<Observable<ServerAPI.Response>>() {
+                @Override
+                public Observable<ServerAPI.Response> call() {
+                    return App.getServerAPI()
+                        .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
+                        .observeOn(AndroidSchedulers.mainThread());
+                }
+            },
+            new Action2<MainFragment, ServerAPI.Response>() {
+                @Override
+                public void call(MainFragment activity, ServerAPI.Response response) {
+                    activity.onItems(response.items, name);
+                }
+            },
+            new Action2<MainFragment, Throwable>() {
+                @Override
+                public void call(MainFragment activity, Throwable throwable) {
+                    activity.onNetworkError(throwable);
+                }
+            });
+
+        if (savedState == null)
+            start(REQUEST_ITEMS);
     }
 
     @Override
@@ -61,6 +64,6 @@ public class MainPresenter extends LoggingPresenter<MainFragment> {
 
     public void request(String name) {
         this.name = name;
-        subscribeRestartable(REQUEST_ITEMS);
+        start(REQUEST_ITEMS);
     }
 }
