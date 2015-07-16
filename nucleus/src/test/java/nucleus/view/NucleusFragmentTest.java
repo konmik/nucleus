@@ -1,6 +1,7 @@
 package nucleus.view;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.os.Bundle;
 
 import org.junit.Before;
@@ -30,25 +31,23 @@ import static org.powermock.api.support.membermodification.MemberModifier.stub;
 import static org.powermock.api.support.membermodification.MemberModifier.suppress;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({NucleusActivityTest.TestView.class, PresenterLifecycleDelegate.class, ReflectionPresenterFactory.class})
-public class NucleusActivityTest {
+@PrepareForTest({NucleusFragmentTest.TestView.class, PresenterLifecycleDelegate.class, ReflectionPresenterFactory.class})
+public class NucleusFragmentTest {
 
-    public static final Class<?> BASE_VIEW_CLASS = Activity.class;
+    public static final Class<?> BASE_VIEW_CLASS = Fragment.class;
     public static final Class<TestView> VIEW_CLASS = TestView.class;
 
     public static class TestPresenter extends Presenter {
     }
 
     @RequiresPresenter(TestPresenter.class)
-    public static class TestView extends NucleusActivity {
-        @Override
-        protected void onDestroy() {
-            super.onDestroy();
-        }
+    public static class TestView extends NucleusFragment {
     }
 
     public void setUpIsFinishing(boolean b) {
-        stub(method(Activity.class, "isFinishing")).toReturn(b);
+        Activity activity = mock(Activity.class);
+        when(activity.isFinishing()).thenReturn(b);
+        stub(method(BASE_VIEW_CLASS, "getActivity")).toReturn(activity);
     }
 
     private TestPresenter mockPresenter;

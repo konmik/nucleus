@@ -1,12 +1,17 @@
 package nucleus.view;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.widget.FrameLayout;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -25,30 +30,37 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.powermock.api.mockito.PowerMockito.when;
+import static org.powermock.api.support.membermodification.MemberMatcher.constructor;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
 import static org.powermock.api.support.membermodification.MemberModifier.stub;
 import static org.powermock.api.support.membermodification.MemberModifier.suppress;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({NucleusActivityTest.TestView.class, PresenterLifecycleDelegate.class, ReflectionPresenterFactory.class})
-public class NucleusActivityTest {
+@PrepareForTest({NucleusLayoutTest.TestView.class, PresenterLifecycleDelegate.class, ReflectionPresenterFactory.class})
+public class NucleusLayoutTest {
 
-    public static final Class<?> BASE_VIEW_CLASS = Activity.class;
+    public static final Class<?> BASE_VIEW_CLASS = FrameLayout.class;
     public static final Class<TestView> VIEW_CLASS = TestView.class;
 
     public static class TestPresenter extends Presenter {
     }
 
     @RequiresPresenter(TestPresenter.class)
-    public static class TestView extends NucleusActivity {
+    public static class TestView extends NucleusLayout {
+        public TestView() {
+            super(null);
+        }
+
         @Override
-        protected void onDestroy() {
-            super.onDestroy();
+        public boolean isInEditMode() {
+            return false;
         }
     }
 
     public void setUpIsFinishing(boolean b) {
-        stub(method(Activity.class, "isFinishing")).toReturn(b);
+        Activity activity = mock(Activity.class);
+        when(activity.isFinishing()).thenReturn(b);
+        stub(method(BASE_VIEW_CLASS, "getContext")).toReturn(activity);
     }
 
     private TestPresenter mockPresenter;
@@ -58,6 +70,13 @@ public class NucleusActivityTest {
 
     private void setUpPresenter() throws Exception {
         mockPresenter = mock(TestPresenter.class);
+
+        PowerMockito.whenNew(Bundle.class).withNoArguments().thenAnswer(new Answer<Bundle>() {
+            @Override
+            public Bundle answer(InvocationOnMock invocation) throws Throwable {
+                return BundleMock.mock();
+            }
+        });
 
         mockDelegate = mock(PresenterLifecycleDelegate.class);
         PowerMockito.whenNew(PresenterLifecycleDelegate.class).withAnyArguments().thenReturn(mockDelegate);
@@ -75,18 +94,17 @@ public class NucleusActivityTest {
         setUpPresenter();
 
         tested = spy(VIEW_CLASS);
-        suppress(method(BASE_VIEW_CLASS, "onCreate", Bundle.class));
-        suppress(method(BASE_VIEW_CLASS, "onSaveInstanceState", Bundle.class));
-        suppress(method(BASE_VIEW_CLASS, "onResume"));
-        suppress(method(BASE_VIEW_CLASS, "onPause"));
-        suppress(method(BASE_VIEW_CLASS, "onDestroy"));
+        suppress(constructor(BASE_VIEW_CLASS, Context.class));
+        suppress(method(BASE_VIEW_CLASS, "onRestoreInstanceState", Parcelable.class));
+        suppress(method(BASE_VIEW_CLASS, "onSaveInstanceState"));
+        suppress(method(BASE_VIEW_CLASS, "onAttachedToWindow"));
+        suppress(method(BASE_VIEW_CLASS, "onDetachedFromWindow"));
 
         setUpIsFinishing(false);
     }
 
     @Test
     public void testCreation() throws Exception {
-        tested.onCreate(null);
         assertEquals(mockPresenter, tested.getPresenter());
         PowerMockito.verifyStatic(times(1));
         ReflectionPresenterFactory.fromViewClass(argThat(new ArgumentMatcher<Class<?>>() {
@@ -101,14 +119,12 @@ public class NucleusActivityTest {
 
     @Test
     public void testLifecycle() throws Exception {
-        tested.onCreate(null);
-        tested.onResume();
+        tested.onAttachedToWindow();
         verify(mockDelegate, times(1)).onResume(tested);
-        tested.onPause();
+        tested.onDetachedFromWindow();
         verify(mockDelegate, times(1)).onPause(false);
-        tested.onSaveInstanceState(BundleMock.mock());
+        tested.onSaveInstanceState();
         verify(mockDelegate, times(1)).onSaveInstanceState();
-        tested.onDestroy();
         verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
     }
 
@@ -117,22 +133,17 @@ public class NucleusActivityTest {
         Bundle presenterBundle = BundleMock.mock();
         when(mockDelegate.onSaveInstanceState()).thenReturn(presenterBundle);
 
-        tested.onCreate(null);
-
-        Bundle state = BundleMock.mock();
-        tested.onSaveInstanceState(state);
+        Bundle state = (Bundle)tested.onSaveInstanceState();
 
         tested = spy(TestView.class);
-        tested.onCreate(state);
+        tested.onRestoreInstanceState(state);
         verify(mockDelegate).onRestoreInstanceState(presenterBundle);
     }
 
     @Test
     public void testDestroy() throws Exception {
-        tested.onCreate(null);
         setUpIsFinishing(true);
-        tested.onPause();
-        tested.onDestroy();
+        tested.onDetachedFromWindow();
         verify(mockDelegate, times(1)).onPause(true);
     }
 }

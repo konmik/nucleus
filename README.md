@@ -5,7 +5,7 @@ Nucleus
 
 Nucleus is an Android library, which helps to use the [Model-View-Presenter](http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter) pattern.
 
-[Introduction article](http://konmik.github.io/introduction-to-model-view-presenter-on-android.html)
+[Introduction article](https://github.com/konmik/konmik.github.io/wiki/Introduction-to-Model-View-Presenter-on-Android)
 
 [Javadoc](http://konmik.github.io/nucleus/)
 

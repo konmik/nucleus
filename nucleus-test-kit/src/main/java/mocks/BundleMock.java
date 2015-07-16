@@ -2,7 +2,6 @@ package mocks;
 
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.os.PersistableBundle;
 import android.util.SparseArray;
 
 import org.mockito.Mockito;
@@ -12,7 +11,6 @@ import org.mockito.stubbing.Answer;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -111,7 +109,7 @@ public final class BundleMock {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                return BundleMock.class.getSimpleName() + "{map=" + map.toString() + "}" ;
+                return BundleMock.class.getSimpleName() + "{map=" + map.toString() + "}";
             }
         }).when(bundle).toString();
 
