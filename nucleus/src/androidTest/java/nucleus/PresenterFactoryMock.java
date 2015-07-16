@@ -4,8 +4,8 @@ import android.os.Bundle;
 
 import org.mockito.Mockito;
 
-import nucleus.factory.PresenterFactory;
 import nucleus.presenter.Presenter;
+import nucleus.factory.PresenterFactory;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 public class PresenterFactoryMock {
     public static PresenterFactory mock(Presenter presenter) {
         PresenterFactory mock = Mockito.mock(PresenterFactory.class);
-        when(mock.providePresenter(any(Bundle.class))).thenReturn(presenter);
+        when(mock.createPresenter(any(Bundle.class))).thenReturn(presenter);
         return mock;
     }
 

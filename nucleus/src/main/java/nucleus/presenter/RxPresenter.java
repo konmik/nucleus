@@ -1,6 +1,7 @@
 package nucleus.presenter;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +20,7 @@ import rx.subjects.BehaviorSubject;
 import rx.subscriptions.CompositeSubscription;
 
 /**
- * This is an extension of {@link nucleus.presenter.Presenter} which provides RxJava functionality.
+ * This is an extension of {@link Presenter} which provides RxJava functionality.
  *
  * @param <View> a type of view
  */
@@ -38,7 +39,7 @@ public class RxPresenter<View> extends Presenter<View> {
      * Returns an observable that emits the current attached view during {@link #onTakeView(Object)}
      * and null during {@link #onDropView()}.
      *
-     * @return an observable that emits the current attached view or null.
+     * @return an observable that emits the attached view or null.
      */
     public Observable<View> view() {
         return view;
@@ -106,19 +107,19 @@ public class RxPresenter<View> extends Presenter<View> {
     public <T> void restartableFirst(int restartableId, Func0<Observable<T>> observableFactory,
         Action2<View, T> onNext, Action2<View, Throwable> onError) {
 
-        restartable(restartableId, observableFactory, new DeliverFirst<View, T>(view), onNext, onError);
+        restartable(restartableId, observableFactory, this.<T>deliverFirst(), onNext, onError);
     }
 
     public <T> void restartableCache(int restartableId, Func0<Observable<T>> observableFactory,
         Action2<View, T> onNext, Action2<View, Throwable> onError) {
 
-        restartable(restartableId, observableFactory, new DeliverLatestCache<View, T>(view), onNext, onError);
+        restartable(restartableId, observableFactory, this.<T>deliverLatestCache(), onNext, onError);
     }
 
     public <T> void restartableReplay(int restartableId, Func0<Observable<T>> observableFactory,
         Action2<View, T> onNext, Action2<View, Throwable> onError) {
 
-        restartable(restartableId, observableFactory, new DeliverReply<View, T>(view), onNext, onError);
+        restartable(restartableId, observableFactory, this.<T>deliverReply(), onNext, onError);
     }
 
     public <T> void restartable(final int restartableId, final Func0<Observable<T>> observableFactory,
@@ -140,11 +141,36 @@ public class RxPresenter<View> extends Presenter<View> {
         });
     }
 
+    public <T> DeliverLatestCache<View, T> deliverLatestCache() {
+        return new DeliverLatestCache<>(view);
+    }
+
+    public <T> DeliverFirst<View, T> deliverFirst() {
+        return new DeliverFirst<>(view);
+    }
+
+    public <T> DeliverReply<View, T> deliverReply() {
+        return new DeliverReply<>(view);
+    }
+
+    public <T> Action1<Delivery<View, T>> split(final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {
+        return new Action1<Delivery<View, T>>() {
+            @Override
+            public void call(Delivery<View, T> delivery) {
+                delivery.split(onNext, onError);
+            }
+        };
+    }
+
+    public <T> Action1<Delivery<View, T>> split(Action2<View, T> onNext) {
+        return split(onNext, null);
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
-    public void onCreate(Bundle savedState) {
+    protected void onCreate(Bundle savedState) {
         if (savedState != null)
             requested.addAll(savedState.getIntegerArrayList(REQUESTED_KEY));
     }
@@ -153,7 +179,7 @@ public class RxPresenter<View> extends Presenter<View> {
      * {@inheritDoc}
      */
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
         super.onDestroy();
         view.onCompleted();
         subscriptions.unsubscribe();
@@ -165,7 +191,7 @@ public class RxPresenter<View> extends Presenter<View> {
      * {@inheritDoc}
      */
     @Override
-    public void onSave(Bundle state) {
+    protected void onSave(Bundle state) {
         super.onSave(state);
         for (int i = requested.size() - 1; i >= 0; i--) {
             Subscription subscription = restartableSubscriptions.get(i);
@@ -179,7 +205,7 @@ public class RxPresenter<View> extends Presenter<View> {
      * {@inheritDoc}
      */
     @Override
-    public void onTakeView(View view) {
+    protected void onTakeView(View view) {
         super.onTakeView(view);
         this.view.onNext(view);
     }
@@ -188,7 +214,7 @@ public class RxPresenter<View> extends Presenter<View> {
      * {@inheritDoc}
      */
     @Override
-    public void onDropView() {
+    protected void onDropView() {
         super.onDropView();
         view.onNext(null);
     }

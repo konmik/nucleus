@@ -3,7 +3,6 @@ package nucleus.presenter.delivery;
 import android.support.annotation.Nullable;
 
 import rx.Notification;
-import rx.functions.Action1;
 import rx.functions.Action2;
 
 public final class Delivery<View, T> {
@@ -21,6 +20,10 @@ public final class Delivery<View, T> {
             onNext.call(view, notification.getValue());
         else if (onError != null && notification.getKind() == Notification.Kind.OnError)
             onError.call(view, notification.getThrowable());
+    }
+
+    public void split(Action2<View, T> onNext) {
+        split(onNext, null);
     }
 
     @Override
