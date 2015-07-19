@@ -1,7 +1,6 @@
 package nucleus.example.main;
 
-import android.test.InstrumentationTestCase;
-
+import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -24,7 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class MainPresenterTest extends InstrumentationTestCase {
+public class MainPresenterTest {
 
     private static final String TEST_TEXT = "test text";
     public static final String FIRST_NAME = "Marilyn";
@@ -49,6 +48,7 @@ public class MainPresenterTest extends InstrumentationTestCase {
     ServerAPI serverAPIMock;
     TestScheduler testScheduler;
 
+    @Test
     public void testRequest() throws Throwable {
         createServerApiMock();
         createTestScheduler();
