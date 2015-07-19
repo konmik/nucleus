@@ -2,6 +2,7 @@ package nucleus.view;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.widget.FrameLayout;
@@ -145,5 +146,23 @@ public class NucleusLayoutTest {
         setUpIsFinishing(true);
         tested.onDetachedFromWindow();
         verify(mockDelegate, times(1)).onPause(true);
+    }
+
+    @Test
+    public void getActivityFromContext() throws Exception {
+        Activity activity = mock(Activity.class);
+        stub(method(BASE_VIEW_CLASS, "getContext")).toReturn(activity);
+        assertEquals(activity, tested.getActivity());
+    }
+
+    @Test
+    public void getActivityFromWrappedContext() throws Exception {
+        Activity activity = mock(Activity.class);
+        ContextWrapper wrapper = mock(ContextWrapper.class);
+        when(wrapper.getBaseContext()).thenReturn(activity);
+        ContextWrapper wrapper2 = mock(ContextWrapper.class);
+        when(wrapper2.getBaseContext()).thenReturn(wrapper);
+        stub(method(BASE_VIEW_CLASS, "getContext")).toReturn(wrapper2);
+        assertEquals(activity, tested.getActivity());
     }
 }
