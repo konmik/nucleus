@@ -8,7 +8,6 @@ import nucleus.presenter.delivery.DeliverReply;
 import nucleus.presenter.delivery.Delivery;
 import rx.Notification;
 import rx.Observable;
-import rx.Subscriber;
 import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Action2;
@@ -101,7 +100,7 @@ public class RestartableReplayTest {
 
     private static final int PAGE_SIZE = 3;
 
-    private Observable<String> request(int pageNumber, int pageSize) {
+    private Observable<String> requestPage(int pageNumber, int pageSize) {
         return Observable.range(pageNumber * pageSize, pageSize).map(new Func1<Integer, String>() {
             @Override
             public String call(Integer integer) {
@@ -137,13 +136,7 @@ public class RestartableReplayTest {
             .concatMap(new Func1<Integer, Observable<String>>() {
                 @Override
                 public Observable<String> call(final Integer page) {
-                    return Observable
-                        .create(new Observable.OnSubscribe<String>() {
-                            @Override
-                            public void call(Subscriber<? super String> subscriber) {
-                                subscriber.add(request(page, PAGE_SIZE).subscribe(subscriber));
-                            }
-                        });
+                    return requestPage(page, PAGE_SIZE);
                 }
             })
             .compose(new DeliverReply<Object, String>(view))
