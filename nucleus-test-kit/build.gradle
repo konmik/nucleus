@@ -8,16 +8,22 @@ android {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
     }
+
+    android {
+        lintOptions {
+            abortOnError false
+        }
+    }
 }
 
 dependencies {
     compile 'junit:junit:4.12'
     compile 'org.mockito:mockito-all:1.10.19' // mockito is not supported by powermock starting from 2.0.21-beta
-    compile ('org.powermock:powermock-api-mockito:1.6.2') {
+    compile('org.powermock:powermock-api-mockito:1.6.2') {
         exclude module: 'hamcrest-core'
         exclude module: 'objenesis'
     }
-    compile ('org.powermock:powermock-module-junit4:1.6.2') {
+    compile('org.powermock:powermock-module-junit4:1.6.2') {
         exclude module: 'hamcrest-core'
         exclude module: 'objenesis'
     }
