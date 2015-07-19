@@ -28,16 +28,10 @@ public class DeliverReply<View, T> implements Observable.Transformer<T, Delivery
             })
             .subscribe(subject);
         return view
-            .filter(new Func1<View, Boolean>() {
-                @Override
-                public Boolean call(View it) {
-                    return it != null;
-                }
-            })
             .switchMap(new Func1<View, Observable<Delivery<View, T>>>() {
                 @Override
                 public Observable<Delivery<View, T>> call(final View view) {
-                    return subject
+                    return view == null ? Observable.<Delivery<View, T>>never() : subject
                         .map(new Func1<Notification<T>, Delivery<View, T>>() {
                             @Override
                             public Delivery<View, T> call(Notification<T> notification) {

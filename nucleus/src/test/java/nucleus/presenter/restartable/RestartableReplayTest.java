@@ -8,13 +8,17 @@ import nucleus.presenter.delivery.DeliverReply;
 import nucleus.presenter.delivery.Delivery;
 import rx.Notification;
 import rx.Observable;
+import rx.Subscriber;
 import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Action2;
-import rx.functions.Func0;
+import rx.functions.Func1;
+import rx.observers.TestObserver;
 import rx.observers.TestSubscriber;
+import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class RestartableReplayTest {
@@ -93,5 +97,91 @@ public class RestartableReplayTest {
         subscription.unsubscribe();
         assertFalse(subject.hasObservers());
         assertFalse(view.hasObservers());
+    }
+
+    private static final int PAGE_SIZE = 3;
+
+    private Observable<String> request(int pageNumber, int pageSize) {
+        return Observable.range(pageNumber * pageSize, pageSize).map(new Func1<Integer, String>() {
+            @Override
+            public String call(Integer integer) {
+                return integer.toString();
+            }
+        });
+    }
+
+    private int requestedPageCount = 1;
+
+    @Test
+    public void testPagingCapabilities() {
+        PublishSubject<Object> view = PublishSubject.create();
+        BehaviorSubject<Integer> nextPageRequests = BehaviorSubject.create();
+        final TestObserver<Delivery<Object, String>> testObserver = new TestObserver<>();
+
+        nextPageRequests
+            .concatMap(new Func1<Integer, Observable<Integer>>() {
+                @Override
+                public Observable<Integer> call(Integer targetPage) {
+                    return targetPage <= requestedPageCount ?
+                        Observable.<Integer>never() :
+                        Observable.range(requestedPageCount, targetPage - requestedPageCount);
+                }
+            })
+            .doOnNext(new Action1<Integer>() {
+                @Override
+                public void call(Integer it) {
+                    requestedPageCount = it + 1;
+                }
+            })
+            .startWith(Observable.range(0, requestedPageCount))
+            .concatMap(new Func1<Integer, Observable<String>>() {
+                @Override
+                public Observable<String> call(final Integer page) {
+                    return Observable
+                        .create(new Observable.OnSubscribe<String>() {
+                            @Override
+                            public void call(Subscriber<? super String> subscriber) {
+                                subscriber.add(request(page, PAGE_SIZE).subscribe(subscriber));
+                            }
+                        });
+                }
+            })
+            .compose(new DeliverReply<Object, String>(view))
+            .subscribe(testObserver);
+
+        ArrayList<Delivery<Object, String>> onNext = new ArrayList<>();
+
+        testObserver.assertReceivedOnNext(onNext);
+
+        view.onNext(999);
+        addOnNext(onNext, 999, 0, 1, 2);
+
+        testObserver.assertReceivedOnNext(onNext);
+
+        nextPageRequests.onNext(2);
+        addOnNext(onNext, 999, 3, 4, 5);
+
+        testObserver.assertReceivedOnNext(onNext);
+
+        view.onNext(null);
+
+        assertEquals(0, testObserver.getOnCompletedEvents().size());
+        testObserver.assertReceivedOnNext(onNext);
+
+        nextPageRequests.onNext(3);
+
+        assertEquals(0, testObserver.getOnCompletedEvents().size());
+        testObserver.assertReceivedOnNext(onNext);
+
+        view.onNext(9999);
+        addOnNext(onNext, 9999, 0, 1, 2, 3, 4, 5, 6, 7, 8);
+
+        assertEquals(0, testObserver.getOnCompletedEvents().size());
+        testObserver.assertReceivedOnNext(onNext);
+    }
+
+    private void addOnNext(ArrayList<Delivery<Object, String>> onNext, Object view, int... values) {
+        for (int value : values)
+            onNext.add(new Delivery<>(view, Notification.createOnNext(Integer.toString(value))));
     }
 }

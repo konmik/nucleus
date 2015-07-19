@@ -11,5 +11,5 @@ android {
 }
 
 dependencies {
-    compile 'org.mockito:mockito-all:1.10.19' // mockito is no supported by powermock starting from 2.0.21-beta
+    compile 'org.mockito:mockito-all:1.10.19' // mockito is not supported by powermock starting from 2.0.21-beta
 }
