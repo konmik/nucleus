@@ -64,9 +64,10 @@ A couple of months later, I finally realized that RxJava has became the tool num
 so RxPresenter appeared. Since that moment, the main focus shifted in the direction of RxJava support.
 
 The correct lifecycle handling was something that seemed obvious to me from the beginning, so I did not make
-an accent on this feature in the library description. However, since those times, more MVP libraries appeared, that
-does not have any idea about proper background threads handling. Now the library description includes
-this fact.
+an accent on this feature in the library description. However, since those times, more MVP libraries appeared,
+now I need to differentiate Nucleus from other implementations. The library description
+became: "Nucleus is a simple Android library, which utilizes the Model-View-Presenter pattern
+*to properly connect background tasks with visual parts of an application*."
 
 ### Include this library:
 
