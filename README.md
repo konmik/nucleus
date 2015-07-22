@@ -3,7 +3,7 @@ Nucleus
 
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Nucleus-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/1379)
 
-Nucleus is an Android library, which utilizes the [Model-View-Presenter](http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter) pattern
+Nucleus is a simple Android library, which utilizes the [Model-View-Presenter](http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter) pattern
 to properly connect background tasks with visual parts of an application.
 
 [MVP introduction article](https://github.com/konmik/konmik.github.io/wiki/Introduction-to-Model-View-Presenter-on-Android)
@@ -23,7 +23,7 @@ But there are still some defects in our applications even when using such advanc
 
 While most applications work without such capabilities, their absence is an obvious bug that just sits there
 and waits for a user who pressed "Login" button while being in a subway and switched to another application
-because his network connection was too slow. Bugs that almost any application produce in such "edge cases"
+because his network connection was too slow. Bugs that almost any application produce in such cases
 are numerous.
 
 Android docs are covering such problems very briefly, take a look at:
@@ -56,7 +56,17 @@ is all you need. Despite presenters are instantiated without Dagger, their depen
 * Presenter in Nucleus is an external class that does not depend on View, this automatically prevents any troubles
 that are connected with activity context leaks.
 
-* View class does not need to manually control the presenter's lifecycle.
+### History
+
+At the moment of the first release, the library main idea was to be the simplest possible MVP implementation.
+
+A couple of months later, I finally realized that RxJava has became the tool number one for smart background threads handling,
+so RxPresenter appeared. Since that moment, the main focus shifted in the direction of RxJava support.
+
+The correct lifecycle handling was something that seemed obvious to me from the beginning, so I did not make
+an accent on this feature in the library description. However, since those times, more MVP libraries appeared, that
+does not have any idea about proper background threads handling. Now the library description includes
+this fact.
 
 ### Include this library:
 
