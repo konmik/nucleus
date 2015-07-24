@@ -95,13 +95,13 @@ public class PresenterLifecycleDelegateTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 return "" + presenters.indexOf(invocation.getArguments()[0]);
             }
-        }).when(storage).getPresenterId(any(Presenter.class));
+        }).when(storage).getId(any(Presenter.class));
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 return presenters.get(Integer.parseInt((String)invocation.getArguments()[0]));
             }
-        }).when(storage).get(anyString());
+        }).when(storage).getPresenter(anyString());
         Whitebox.setInternalState(PresenterStorage.class, "INSTANCE", storage);
         return storage;
     }

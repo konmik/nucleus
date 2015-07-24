@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
-import nucleus.presenter.delivery.DeliverReply;
+import nucleus.presenter.delivery.DeliverReplay;
 import nucleus.presenter.delivery.Delivery;
 import rx.Notification;
 import rx.Observable;
@@ -29,7 +29,7 @@ public class RestartableReplayTest {
         final ArrayList<Delivery<Object, Integer>> deliveries = new ArrayList<>();
 
         final PublishSubject<Integer> subject = PublishSubject.create();
-        DeliverReply<Object, Integer> restartable = new DeliverReply<>(view);
+        DeliverReplay<Object, Integer> restartable = new DeliverReplay<>(view);
         Subscription subscription = restartable.call(subject)
             .subscribe(new Action1<Delivery<Object, Integer>>() {
                 @Override
@@ -139,7 +139,7 @@ public class RestartableReplayTest {
                     return requestPage(page, PAGE_SIZE);
                 }
             })
-            .compose(new DeliverReply<Object, String>(view))
+            .compose(new DeliverReplay<Object, String>(view))
             .subscribe(testObserver);
 
         ArrayList<Delivery<Object, String>> onNext = new ArrayList<>();

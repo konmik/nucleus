@@ -9,7 +9,7 @@ import java.util.Map;
 
 import nucleus.presenter.delivery.DeliverFirst;
 import nucleus.presenter.delivery.DeliverLatestCache;
-import nucleus.presenter.delivery.DeliverReply;
+import nucleus.presenter.delivery.DeliverReplay;
 import nucleus.presenter.delivery.Delivery;
 import rx.Observable;
 import rx.Subscription;
@@ -119,7 +119,7 @@ public class RxPresenter<View> extends Presenter<View> {
     public <T> void restartableReplay(int restartableId, Func0<Observable<T>> observableFactory,
         Action2<View, T> onNext, Action2<View, Throwable> onError) {
 
-        restartable(restartableId, observableFactory, this.<T>deliverReply(), onNext, onError);
+        restartable(restartableId, observableFactory, this.<T>deliverReplay(), onNext, onError);
     }
 
     public <T> void restartable(final int restartableId, final Func0<Observable<T>> observableFactory,
@@ -149,8 +149,8 @@ public class RxPresenter<View> extends Presenter<View> {
         return new DeliverFirst<>(view);
     }
 
-    public <T> DeliverReply<View, T> deliverReply() {
-        return new DeliverReply<>(view);
+    public <T> DeliverReplay<View, T> deliverReplay() {
+        return new DeliverReplay<>(view);
     }
 
     public <T> Action1<Delivery<View, T>> split(final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {

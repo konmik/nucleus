@@ -15,18 +15,6 @@ public enum PresenterStorage {
     private HashMap<Presenter, String> presenterToId = new HashMap<>();
 
     /**
-     * Returns a presenter by id or null if such presenter does not exist.
-     *
-     * @param id  id of a presenter that has been received by calling {@link #getPresenterId(Presenter)}
-     * @param <P> a type of presenter
-     * @return a presenter or null
-     */
-    public <P> P get(String id) {
-        //noinspection unchecked
-        return (P)idToPresenter.get(id);
-    }
-
-    /**
      * Adds a presenter to the storage
      *
      * @param presenter a presenter to add
@@ -44,12 +32,24 @@ public enum PresenterStorage {
     }
 
     /**
+     * Returns a presenter by id or null if such presenter does not exist.
+     *
+     * @param id  id of a presenter that has been received by calling {@link #getId(Presenter)}
+     * @param <P> a type of presenter
+     * @return a presenter or null
+     */
+    public <P> P getPresenter(String id) {
+        //noinspection unchecked
+        return (P)idToPresenter.get(id);
+    }
+
+    /**
      * Returns id of a given presenter.
      *
      * @param presenter a presenter to get id for.
      * @return if of the presenter.
      */
-    public String getPresenterId(Presenter presenter) {
+    public String getId(Presenter presenter) {
         return presenterToId.get(presenter);
     }
 

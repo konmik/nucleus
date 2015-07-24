@@ -8,7 +8,7 @@ import nucleus.factory.PresenterStorage;
 import nucleus.presenter.Presenter;
 
 /**
- * This class delivers View events to Presenter.
+ * This class adopts a View lifecycle to the Presenter`s lifecycle.
  *
  * @param <P> a type of the presenter.
  */
@@ -39,7 +39,7 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
     public P getPresenter() {
         if (presenterFactory != null) {
             if (presenter == null && bundle != null)
-                presenter = PresenterStorage.INSTANCE.get(bundle.getString(PRESENTER_ID_KEY));
+                presenter = PresenterStorage.INSTANCE.getPresenter(bundle.getString(PRESENTER_ID_KEY));
 
             if (presenter == null) {
                 presenter = presenterFactory.createPresenter();
@@ -57,7 +57,7 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
             Bundle presenterBundle = new Bundle();
             presenter.save(presenterBundle);
             bundle.putBundle(PRESENTER_KEY, presenterBundle);
-            bundle.putString(PRESENTER_ID_KEY, PresenterStorage.INSTANCE.getPresenterId(presenter));
+            bundle.putString(PRESENTER_ID_KEY, PresenterStorage.INSTANCE.getId(presenter));
         }
         return bundle;
     }

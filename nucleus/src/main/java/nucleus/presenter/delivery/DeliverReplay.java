@@ -7,11 +7,11 @@ import rx.functions.Action0;
 import rx.functions.Func1;
 import rx.subjects.ReplaySubject;
 
-public class DeliverReply<View, T> implements Observable.Transformer<T, Delivery<View, T>> {
+public class DeliverReplay<View, T> implements Observable.Transformer<T, Delivery<View, T>> {
 
     private final Observable<View> view;
 
-    public DeliverReply(Observable<View> view) {
+    public DeliverReplay(Observable<View> view) {
         this.view = view;
     }
 

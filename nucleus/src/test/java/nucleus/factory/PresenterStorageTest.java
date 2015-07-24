@@ -15,12 +15,12 @@ public class PresenterStorageTest {
         Presenter presenter = new Presenter();
         PresenterStorage.INSTANCE.add(presenter);
 
-        String id = PresenterStorage.INSTANCE.getPresenterId(presenter);
+        String id = PresenterStorage.INSTANCE.getId(presenter);
 
-        assertEquals(presenter, PresenterStorage.INSTANCE.get(id));
+        assertEquals(presenter, PresenterStorage.INSTANCE.getPresenter(id));
 
         presenter.destroy();
-        assertNull(PresenterStorage.INSTANCE.get(id));
+        assertNull(PresenterStorage.INSTANCE.getPresenter(id));
     }
 
     @After
