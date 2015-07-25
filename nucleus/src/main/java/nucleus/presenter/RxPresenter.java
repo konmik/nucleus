@@ -16,8 +16,8 @@ import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Action2;
 import rx.functions.Func0;
+import rx.internal.util.SubscriptionList;
 import rx.subjects.BehaviorSubject;
-import rx.subscriptions.CompositeSubscription;
 
 /**
  * This is an extension of {@link Presenter} which provides RxJava functionality.
@@ -29,7 +29,7 @@ public class RxPresenter<View> extends Presenter<View> {
     private static final String REQUESTED_KEY = RxPresenter.class.getName() + "#requested";
 
     private final BehaviorSubject<View> view = BehaviorSubject.create();
-    private final CompositeSubscription subscriptions = new CompositeSubscription();
+    private final SubscriptionList subscriptions = new SubscriptionList();
 
     private final HashMap<Integer, Func0<Subscription>> restartables = new HashMap<>();
     private final HashMap<Integer, Subscription> restartableSubscriptions = new HashMap<>();
@@ -47,7 +47,7 @@ public class RxPresenter<View> extends Presenter<View> {
 
     /**
      * Registers a subscription to automatically unsubscribe it during onDestroy.
-     * See {@link CompositeSubscription#add(Subscription) for details.}
+     * See {@link SubscriptionList#add(Subscription) for details.}
      *
      * @param subscription a subscription to add.
      */
@@ -57,7 +57,7 @@ public class RxPresenter<View> extends Presenter<View> {
 
     /**
      * Removes and unsubscribes a subscription that has been registered with {@link #add} previously.
-     * See {@link CompositeSubscription#remove(Subscription)} for details.
+     * See {@link SubscriptionList#remove(Subscription)} for details.
      *
      * @param subscription a subscription to remove.
      */
