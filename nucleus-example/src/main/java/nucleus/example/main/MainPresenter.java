@@ -7,7 +7,6 @@ import nucleus.example.base.App;
 import nucleus.example.base.ServerAPI;
 import nucleus.presenter.RxPresenter;
 import rx.Observable;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action2;
 import rx.functions.Func0;
