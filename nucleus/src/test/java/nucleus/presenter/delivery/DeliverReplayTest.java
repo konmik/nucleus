@@ -1,11 +1,9 @@
-package nucleus.presenter.restartable;
+package nucleus.presenter.delivery;
 
 import org.junit.Test;
 
 import java.util.ArrayList;
 
-import nucleus.presenter.delivery.DeliverReplay;
-import nucleus.presenter.delivery.Delivery;
 import rx.Notification;
 import rx.Observable;
 import rx.Subscription;
@@ -20,7 +18,7 @@ import rx.subjects.PublishSubject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-public class RestartableReplayTest {
+public class DeliverReplayTest {
 
     @Test
     public void testReplay() throws Exception {
@@ -91,7 +89,7 @@ public class RestartableReplayTest {
         testSubscriber.assertNotCompleted();
 
         // final checks
-        testSubscriber.assertValues(deliveries.toArray(new Delivery[deliveries.size()]));
+        testSubscriber.assertReceivedOnNext(deliveries);
 
         subscription.unsubscribe();
         assertFalse(subject.hasObservers());

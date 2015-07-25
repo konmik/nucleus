@@ -1,8 +1,7 @@
-package nucleus.presenter.restartable;
+package nucleus.presenter.delivery;
 
 import org.junit.Test;
 
-import nucleus.presenter.delivery.Delivery;
 import rx.Notification;
 import rx.functions.Action2;
 

@@ -1,23 +1,19 @@
-package nucleus.presenter.restartable;
+package nucleus.presenter.delivery;
 
 import org.junit.Test;
 
 import java.util.ArrayList;
 
-import nucleus.presenter.delivery.DeliverFirst;
-import nucleus.presenter.delivery.Delivery;
 import rx.Notification;
-import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Action2;
-import rx.functions.Func0;
 import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
 
 import static org.junit.Assert.assertFalse;
 
-public class RestartableOnceTest {
+public class DeliverFirstTest {
 
     @Test
     public void testOnce() throws Exception {
@@ -77,7 +73,7 @@ public class RestartableOnceTest {
         testSubscriber.assertValueCount(1);
 
         // final checks
-        testSubscriber.assertValues(deliveries.toArray(new Delivery[deliveries.size()]));
+        testSubscriber.assertReceivedOnNext(deliveries);
 
         subscription.unsubscribe();
         assertFalse(subject.hasObservers());
@@ -126,7 +122,7 @@ public class RestartableOnceTest {
         testSubscriber.assertValueCount(1);
 
         // final checks
-        testSubscriber.assertValues(deliveries.toArray(new Delivery[deliveries.size()]));
+        testSubscriber.assertReceivedOnNext(deliveries);
 
         subscription.unsubscribe();
         assertFalse(subject.hasObservers());
