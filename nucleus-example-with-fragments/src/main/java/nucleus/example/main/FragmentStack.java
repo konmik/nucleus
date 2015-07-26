@@ -4,7 +4,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import nucleus.example.R;
 import nucleus.presenter.Presenter;
 import nucleus.view.ViewWithPresenter;
 
@@ -36,6 +38,7 @@ public class FragmentStack {
         Fragment top = peek();
         if (top != null) {
             manager.beginTransaction()
+                .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
                 .remove(top)
                 .add(containerId, fragment, indexToTag(manager.getBackStackEntryCount() + 1))
                 .addToBackStack(null)
@@ -67,14 +70,20 @@ public class FragmentStack {
     }
 
     /**
-     * Replaces entire stack contents with just one fragment.
+     * Replaces stack contents with just one fragment.
      */
-    public void replace(Fragment fragment) {
-        clear();
+    public void replace(Fragment fragment1) {
+        ArrayList<Presenter> presenters = getPresenters();
+
+        manager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         manager.beginTransaction()
-            .replace(containerId, fragment, indexToTag(0))
+            .replace(containerId, fragment1, indexToTag(0))
             .commit();
         manager.executePendingTransactions();
+
+        for (Presenter presenter : presenters) {
+            presenter.destroy();
+        }
     }
 
     /**
@@ -84,21 +93,28 @@ public class FragmentStack {
         return manager.findFragmentById(containerId);
     }
 
-    private void clear() {
+    private ArrayList<Presenter> getPresenters() {
         ArrayList<Presenter> presenters = new ArrayList<>();
-        for (int i = 0; i < manager.getBackStackEntryCount(); i++) {
-            Fragment fragment = manager.findFragmentByTag(indexToTag(i));
-            if (fragment != null && fragment instanceof ViewWithPresenter) {
+        for (Fragment fragment : getFragments()) {
+            if (fragment instanceof ViewWithPresenter) {
                 Presenter presenter = ((ViewWithPresenter)fragment).getPresenter();
                 if (presenter != null) {
                     presenters.add(presenter);
                 }
             }
         }
-        manager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        for (Presenter presenter : presenters) {
-            presenter.destroy();
+        return presenters;
+    }
+
+    private List<Fragment> getFragments() {
+        List<Fragment> fragments = new ArrayList<>(manager.getBackStackEntryCount() + 1);
+        for (int i = 0; i < manager.getBackStackEntryCount() + 1; i++) {
+            Fragment fragment = manager.findFragmentByTag(indexToTag(i));
+            if (fragment != null) {
+                fragments.add(fragment);
+            }
         }
+        return fragments;
     }
 
     private void destroyPresenter(Fragment top) {

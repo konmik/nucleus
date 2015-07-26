@@ -67,32 +67,23 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
 
         TestFragment1 fragment = new TestFragment1();
         stack.push(fragment);
-        assertEquals(fragment, manager.findFragmentById(CONTAINER_ID));
-        assertEquals(fragment, manager.findFragmentByTag("0"));
-        assertEquals(fragment, stack.peek());
-        assertEquals(0, manager.getBackStackEntryCount());
+        assertTopFragment(manager, stack, fragment, 0);
 
         TestFragment2 fragment2 = new TestFragment2();
         stack.push(fragment2);
-        assertEquals(fragment2, manager.findFragmentById(CONTAINER_ID));
-        assertEquals(fragment2, manager.findFragmentByTag("1"));
-        assertEquals(fragment2, stack.peek());
-        assertEquals(1, manager.getBackStackEntryCount());
-
-        assertEquals(fragment, manager.findFragmentByTag("0"));
+        assertFragment(manager, fragment, 0);
+        assertTopFragment(manager, stack, fragment2, 1);
 
         assertFalse(fragment.isAdded());
         assertTrue(fragment2.isAdded());
 
         assertTrue(stack.pop());
-        assertEquals(fragment, manager.findFragmentById(CONTAINER_ID));
-        assertEquals(0, manager.getBackStackEntryCount());
+        assertTopFragment(manager, stack, fragment, 0);
 
         assertNull(manager.findFragmentByTag("1"));
 
         assertFalse(stack.pop());
-        assertEquals(fragment, manager.findFragmentById(CONTAINER_ID));
-        assertEquals(0, manager.getBackStackEntryCount());
+        assertTopFragment(manager, stack, fragment, 0);
     }
 
     @UiThreadTest
@@ -102,15 +93,11 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
 
         TestFragment1 fragment = new TestFragment1();
         stack.replace(fragment);
-        assertEquals(fragment, manager.findFragmentById(CONTAINER_ID));
-        assertEquals(fragment, stack.peek());
-        assertEquals(0, manager.getBackStackEntryCount());
+        assertTopFragment(manager, stack, fragment, 0);
 
         TestFragment2 fragment2 = new TestFragment2();
         stack.replace(fragment2);
-        assertEquals(fragment2, manager.findFragmentById(CONTAINER_ID));
-        assertEquals(fragment2, stack.peek());
-        assertEquals(0, manager.getBackStackEntryCount());
+        assertTopFragment(manager, stack, fragment2, 0);
     }
 
     @UiThreadTest
@@ -127,11 +114,20 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
 
         TestFragment1 fragment3 = new TestFragment1();
         stack.replace(fragment3);
-        assertEquals(0, manager.getBackStackEntryCount());
-        assertEquals(fragment3, manager.findFragmentById(CONTAINER_ID));
-        assertEquals(fragment3, manager.findFragmentByTag("0"));
+        assertTopFragment(manager, stack, fragment3, 0);
 
         assertEquals(1, fragment.presenter.onDestroy);
         assertNull(manager.findFragmentByTag("1"));
+    }
+
+    private void assertTopFragment(FragmentManager manager, FragmentStack stack, Fragment fragment, int index) {
+        assertFragment(manager, fragment, index);
+        assertEquals(fragment, manager.findFragmentById(CONTAINER_ID));
+        assertEquals(fragment, stack.peek());
+        assertEquals(index, manager.getBackStackEntryCount());
+    }
+
+    private void assertFragment(FragmentManager manager, Fragment fragment, int index) {
+        assertEquals(fragment, manager.findFragmentByTag(Integer.toString(index)));
     }
 }
