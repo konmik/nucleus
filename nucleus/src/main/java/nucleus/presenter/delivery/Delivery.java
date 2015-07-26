@@ -5,6 +5,12 @@ import android.support.annotation.Nullable;
 import rx.Notification;
 import rx.functions.Action2;
 
+/**
+ * A class that represents a couple of View and Data.
+ *
+ * @param <View>
+ * @param <T>
+ */
 public final class Delivery<View, T> {
 
     private final View view;
@@ -20,10 +26,6 @@ public final class Delivery<View, T> {
             onNext.call(view, notification.getValue());
         else if (onError != null && notification.getKind() == Notification.Kind.OnError)
             onError.call(view, notification.getThrowable());
-    }
-
-    public void split(Action2<View, T> onNext) {
-        split(onNext, null);
     }
 
     @Override
