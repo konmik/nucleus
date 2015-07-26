@@ -134,7 +134,20 @@ public class PresenterLifecycleDelegateTest {
     @Test
     public void saveRestore() throws Exception {
         PresenterLifecycleDelegate<Presenter> delegate = new PresenterLifecycleDelegate<>(factory);
-        delegate.getPresenter();
+        delegate.onResume(1);
+        Bundle bundle = delegate.onSaveInstanceState();
+
+        delegate = new PresenterLifecycleDelegate<>(factory);
+        delegate.onRestoreInstanceState(bundle);
+        assertEquals(presenters.get(0), delegate.getPresenter());
+
+        delegate = new PresenterLifecycleDelegate<>(factory);
+        assertNotEquals(presenters.get(0), delegate.getPresenter());
+    }
+
+    @Test
+    public void saveNoResume() throws Exception {
+        PresenterLifecycleDelegate<Presenter> delegate = new PresenterLifecycleDelegate<>(factory);
         Bundle bundle = delegate.onSaveInstanceState();
 
         delegate = new PresenterLifecycleDelegate<>(factory);

@@ -19,13 +19,19 @@ public class LoggingFragment<PresenterType extends Presenter> extends NucleusSup
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        v(TAG, "onCreate");
+        v(TAG, "onCreate " + savedInstanceState);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         v(TAG, "onDestroy");
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle bundle) {
+        super.onSaveInstanceState(bundle);
+        v(TAG, "onSaveInstanceState " + bundle);
     }
 
     @Override

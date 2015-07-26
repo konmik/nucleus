@@ -66,7 +66,8 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
      */
     public Bundle onSaveInstanceState() {
         Bundle bundle = new Bundle();
-        if (presenterFactory != null && presenter != null) {
+        getPresenter();
+        if (presenter != null) {
             Bundle presenterBundle = new Bundle();
             presenter.save(presenterBundle);
             bundle.putBundle(PRESENTER_KEY, presenterBundle);
