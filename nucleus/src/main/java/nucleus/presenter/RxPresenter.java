@@ -22,7 +22,7 @@ import rx.subjects.BehaviorSubject;
 /**
  * This is an extension of {@link Presenter} which provides RxJava functionality.
  *
- * @param <View> a type of view
+ * @param <View> a type of view.
  */
 public class RxPresenter<View> extends Presenter<View> {
 
