@@ -11,9 +11,6 @@ import nucleus.example.base.ServerAPI;
 import nucleus.presenter.RxPresenter;
 import rx.Observable;
 import rx.Scheduler;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 import rx.functions.Action2;
 import rx.functions.Func0;
 
@@ -40,7 +37,7 @@ public class MainPresenter extends RxPresenter<MainActivity> {
         if (savedState != null)
             name = savedState.getString(NAME_KEY);
 
-        restartableCache(REQUEST_ITEMS,
+        restartableLatestCache(REQUEST_ITEMS,
             new Func0<Observable<ServerAPI.Response>>() {
                 @Override
                 public Observable<ServerAPI.Response> call() {

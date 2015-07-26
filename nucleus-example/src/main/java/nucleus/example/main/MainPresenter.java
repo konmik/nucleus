@@ -30,7 +30,7 @@ public class MainPresenter extends RxPresenter<MainActivity> {
         if (savedState != null)
             name = savedState.getString(NAME_KEY);
 
-        restartableCache(REQUEST_ITEMS,
+        restartableLatestCache(REQUEST_ITEMS,
             new Func0<Observable<ServerAPI.Response>>() {
                 @Override
                 public Observable<ServerAPI.Response> call() {
