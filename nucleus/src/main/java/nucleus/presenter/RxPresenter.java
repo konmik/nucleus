@@ -28,7 +28,7 @@ public class RxPresenter<View> extends Presenter<View> {
 
     private static final String REQUESTED_KEY = RxPresenter.class.getName() + "#requested";
 
-    private final BehaviorSubject<View> view = BehaviorSubject.create();
+    private final BehaviorSubject<View> views = BehaviorSubject.create();
     private final SubscriptionList subscriptions = new SubscriptionList();
 
     private final HashMap<Integer, Func0<Subscription>> restartables = new HashMap<>();
@@ -36,13 +36,13 @@ public class RxPresenter<View> extends Presenter<View> {
     private final ArrayList<Integer> requested = new ArrayList<>();
 
     /**
-     * Returns an observable that emits the current attached view during {@link #onTakeView(Object)}
-     * and null during {@link #onDropView()}.
+     * Returns an {@link rx.Observable} that emits the current attached view or null.
+     * See {@link BehaviorSubject} for more information.
      *
-     * @return an observable that emits the attached view or null.
+     * @return an observable that emits the current attached view or null.
      */
     public Observable<View> view() {
-        return view;
+        return views;
     }
 
     /**
@@ -66,7 +66,7 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
-     * A restartable is any RxJava observable that can be requested (subscribed) and
+     * A restartable is any RxJava observable that can be started (subscribed) and
      * should be automatically restarted (re-subscribed) after a process restart if
      * it was still subscribed at the moment of saving presenter's state.
      *
@@ -104,55 +104,128 @@ public class RxPresenter<View> extends Presenter<View> {
             subscription.unsubscribe();
     }
 
-    public <T> void restartableFirst(int restartableId, Func0<Observable<T>> observableFactory,
-        Action2<View, T> onNext, Action2<View, Throwable> onError) {
-
-        restartable(restartableId, observableFactory, this.<T>deliverFirst(), onNext, onError);
-    }
-
-    public <T> void restartableCache(int restartableId, Func0<Observable<T>> observableFactory,
-        Action2<View, T> onNext, Action2<View, Throwable> onError) {
-
-        restartable(restartableId, observableFactory, this.<T>deliverLatestCache(), onNext, onError);
-    }
-
-    public <T> void restartableReplay(int restartableId, Func0<Observable<T>> observableFactory,
-        Action2<View, T> onNext, Action2<View, Throwable> onError) {
-
-        restartable(restartableId, observableFactory, this.<T>deliverReplay(), onNext, onError);
-    }
-
-    public <T> void restartable(final int restartableId, final Func0<Observable<T>> observableFactory,
-        final Observable.Transformer<T, Delivery<View, T>> transformer,
-        final Action2<View, T> onNext, final Action2<View, Throwable> onError) {
+    /**
+     * This is a shortcut that can be used instead of combining together
+     * {@link #restartable(int, Func0)},
+     * {@link #deliverFirst()},
+     * {@link #split(Action2, Action2)}.
+     *
+     * @param restartableId     an id of the restartable.
+     * @param observableFactory a factory that should return an Observable when the restartable should run.
+     * @param onNext            a callback that will be called when received data should be delivered to view.
+     * @param onError           a callback that will be called if the source observable emits onError.
+     * @param <T>               the type of the observable.
+     */
+    public <T> void restartableFirst(int restartableId, final Func0<Observable<T>> observableFactory,
+        final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {
 
         restartable(restartableId, new Func0<Subscription>() {
             @Override
             public Subscription call() {
                 return observableFactory.call()
-                    .compose(transformer)
-                    .subscribe(new Action1<Delivery<View, T>>() {
-                        @Override
-                        public void call(Delivery<View, T> delivery) {
-                            delivery.split(onNext, onError);
-                        }
-                    });
+                    .compose(RxPresenter.this.<T>deliverFirst())
+                    .subscribe(split(onNext, onError));
             }
         });
     }
 
+    /**
+     * This is a shortcut that can be used instead of combining together
+     * {@link #restartable(int, Func0)},
+     * {@link #deliverLatestCache()},
+     * {@link #split(Action2, Action2)}.
+     *
+     * @param restartableId     an id of the restartable.
+     * @param observableFactory a factory that should return an Observable when the restartable should run.
+     * @param onNext            a callback that will be called when received data should be delivered to view.
+     * @param onError           a callback that will be called if the source observable emits onError.
+     * @param <T>               the type of the observable.
+     */
+    public <T> void restartableLatestCache(int restartableId, final Func0<Observable<T>> observableFactory,
+        final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {
+
+        restartable(restartableId, new Func0<Subscription>() {
+            @Override
+            public Subscription call() {
+                return observableFactory.call()
+                    .compose(RxPresenter.this.<T>deliverLatestCache())
+                    .subscribe(split(onNext, onError));
+            }
+        });
+    }
+
+    /**
+     * This is a shortcut that can be used instead of combining together
+     * {@link #restartable(int, Func0)},
+     * {@link #deliverReplay()},
+     * {@link #split(Action2, Action2)}.
+     *
+     * @param restartableId     an id of the restartable.
+     * @param observableFactory a factory that should return an Observable when the restartable should run.
+     * @param onNext            a callback that will be called when received data should be delivered to view.
+     * @param onError           a callback that will be called if the source observable emits onError.
+     * @param <T>               the type of the observable.
+     */
+    public <T> void restartableReplay(int restartableId, final Func0<Observable<T>> observableFactory,
+        final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {
+
+        restartable(restartableId, new Func0<Subscription>() {
+            @Override
+            public Subscription call() {
+                return observableFactory.call()
+                    .compose(RxPresenter.this.<T>deliverReplay())
+                    .subscribe(split(onNext, onError));
+            }
+        });
+    }
+
+    /**
+     * Returns an {@link rx.Observable.Transformer} that couples views with data that has been emitted by
+     * the source {@link rx.Observable}.
+     *
+     * {@link #deliverLatestCache} keeps the latest onNext value and emits it each time a new view gets attached.
+     * If a new onNext value appears while a view is attached, it will be delivered immediately.
+     *
+     * @param <T> the type of source observable emissions
+     */
     public <T> DeliverLatestCache<View, T> deliverLatestCache() {
-        return new DeliverLatestCache<>(view);
+        return new DeliverLatestCache<>(views);
     }
 
+    /**
+     * Returns an {@link rx.Observable.Transformer} that couples views with data that has been emitted by
+     * the source {@link rx.Observable}.
+     *
+     * {@link #deliverFirst} delivers only the first onNext value that has been emitted by the source observable.
+     *
+     * @param <T> the type of source observable emissions
+     */
     public <T> DeliverFirst<View, T> deliverFirst() {
-        return new DeliverFirst<>(view);
+        return new DeliverFirst<>(views);
     }
 
+    /**
+     * Returns an {@link rx.Observable.Transformer} that couples views with data that has been emitted by
+     * the source {@link rx.Observable}.
+     *
+     * {@link #deliverReplay} keeps all onNext values and emits them each time a new view gets attached.
+     * If a new onNext value appears while a view is attached, it will be delivered immediately.
+     *
+     * @param <T> the type of source observable emissions
+     */
     public <T> DeliverReplay<View, T> deliverReplay() {
-        return new DeliverReplay<>(view);
+        return new DeliverReplay<>(views);
     }
 
+    /**
+     * Returns a method that can be used for manual restartable chain build. It returns an Action1 that splits
+     * a received {@link Delivery} into two {@link Action2} onNext and onError calls.
+     *
+     * @param onNext  a method that will be called if the delivery contains an emitted onNext value.
+     * @param onError a method that will be called if the delivery contains an onError throwable.
+     * @param <T>     a type on onNext value.
+     * @return an Action1 that splits a received {@link Delivery} into two {@link Action2} onNext and onError calls.
+     */
     public <T> Action1<Delivery<View, T>> split(final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {
         return new Action1<Delivery<View, T>>() {
             @Override
@@ -162,6 +235,9 @@ public class RxPresenter<View> extends Presenter<View> {
         };
     }
 
+    /**
+     * This is a shortcut for calling {@link #split(Action2, Action2)} when the second parameter is null.
+     */
     public <T> Action1<Delivery<View, T>> split(Action2<View, T> onNext) {
         return split(onNext, null);
     }
@@ -181,7 +257,7 @@ public class RxPresenter<View> extends Presenter<View> {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        view.onCompleted();
+        views.onCompleted();
         subscriptions.unsubscribe();
         for (Map.Entry<Integer, Subscription> entry : restartableSubscriptions.entrySet())
             entry.getValue().unsubscribe();
@@ -207,7 +283,7 @@ public class RxPresenter<View> extends Presenter<View> {
     @Override
     protected void onTakeView(View view) {
         super.onTakeView(view);
-        this.view.onNext(view);
+        views.onNext(view);
     }
 
     /**
@@ -216,6 +292,6 @@ public class RxPresenter<View> extends Presenter<View> {
     @Override
     protected void onDropView() {
         super.onDropView();
-        view.onNext(null);
+        views.onNext(null);
     }
 }
