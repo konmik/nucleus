@@ -16,9 +16,14 @@ android {
     }
 }
 
+repositories {
+    mavenLocal()
+}
+
 dependencies {
-    compile project(':nucleus')
+    compile "info.android15.nucleus:nucleus:$VERSION_NAME"
+    compile "info.android15.nucleus:nucleus-support-v4:$VERSION_NAME"
+    compile "info.android15.nucleus:nucleus-support-v7:$VERSION_NAME"
     compile 'com.squareup.retrofit:retrofit:1.9.0'
     compile 'io.reactivex:rxandroid:0.24.0'
-    compile 'io.reactivex:rxjava:1.0.8'
 }

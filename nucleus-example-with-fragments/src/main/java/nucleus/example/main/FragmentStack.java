@@ -1,15 +1,25 @@
 package nucleus.example.main;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 
-import nucleus.view.NucleusFragment;
+import java.util.ArrayList;
+
+import nucleus.presenter.Presenter;
+import nucleus.view.ViewWithPresenter;
 
 /**
- * This is an example fragment stack handler.
+ * Why this class is needed.
+ *
+ * FragmentManager does not supply a developer with a fragment stack.
+ * It gives us a fragment *transaction* stack.
+ *
+ * To be sane, we need *fragment* stack.
+ *
+ * This implementation also handles NucleusSupportFragment presenter`s lifecycle correctly.
  */
 public class FragmentStack {
+
     private FragmentManager manager;
     private int containerId;
 
@@ -22,19 +32,34 @@ public class FragmentStack {
      * Pushes a fragment to the top of the stack.
      */
     public void push(Fragment fragment) {
-        FragmentTransaction transaction = manager.beginTransaction();
-        transaction.replace(containerId, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
+
+        Fragment top = peek();
+        if (top != null) {
+            manager.beginTransaction()
+                .remove(top)
+                .add(containerId, fragment, indexToTag(manager.getBackStackEntryCount() + 1))
+                .addToBackStack(null)
+                .commit();
+        }
+        else {
+            manager.beginTransaction()
+                .add(containerId, fragment, indexToTag(0))
+                .commit();
+        }
+
         manager.executePendingTransactions();
     }
 
     /**
      * Pops the topmost fragment from the stack.
+     * The lowest fragment can't be popped, it can only be replaced.
+     *
+     * @return false if the stack can't pop or true if a top fragment has been popped.
      */
     public boolean pop() {
-        if (manager.getBackStackEntryCount() == 0)
+        if (manager.getBackStackEntryCount() == 0) {
             return false;
+        }
         Fragment top = peek();
         manager.popBackStackImmediate();
         destroyPresenter(top);
@@ -45,14 +70,11 @@ public class FragmentStack {
      * Replaces entire stack contents with just one fragment.
      */
     public void replace(Fragment fragment) {
-        while (pop()) ;
-        Fragment top = peek();
+        clear();
         manager.beginTransaction()
-            .replace(containerId, fragment)
+            .replace(containerId, fragment, indexToTag(0))
             .commit();
         manager.executePendingTransactions();
-        if (top != null)
-            destroyPresenter(top);
     }
 
     /**
@@ -62,8 +84,30 @@ public class FragmentStack {
         return manager.findFragmentById(containerId);
     }
 
+    private void clear() {
+        ArrayList<Presenter> presenters = new ArrayList<>();
+        for (int i = 0; i < manager.getBackStackEntryCount(); i++) {
+            Fragment fragment = manager.findFragmentByTag(indexToTag(i));
+            if (fragment != null && fragment instanceof ViewWithPresenter) {
+                Presenter presenter = ((ViewWithPresenter)fragment).getPresenter();
+                if (presenter != null) {
+                    presenters.add(presenter);
+                }
+            }
+        }
+        manager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        for (Presenter presenter : presenters) {
+            presenter.destroy();
+        }
+    }
+
     private void destroyPresenter(Fragment top) {
-        if (top instanceof NucleusFragment)
-            ((NucleusFragment)top).getPresenter().destroy();
+        if (top instanceof ViewWithPresenter) {
+            ((ViewWithPresenter)top).getPresenter().destroy();
+        }
+    }
+
+    private String indexToTag(int index) {
+        return Integer.toString(index);
     }
 }

@@ -1,12 +1,12 @@
 package nucleus.example.main;
 
-import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 
 import nucleus.example.R;
-import nucleus.view.NucleusActivity;
+import nucleus.view.NucleusAppCompatActivity;
 
-public class MainActivity extends NucleusActivity<MainPresenter> {
+public class MainActivity extends NucleusAppCompatActivity<MainPresenter> {
 
     FragmentStack fragmentStack;
 
@@ -15,7 +15,7 @@ public class MainActivity extends NucleusActivity<MainPresenter> {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        fragmentStack = new FragmentStack(getFragmentManager(), R.id.fragmentContainer);
+        fragmentStack = new FragmentStack(getSupportFragmentManager(), R.id.fragmentContainer);
 
         if (savedInstanceState == null)
             fragmentStack.replace(new MainFragment());

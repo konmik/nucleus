@@ -4,11 +4,11 @@ import android.os.Bundle;
 import android.view.View;
 
 import nucleus.presenter.Presenter;
-import nucleus.view.NucleusFragment;
+import nucleus.view.NucleusSupportFragment;
 
 import static android.util.Log.v;
 
-public class LoggingFragment<PresenterType extends Presenter> extends NucleusFragment<PresenterType> {
+public class LoggingFragment<PresenterType extends Presenter> extends NucleusSupportFragment<PresenterType> {
 
     private final String TAG = getClass().getSimpleName();
 
