@@ -1,5 +1,12 @@
 # Changelog
 
+### XX.08.2015, Version: 2.0.0
+
+* RxPresenter became completely usable without getView().
+* OperatorSemaphore replaced with standard RxJava operators.
+* Internal structure is simplified even more: removed manager and helper.
+* All tests became unit tests and are testable without device.
+
 ### 09.06.2015, Version: 1.3.3
 
 * Jar library release of core library to provide sources in IntelliJ IDEA.
