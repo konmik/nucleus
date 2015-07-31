@@ -1,5 +1,6 @@
 package nucleus.example.main;
 
+import android.app.Activity;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.test.ActivityInstrumentationTestCase2;
@@ -60,10 +61,18 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
 
     }
 
+    public interface TestCallback {
+
+    }
+
+    public static class TestFragmentC extends Fragment implements TestCallback {
+
+    }
+
     @UiThreadTest
     public void testPushPop() throws Exception {
         FragmentManager manager = activity.getSupportFragmentManager();
-        FragmentStack stack = new FragmentStack(manager, CONTAINER_ID);
+        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID);
 
         TestFragment1 fragment = new TestFragment1();
         stack.push(fragment);
@@ -89,7 +98,7 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
     @UiThreadTest
     public void testReplace() throws Exception {
         FragmentManager manager = activity.getSupportFragmentManager();
-        FragmentStack stack = new FragmentStack(manager, CONTAINER_ID);
+        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID);
 
         TestFragment1 fragment = new TestFragment1();
         stack.replace(fragment);
@@ -104,7 +113,7 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
     public void testPushReplace() throws Exception {
 
         FragmentManager manager = activity.getSupportFragmentManager();
-        FragmentStack stack = new FragmentStack(manager, CONTAINER_ID);
+        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID);
 
         TestFragment1 fragment = new TestFragment1();
         stack.push(fragment);
@@ -118,6 +127,39 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
 
         assertEquals(1, fragment.presenter.onDestroy);
         assertNull(manager.findFragmentByTag("1"));
+    }
+
+    @UiThreadTest
+    public void testFindCallback() throws Exception {
+        FragmentManager manager = activity.getSupportFragmentManager();
+        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID);
+
+        TestFragmentC fragment = new TestFragmentC();
+        stack.push(fragment);
+        TestFragment2 fragment2 = new TestFragment2();
+        stack.push(fragment2);
+
+        assertEquals(fragment, stack.findCallback(fragment2, TestCallback.class));
+        assertEquals(activity, stack.findCallback(fragment2, Activity.class));
+        assertNull(stack.findCallback(fragment2, String.class));
+    }
+
+    @UiThreadTest
+    public void testBack() throws Exception {
+        FragmentManager manager = activity.getSupportFragmentManager();
+        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID);
+
+        assertFalse(stack.back());
+
+        stack.push(new TestFragment1());
+        assertEquals(1, stack.size());
+        assertFalse(stack.back());
+
+        stack.push(new TestFragment1());
+        assertEquals(2, stack.size());
+        assertTrue(stack.back());
+
+        assertEquals(1, stack.size());
     }
 
     private void assertTopFragment(FragmentManager manager, FragmentStack stack, Fragment fragment, int index) {

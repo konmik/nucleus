@@ -8,14 +8,14 @@ import nucleus.view.NucleusAppCompatActivity;
 
 public class MainActivity extends NucleusAppCompatActivity<MainPresenter> {
 
-    FragmentStack fragmentStack;
+    private FragmentStack fragmentStack;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        fragmentStack = new FragmentStack(getSupportFragmentManager(), R.id.fragmentContainer);
+        fragmentStack = new FragmentStack(this, getSupportFragmentManager(), R.id.fragmentContainer);
 
         if (savedInstanceState == null)
             fragmentStack.replace(new MainFragment());
