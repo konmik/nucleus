@@ -35,8 +35,6 @@ public class FragmentStack {
     private int containerId;
     @Nullable private OnFragmentRemovedListener onFragmentRemovedListener;
 
-    private ArrayList<Fragment> fragments = new ArrayList<>();
-
     public FragmentStack(Activity activity, FragmentManager manager, int containerId, @Nullable OnFragmentRemovedListener onFragmentRemovedListener) {
         this.activity = activity;
         this.manager = manager;
@@ -50,7 +48,7 @@ public class FragmentStack {
      * @return the number of fragments in the stack.
      */
     public int size() {
-        return fragments.size();
+        return getFragments().size();
     }
 
     /**
@@ -63,18 +61,17 @@ public class FragmentStack {
             manager.beginTransaction()
                 .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
                 .remove(top)
-                .add(containerId, fragment)
+                .add(containerId, fragment, indexToTag(manager.getBackStackEntryCount() + 1))
                 .addToBackStack(null)
                 .commit();
         }
         else {
             manager.beginTransaction()
-                .add(containerId, fragment)
+                .add(containerId, fragment, indexToTag(0))
                 .commit();
         }
 
         manager.executePendingTransactions();
-        fragments.add(fragment);
     }
 
     /**
@@ -104,7 +101,6 @@ public class FragmentStack {
             return false;
         Fragment top = peek();
         manager.popBackStackImmediate();
-        fragments.remove(top);
         if (onFragmentRemovedListener != null)
             onFragmentRemovedListener.onFragmentRemoved(top);
         return true;
@@ -114,28 +110,25 @@ public class FragmentStack {
      * Replaces stack contents with just one fragment.
      */
     public void replace(Fragment fragment) {
-        List<Fragment> before = new ArrayList<>(fragments);
+        List<Fragment> fragments = getFragments();
 
         manager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         manager.beginTransaction()
-            .setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right)
-            .replace(containerId, fragment)
+            .replace(containerId, fragment, indexToTag(0))
             .commit();
         manager.executePendingTransactions();
-        fragments.clear();
-        fragments.add(fragment);
 
         if (onFragmentRemovedListener != null) {
-            for (Fragment fragment1 : before)
+            for (Fragment fragment1 : fragments)
                 onFragmentRemovedListener.onFragmentRemoved(fragment1);
         }
     }
 
     /**
-     * Returns the topmost fragment in the stack or null.
+     * Returns the topmost fragment in the stack.
      */
     public Fragment peek() {
-        return fragments.size() == 0 ? null : fragments.get(fragments.size() - 1);
+        return manager.findFragmentById(containerId);
     }
 
     /**
@@ -162,10 +155,25 @@ public class FragmentStack {
     }
 
     private Fragment getBackFragment(Fragment fragment) {
+        List<Fragment> fragments = getFragments();
         for (int f = fragments.size() - 1; f >= 0; f--) {
             if (fragments.get(f) == fragment && f > 0)
                 return fragments.get(f - 1);
         }
         return null;
+    }
+
+    private List<Fragment> getFragments() {
+        List<Fragment> fragments = new ArrayList<>(manager.getBackStackEntryCount() + 1);
+        for (int i = 0; i < manager.getBackStackEntryCount() + 1; i++) {
+            Fragment fragment = manager.findFragmentByTag(indexToTag(i));
+            if (fragment != null)
+                fragments.add(fragment);
+        }
+        return fragments;
+    }
+
+    private String indexToTag(int index) {
+        return Integer.toString(index);
     }
 }

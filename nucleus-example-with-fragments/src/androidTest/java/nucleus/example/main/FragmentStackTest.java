@@ -156,6 +156,6 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
     }
 
     private void assertFragment(FragmentManager manager, Fragment fragment, int index) {
-        assertEquals(fragment, manager.getFragments().get(index));
+        assertEquals(fragment, manager.findFragmentByTag(Integer.toString(index)));
     }
 }
