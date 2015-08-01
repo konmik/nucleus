@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 
 import nucleus.example.R;
 import nucleus.view.NucleusAppCompatActivity;
+import nucleus.view.ViewWithPresenter;
 
 public class MainActivity extends NucleusAppCompatActivity<MainPresenter> {
 
@@ -15,7 +16,13 @@ public class MainActivity extends NucleusAppCompatActivity<MainPresenter> {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        fragmentStack = new FragmentStack(this, getSupportFragmentManager(), R.id.fragmentContainer);
+        fragmentStack = new FragmentStack(this, getSupportFragmentManager(), R.id.fragmentContainer, new FragmentStack.OnFragmentRemovedListener() {
+            @Override
+            public void onFragmentRemoved(Fragment fragment) {
+                if (fragment instanceof ViewWithPresenter)
+                    ((ViewWithPresenter)fragment).getPresenter().destroy();
+            }
+        });
 
         if (savedInstanceState == null)
             fragmentStack.replace(new MainFragment());
