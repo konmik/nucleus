@@ -102,13 +102,16 @@ public class NucleusActivityTest {
     @Test
     public void testLifecycle() throws Exception {
         tested.onCreate(null);
+
         tested.onResume();
         verify(mockDelegate, times(1)).onResume(tested);
-        tested.onPause();
-        verify(mockDelegate, times(1)).onPause(false);
+
         tested.onSaveInstanceState(BundleMock.mock());
         verify(mockDelegate, times(1)).onSaveInstanceState();
+
         tested.onDestroy();
+        verify(mockDelegate, times(1)).onDestroy(false);
+
         verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
     }
 
@@ -130,9 +133,9 @@ public class NucleusActivityTest {
     @Test
     public void testDestroy() throws Exception {
         tested.onCreate(null);
+        tested.onResume();
         setUpIsFinishing(true);
-        tested.onPause();
         tested.onDestroy();
-        verify(mockDelegate, times(1)).onPause(true);
+        verify(mockDelegate, times(1)).onDestroy(true);
     }
 }

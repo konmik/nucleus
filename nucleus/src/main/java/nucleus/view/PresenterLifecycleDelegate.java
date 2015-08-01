@@ -21,6 +21,7 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
     @Nullable private PresenterFactory<P> presenterFactory;
     @Nullable private P presenter;
     @Nullable private Bundle bundle;
+    private boolean viewIsTaken;
 
     public PresenterLifecycleDelegate(@Nullable PresenterFactory<P> presenterFactory) {
         this.presenterFactory = presenterFactory;
@@ -90,17 +91,20 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
      */
     public void onResume(Object view) {
         getPresenter();
-        if (presenter != null)
+        if (presenter != null && !viewIsTaken) {
             //noinspection unchecked
             presenter.takeView(view);
+            viewIsTaken = true;
+        }
     }
 
     /**
-     * {@link android.app.Activity#onPause()}, {@link android.app.Fragment#onPause()}, {@link android.view.View#onDetachedFromWindow()}
+     * {@link android.app.Activity#onDestroy()} ()}, {@link android.app.Fragment#onDestroyView()}, {@link android.view.View#onDetachedFromWindow()}
      */
-    public void onPause(boolean destroy) {
+    public void onDestroy(boolean destroy) {
         if (presenter != null) {
             presenter.dropView();
+            viewIsTaken = false;
             if (destroy) {
                 presenter.destroy();
                 presenter = null;

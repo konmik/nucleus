@@ -71,8 +71,8 @@ public abstract class NucleusFragmentActivity<P extends Presenter> extends Fragm
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        presenterDelegate.onPause(isFinishing());
+    protected void onDestroy() {
+        super.onDestroy();
+        presenterDelegate.onDestroy(isFinishing());
     }
 }

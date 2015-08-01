@@ -71,8 +71,8 @@ public abstract class NucleusActionBarActivity<P extends Presenter> extends Acti
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        presenterDelegate.onPause(isFinishing());
+    protected void onDestroy() {
+        super.onDestroy();
+        presenterDelegate.onDestroy(isFinishing());
     }
 }

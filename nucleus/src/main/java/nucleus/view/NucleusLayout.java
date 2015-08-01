@@ -107,6 +107,6 @@ public class NucleusLayout<P extends Presenter> extends FrameLayout implements V
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        presenterDelegate.onPause(getActivity().isFinishing());
+        presenterDelegate.onDestroy(getActivity().isFinishing());
     }
 }
