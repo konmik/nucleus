@@ -111,23 +111,28 @@ public class PresenterLifecycleDelegateTest {
         PresenterLifecycleDelegate<?> delegate = new PresenterLifecycleDelegate<>(null);
         delegate.onRestoreInstanceState(BundleMock.mock());
         assertNull(delegate.getPresenterFactory());
-        assertNull(delegate.getPresenter());
-        assertNotNull(delegate.onSaveInstanceState());
+        assertNotNull(delegate.onSaveInstanceState(1));
         delegate.setPresenterFactory(null);
         delegate.onResume(1);
         delegate.onDestroy(false);
         delegate.onDestroy(true);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testGetPresenterThrows() throws Exception {
+        PresenterLifecycleDelegate<?> delegate = new PresenterLifecycleDelegate<>(null);
+        assertNull(delegate.getPresenter(1));
+    }
+
     @Test
     public void twoWaysOfFactoryInjection() throws Exception {
         PresenterLifecycleDelegate<Presenter> delegate = new PresenterLifecycleDelegate<>(factory);
-        Presenter presenter = delegate.getPresenter();
+        Presenter presenter = delegate.getPresenter(1);
         assertEquals(presenters.get(0), presenter);
 
         delegate = new PresenterLifecycleDelegate<>(null);
         delegate.setPresenterFactory(factory);
-        presenter = delegate.getPresenter();
+        presenter = delegate.getPresenter(1);
         assertEquals(presenters.get(1), presenter);
     }
 
@@ -135,26 +140,26 @@ public class PresenterLifecycleDelegateTest {
     public void saveRestore() throws Exception {
         PresenterLifecycleDelegate<Presenter> delegate = new PresenterLifecycleDelegate<>(factory);
         delegate.onResume(1);
-        Bundle bundle = delegate.onSaveInstanceState();
+        Bundle bundle = delegate.onSaveInstanceState(1);
 
         delegate = new PresenterLifecycleDelegate<>(factory);
         delegate.onRestoreInstanceState(bundle);
-        assertEquals(presenters.get(0), delegate.getPresenter());
+        assertEquals(presenters.get(0), delegate.getPresenter(1));
 
         delegate = new PresenterLifecycleDelegate<>(factory);
-        assertNotEquals(presenters.get(0), delegate.getPresenter());
+        assertNotEquals(presenters.get(0), delegate.getPresenter(1));
     }
 
     @Test
     public void saveNoResume() throws Exception {
         PresenterLifecycleDelegate<Presenter> delegate = new PresenterLifecycleDelegate<>(factory);
-        Bundle bundle = delegate.onSaveInstanceState();
+        Bundle bundle = delegate.onSaveInstanceState(1);
 
         delegate = new PresenterLifecycleDelegate<>(factory);
         delegate.onRestoreInstanceState(bundle);
-        assertEquals(presenters.get(0), delegate.getPresenter());
+        assertEquals(presenters.get(0), delegate.getPresenter(1));
 
         delegate = new PresenterLifecycleDelegate<>(factory);
-        assertNotEquals(presenters.get(0), delegate.getPresenter());
+        assertNotEquals(presenters.get(0), delegate.getPresenter(1));
     }
 }

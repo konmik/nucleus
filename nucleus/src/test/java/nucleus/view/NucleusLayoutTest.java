@@ -81,7 +81,12 @@ public class NucleusLayoutTest {
 
         mockDelegate = mock(PresenterLifecycleDelegate.class);
         PowerMockito.whenNew(PresenterLifecycleDelegate.class).withAnyArguments().thenReturn(mockDelegate);
-        when(mockDelegate.getPresenter()).thenReturn(mockPresenter);
+        when(mockDelegate.getPresenter(argThat(new ArgumentMatcher() {
+            @Override
+            public boolean matches(Object argument) {
+                return argument == tested;
+            }
+        }))).thenReturn(mockPresenter);
 
         mockFactory = mock(ReflectionPresenterFactory.class);
         when(mockFactory.createPresenter()).thenReturn(mockPresenter);
@@ -92,9 +97,6 @@ public class NucleusLayoutTest {
 
     @Before
     public void setUp() throws Exception {
-        setUpPresenter();
-
-        tested = spy(VIEW_CLASS);
         suppress(constructor(BASE_VIEW_CLASS, Context.class));
         suppress(method(BASE_VIEW_CLASS, "onRestoreInstanceState", Parcelable.class));
         suppress(method(BASE_VIEW_CLASS, "onSaveInstanceState"));
@@ -102,6 +104,9 @@ public class NucleusLayoutTest {
         suppress(method(BASE_VIEW_CLASS, "onDetachedFromWindow"));
 
         setUpIsFinishing(false);
+
+        setUpPresenter();
+        tested = spy(VIEW_CLASS);
     }
 
     @Test
@@ -114,7 +119,7 @@ public class NucleusLayoutTest {
                 return TestView.class.isAssignableFrom((Class)argument);
             }
         }));
-        verify(mockDelegate, times(1)).getPresenter();
+        verify(mockDelegate, times(1)).getPresenter(tested);
         verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
     }
 
@@ -125,14 +130,14 @@ public class NucleusLayoutTest {
         tested.onDetachedFromWindow();
         verify(mockDelegate, times(1)).onDestroy(false);
         tested.onSaveInstanceState();
-        verify(mockDelegate, times(1)).onSaveInstanceState();
+        verify(mockDelegate, times(1)).onSaveInstanceState(any());
         verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
     }
 
     @Test
     public void testSaveRestore() throws Exception {
         Bundle presenterBundle = BundleMock.mock();
-        when(mockDelegate.onSaveInstanceState()).thenReturn(presenterBundle);
+        when(mockDelegate.onSaveInstanceState(any())).thenReturn(presenterBundle);
 
         Bundle state = (Bundle)tested.onSaveInstanceState();
 

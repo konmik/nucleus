@@ -2,6 +2,7 @@ package nucleus.example.main;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +41,8 @@ public class MainFragment extends LoggingFragment<MainPresenter> {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        Log.v(getClass().getSimpleName(), "onViewCreated");
+
         check1 = (CheckedTextView)view.findViewById(R.id.check1);
         check2 = (CheckedTextView)view.findViewById(R.id.check2);
 
@@ -65,6 +68,7 @@ public class MainFragment extends LoggingFragment<MainPresenter> {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.v(getClass().getSimpleName(), "onItemClickListener " + adapter);
                 ServerAPI.Item item = adapter.getItem(position);
                 ((MainActivity)getActivity()).push(new ItemFragment(item.toString()));
             }
@@ -74,9 +78,11 @@ public class MainFragment extends LoggingFragment<MainPresenter> {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        Log.v(getClass().getSimpleName(), "onDestroyView");
         check1 = null;
         check2 = null;
         adapter = null;
+        ((ListView)getView().findViewById(R.id.listView)).setOnItemClickListener(null);
     }
 
     public void onItems(ServerAPI.Item[] items, String user) {

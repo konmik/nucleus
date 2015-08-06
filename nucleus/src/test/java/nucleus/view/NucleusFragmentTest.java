@@ -60,7 +60,12 @@ public class NucleusFragmentTest {
 
         mockDelegate = mock(PresenterLifecycleDelegate.class);
         PowerMockito.whenNew(PresenterLifecycleDelegate.class).withAnyArguments().thenReturn(mockDelegate);
-        when(mockDelegate.getPresenter()).thenReturn(mockPresenter);
+        when(mockDelegate.getPresenter(argThat(new ArgumentMatcher() {
+            @Override
+            public boolean matches(Object argument) {
+                return argument == tested;
+            }
+        }))).thenReturn(mockPresenter);
 
         mockFactory = mock(ReflectionPresenterFactory.class);
         when(mockFactory.createPresenter()).thenReturn(mockPresenter);
@@ -71,9 +76,6 @@ public class NucleusFragmentTest {
 
     @Before
     public void setUp() throws Exception {
-        setUpPresenter();
-
-        tested = spy(VIEW_CLASS);
         suppress(method(BASE_VIEW_CLASS, "onCreate", Bundle.class));
         suppress(method(BASE_VIEW_CLASS, "onSaveInstanceState", Bundle.class));
         suppress(method(BASE_VIEW_CLASS, "onResume"));
@@ -81,6 +83,9 @@ public class NucleusFragmentTest {
         suppress(method(BASE_VIEW_CLASS, "onDestroyView"));
 
         setUpIsFinishing(false);
+
+        setUpPresenter();
+        tested = spy(VIEW_CLASS);
     }
 
     @Test
@@ -94,8 +99,10 @@ public class NucleusFragmentTest {
                 return TestView.class.isAssignableFrom((Class)argument);
             }
         }));
-        verify(mockDelegate, times(1)).getPresenter();
-        verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
+        verify(mockDelegate, times(1)).getPresenter(tested);
+        verifyNoMoreInteractions(mockPresenter);
+        verifyNoMoreInteractions(mockDelegate);
+        verifyNoMoreInteractions(mockFactory);
     }
 
     @Test
@@ -105,7 +112,7 @@ public class NucleusFragmentTest {
         verify(mockDelegate, times(1)).onResume(tested);
 
         tested.onSaveInstanceState(BundleMock.mock());
-        verify(mockDelegate, times(1)).onSaveInstanceState();
+        verify(mockDelegate, times(1)).onSaveInstanceState(any());
 
         tested.onDestroyView();
         verify(mockDelegate, times(1)).onDestroy(false);
@@ -116,7 +123,7 @@ public class NucleusFragmentTest {
     @Test
     public void testSaveRestore() throws Exception {
         Bundle presenterBundle = BundleMock.mock();
-        when(mockDelegate.onSaveInstanceState()).thenReturn(presenterBundle);
+        when(mockDelegate.onSaveInstanceState(any())).thenReturn(presenterBundle);
 
         tested.onCreate(null);
 

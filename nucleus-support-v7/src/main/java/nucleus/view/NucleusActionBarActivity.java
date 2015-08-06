@@ -48,7 +48,7 @@ public abstract class NucleusActionBarActivity<P extends Presenter> extends Acti
      * @return a currently attached presenter or null.
      */
     public P getPresenter() {
-        return presenterDelegate.getPresenter();
+        return presenterDelegate.getPresenter(this);
     }
 
     @Override
@@ -61,7 +61,7 @@ public abstract class NucleusActionBarActivity<P extends Presenter> extends Acti
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBundle(PRESENTER_STATE_KEY, presenterDelegate.onSaveInstanceState());
+        outState.putBundle(PRESENTER_STATE_KEY, presenterDelegate.onSaveInstanceState(this));
     }
 
     @Override

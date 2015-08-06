@@ -46,7 +46,7 @@ public abstract class NucleusSupportFragment<P extends Presenter> extends Fragme
      * @return a currently attached presenter or null.
      */
     public P getPresenter() {
-        return presenterDelegate.getPresenter();
+        return presenterDelegate.getPresenter(this);
     }
 
     @Override
@@ -59,7 +59,7 @@ public abstract class NucleusSupportFragment<P extends Presenter> extends Fragme
     @Override
     public void onSaveInstanceState(Bundle bundle) {
         super.onSaveInstanceState(bundle);
-        bundle.putBundle(PRESENTER_STATE_KEY, presenterDelegate.onSaveInstanceState());
+        bundle.putBundle(PRESENTER_STATE_KEY, presenterDelegate.onSaveInstanceState(this));
     }
 
     @Override

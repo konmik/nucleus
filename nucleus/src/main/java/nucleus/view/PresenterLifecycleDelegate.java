@@ -21,7 +21,6 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
     @Nullable private PresenterFactory<P> presenterFactory;
     @Nullable private P presenter;
     @Nullable private Bundle bundle;
-    private boolean viewIsTaken;
 
     public PresenterLifecycleDelegate(@Nullable PresenterFactory<P> presenterFactory) {
         this.presenterFactory = presenterFactory;
@@ -47,9 +46,12 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
     /**
      * {@link ViewWithPresenter#getPresenter()}
      */
-    public P getPresenter() {
-        if (presenterFactory != null) {
-            if (presenter == null && bundle != null)
+    public P getPresenter(Object view) {
+        if (presenterFactory == null)
+            throw new IllegalStateException("" + view + " does not have a presenter factory. Forgot @RequiresPresenter?");
+
+        if (presenter == null) {
+            if (bundle != null)
                 presenter = PresenterStorage.INSTANCE.getPresenter(bundle.getString(PRESENTER_ID_KEY));
 
             if (presenter == null) {
@@ -57,17 +59,21 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
                 PresenterStorage.INSTANCE.add(presenter);
                 presenter.create(bundle == null ? null : bundle.getBundle(PRESENTER_KEY));
             }
+
             bundle = null;
         }
+
+        presenter.takeView(view);
         return presenter;
     }
 
     /**
      * {@link android.app.Activity#onSaveInstanceState(Bundle)}, {@link android.app.Fragment#onSaveInstanceState(Bundle)}, {@link android.view.View#onSaveInstanceState()}.
      */
-    public Bundle onSaveInstanceState() {
+    public Bundle onSaveInstanceState(Object view) {
         Bundle bundle = new Bundle();
-        getPresenter();
+        if (presenterFactory != null)
+            getPresenter(view);
         if (presenter != null) {
             Bundle presenterBundle = new Bundle();
             presenter.save(presenterBundle);
@@ -82,7 +88,7 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
      */
     public void onRestoreInstanceState(Bundle presenterState) {
         if (presenter != null)
-            throw new IllegalArgumentException("onRestoreInstanceState() should be called before onResume()");
+            throw new IllegalArgumentException("onRestoreInstanceState() should be called before getPresenter()");
         this.bundle = presenterState;
     }
 
@@ -90,12 +96,8 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
      * {@link android.app.Activity#onResume()}, {@link android.app.Fragment#onResume()}, {@link android.view.View#onAttachedToWindow()}
      */
     public void onResume(Object view) {
-        getPresenter();
-        if (presenter != null && !viewIsTaken) {
-            //noinspection unchecked
-            presenter.takeView(view);
-            viewIsTaken = true;
-        }
+        if (presenterFactory != null)
+            getPresenter(view);
     }
 
     /**
@@ -104,7 +106,6 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
     public void onDestroy(boolean destroy) {
         if (presenter != null) {
             presenter.dropView();
-            viewIsTaken = false;
             if (destroy) {
                 presenter.destroy();
                 presenter = null;
