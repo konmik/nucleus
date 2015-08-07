@@ -77,6 +77,7 @@ public class MainFragment extends LoggingFragment<MainPresenter> {
         check1 = null;
         check2 = null;
         adapter = null;
+        ((ListView)getView().findViewById(R.id.listView)).setOnItemClickListener(null);
     }
 
     public void onItems(ServerAPI.Item[] items, String user) {
