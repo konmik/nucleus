@@ -48,7 +48,7 @@ public abstract class NucleusActivity<P extends Presenter> extends Activity impl
      * @return a currently attached presenter or null.
      */
     public P getPresenter() {
-        return presenterDelegate.getPresenter(this);
+        return presenterDelegate.getPresenter();
     }
 
     @Override
@@ -61,7 +61,7 @@ public abstract class NucleusActivity<P extends Presenter> extends Activity impl
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBundle(PRESENTER_STATE_KEY, presenterDelegate.onSaveInstanceState(this));
+        outState.putBundle(PRESENTER_STATE_KEY, presenterDelegate.onSaveInstanceState());
     }
 
     @Override
@@ -71,8 +71,8 @@ public abstract class NucleusActivity<P extends Presenter> extends Activity impl
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        presenterDelegate.onDestroy(isFinishing());
+    protected void onPause() {
+        super.onPause();
+        presenterDelegate.onPause(isFinishing());
     }
 }

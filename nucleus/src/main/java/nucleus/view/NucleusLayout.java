@@ -65,7 +65,7 @@ public class NucleusLayout<P extends Presenter> extends FrameLayout implements V
      * @return a currently attached presenter or null.
      */
     public P getPresenter() {
-        return presenterDelegate.getPresenter(this);
+        return presenterDelegate.getPresenter();
     }
 
     /**
@@ -85,7 +85,7 @@ public class NucleusLayout<P extends Presenter> extends FrameLayout implements V
     @Override
     protected Parcelable onSaveInstanceState() {
         Bundle bundle = new Bundle();
-        bundle.putBundle(PRESENTER_STATE_KEY, presenterDelegate.onSaveInstanceState(this));
+        bundle.putBundle(PRESENTER_STATE_KEY, presenterDelegate.onSaveInstanceState());
         bundle.putParcelable(PARENT_STATE_KEY, super.onSaveInstanceState());
         return bundle;
     }
@@ -107,6 +107,6 @@ public class NucleusLayout<P extends Presenter> extends FrameLayout implements V
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        presenterDelegate.onDestroy(getActivity().isFinishing());
+        presenterDelegate.onPause(getActivity().isFinishing());
     }
 }

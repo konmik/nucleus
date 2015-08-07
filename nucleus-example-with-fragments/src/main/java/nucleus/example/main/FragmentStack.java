@@ -1,7 +1,6 @@
 package nucleus.example.main;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
@@ -9,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nucleus.example.R;
+import nucleus.view.ViewWithPresenter;
 
 /**
  * Why this class is needed.
@@ -26,20 +26,14 @@ public class FragmentStack {
         boolean onBackPressed();
     }
 
-    public interface OnFragmentRemovedListener {
-        void onFragmentRemoved(Fragment fragment);
-    }
-
     private Activity activity;
     private FragmentManager manager;
     private int containerId;
-    @Nullable private OnFragmentRemovedListener onFragmentRemovedListener;
 
-    public FragmentStack(Activity activity, FragmentManager manager, int containerId, @Nullable OnFragmentRemovedListener onFragmentRemovedListener) {
+    public FragmentStack(Activity activity, FragmentManager manager, int containerId) {
         this.activity = activity;
         this.manager = manager;
         this.containerId = containerId;
-        this.onFragmentRemovedListener = onFragmentRemovedListener;
     }
 
     /**
@@ -101,26 +95,25 @@ public class FragmentStack {
             return false;
         Fragment top = peek();
         manager.popBackStackImmediate();
-        if (onFragmentRemovedListener != null)
-            onFragmentRemovedListener.onFragmentRemoved(top);
+        destroyPresenter(top);
         return true;
     }
 
     /**
      * Replaces stack contents with just one fragment.
      */
-    public void replace(Fragment fragment) {
+    public void replace(Fragment fragment1) {
         List<Fragment> fragments = getFragments();
 
         manager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         manager.beginTransaction()
-            .replace(containerId, fragment, indexToTag(0))
+            .replace(containerId, fragment1, indexToTag(0))
             .commit();
         manager.executePendingTransactions();
 
-        if (onFragmentRemovedListener != null) {
-            for (Fragment fragment1 : fragments)
-                onFragmentRemovedListener.onFragmentRemoved(fragment1);
+        for (Fragment fragment : fragments) {
+            if (fragment instanceof ViewWithPresenter)
+                ((ViewWithPresenter)fragment).getPresenter().destroy();
         }
     }
 
@@ -171,6 +164,11 @@ public class FragmentStack {
                 fragments.add(fragment);
         }
         return fragments;
+    }
+
+    private void destroyPresenter(Fragment fragment) {
+        if (fragment instanceof ViewWithPresenter)
+            ((ViewWithPresenter)fragment).getPresenter().destroy();
     }
 
     private String indexToTag(int index) {

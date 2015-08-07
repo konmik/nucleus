@@ -3,7 +3,6 @@ package nucleus.view;
 import android.app.Activity;
 import android.os.Bundle;
 
-import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +19,6 @@ import nucleus.presenter.Presenter;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -63,12 +61,7 @@ public class NucleusActivityTest {
 
         mockDelegate = mock(PresenterLifecycleDelegate.class);
         PowerMockito.whenNew(PresenterLifecycleDelegate.class).withAnyArguments().thenReturn(mockDelegate);
-        when(mockDelegate.getPresenter(argThat(new ArgumentMatcher() {
-            @Override
-            public boolean matches(Object argument) {
-                return argument == tested;
-            }
-        }))).thenReturn(mockPresenter);
+        when(mockDelegate.getPresenter()).thenReturn(mockPresenter);
 
         mockFactory = mock(ReflectionPresenterFactory.class);
         when(mockFactory.createPresenter()).thenReturn(mockPresenter);
@@ -79,6 +72,9 @@ public class NucleusActivityTest {
 
     @Before
     public void setUp() throws Exception {
+        setUpPresenter();
+
+        tested = spy(VIEW_CLASS);
         suppress(method(BASE_VIEW_CLASS, "onCreate", Bundle.class));
         suppress(method(BASE_VIEW_CLASS, "onSaveInstanceState", Bundle.class));
         suppress(method(BASE_VIEW_CLASS, "onResume"));
@@ -86,9 +82,6 @@ public class NucleusActivityTest {
         suppress(method(BASE_VIEW_CLASS, "onDestroy"));
 
         setUpIsFinishing(false);
-
-        setUpPresenter();
-        tested = spy(VIEW_CLASS);
     }
 
     @Test
@@ -102,30 +95,27 @@ public class NucleusActivityTest {
                 return TestView.class.isAssignableFrom((Class)argument);
             }
         }));
-        verify(mockDelegate, times(1)).getPresenter(tested);
+        verify(mockDelegate, times(1)).getPresenter();
         verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
     }
 
     @Test
     public void testLifecycle() throws Exception {
         tested.onCreate(null);
-
         tested.onResume();
         verify(mockDelegate, times(1)).onResume(tested);
-
+        tested.onPause();
+        verify(mockDelegate, times(1)).onPause(false);
         tested.onSaveInstanceState(BundleMock.mock());
-        verify(mockDelegate, times(1)).onSaveInstanceState(any());
-
+        verify(mockDelegate, times(1)).onSaveInstanceState();
         tested.onDestroy();
-        verify(mockDelegate, times(1)).onDestroy(false);
-
         verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
     }
 
     @Test
     public void testSaveRestore() throws Exception {
         Bundle presenterBundle = BundleMock.mock();
-        when(mockDelegate.onSaveInstanceState(any())).thenReturn(presenterBundle);
+        when(mockDelegate.onSaveInstanceState()).thenReturn(presenterBundle);
 
         tested.onCreate(null);
 
@@ -140,9 +130,9 @@ public class NucleusActivityTest {
     @Test
     public void testDestroy() throws Exception {
         tested.onCreate(null);
-        tested.onResume();
         setUpIsFinishing(true);
+        tested.onPause();
         tested.onDestroy();
-        verify(mockDelegate, times(1)).onDestroy(true);
+        verify(mockDelegate, times(1)).onPause(true);
     }
 }

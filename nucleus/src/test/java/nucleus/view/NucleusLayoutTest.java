@@ -81,12 +81,7 @@ public class NucleusLayoutTest {
 
         mockDelegate = mock(PresenterLifecycleDelegate.class);
         PowerMockito.whenNew(PresenterLifecycleDelegate.class).withAnyArguments().thenReturn(mockDelegate);
-        when(mockDelegate.getPresenter(argThat(new ArgumentMatcher() {
-            @Override
-            public boolean matches(Object argument) {
-                return argument == tested;
-            }
-        }))).thenReturn(mockPresenter);
+        when(mockDelegate.getPresenter()).thenReturn(mockPresenter);
 
         mockFactory = mock(ReflectionPresenterFactory.class);
         when(mockFactory.createPresenter()).thenReturn(mockPresenter);
@@ -97,6 +92,9 @@ public class NucleusLayoutTest {
 
     @Before
     public void setUp() throws Exception {
+        setUpPresenter();
+
+        tested = spy(VIEW_CLASS);
         suppress(constructor(BASE_VIEW_CLASS, Context.class));
         suppress(method(BASE_VIEW_CLASS, "onRestoreInstanceState", Parcelable.class));
         suppress(method(BASE_VIEW_CLASS, "onSaveInstanceState"));
@@ -104,9 +102,6 @@ public class NucleusLayoutTest {
         suppress(method(BASE_VIEW_CLASS, "onDetachedFromWindow"));
 
         setUpIsFinishing(false);
-
-        setUpPresenter();
-        tested = spy(VIEW_CLASS);
     }
 
     @Test
@@ -119,7 +114,7 @@ public class NucleusLayoutTest {
                 return TestView.class.isAssignableFrom((Class)argument);
             }
         }));
-        verify(mockDelegate, times(1)).getPresenter(tested);
+        verify(mockDelegate, times(1)).getPresenter();
         verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
     }
 
@@ -128,16 +123,16 @@ public class NucleusLayoutTest {
         tested.onAttachedToWindow();
         verify(mockDelegate, times(1)).onResume(tested);
         tested.onDetachedFromWindow();
-        verify(mockDelegate, times(1)).onDestroy(false);
+        verify(mockDelegate, times(1)).onPause(false);
         tested.onSaveInstanceState();
-        verify(mockDelegate, times(1)).onSaveInstanceState(any());
+        verify(mockDelegate, times(1)).onSaveInstanceState();
         verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
     }
 
     @Test
     public void testSaveRestore() throws Exception {
         Bundle presenterBundle = BundleMock.mock();
-        when(mockDelegate.onSaveInstanceState(any())).thenReturn(presenterBundle);
+        when(mockDelegate.onSaveInstanceState()).thenReturn(presenterBundle);
 
         Bundle state = (Bundle)tested.onSaveInstanceState();
 
@@ -150,7 +145,7 @@ public class NucleusLayoutTest {
     public void testDestroy() throws Exception {
         setUpIsFinishing(true);
         tested.onDetachedFromWindow();
-        verify(mockDelegate, times(1)).onDestroy(true);
+        verify(mockDelegate, times(1)).onPause(true);
     }
 
     @Test
