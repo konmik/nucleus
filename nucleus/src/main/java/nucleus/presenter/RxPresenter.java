@@ -130,6 +130,13 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
+     * This is a shortcut for calling {@link #restartableFirst(int, Func0, Action2, Action2)} with the last parameter = null.
+     */
+    public <T> void restartableFirst(int restartableId, final Func0<Observable<T>> observableFactory, final Action2<View, T> onNext) {
+        restartableFirst(restartableId, observableFactory, onNext, null);
+    }
+
+    /**
      * This is a shortcut that can be used instead of combining together
      * {@link #restartable(int, Func0)},
      * {@link #deliverLatestCache()},
@@ -155,6 +162,13 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
+     * This is a shortcut for calling {@link #restartableLatestCache(int, Func0, Action2, Action2)} with the last parameter = null.
+     */
+    public <T> void restartableLatestCache(int restartableId, final Func0<Observable<T>> observableFactory, final Action2<View, T> onNext) {
+        restartableLatestCache(restartableId, observableFactory, onNext, null);
+    }
+
+    /**
      * This is a shortcut that can be used instead of combining together
      * {@link #restartable(int, Func0)},
      * {@link #deliverReplay()},
@@ -177,6 +191,13 @@ public class RxPresenter<View> extends Presenter<View> {
                     .subscribe(split(onNext, onError));
             }
         });
+    }
+
+    /**
+     * This is a shortcut for calling {@link #restartableReplay(int, Func0, Action2, Action2)} with the last parameter = null.
+     */
+    public <T> void restartableReplay(int restartableId, final Func0<Observable<T>> observableFactory, final Action2<View, T> onNext) {
+        restartableReplay(restartableId, observableFactory, onNext, null);
     }
 
     /**
