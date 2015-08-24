@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import rx.Notification;
 import rx.Subscription;
+import rx.exceptions.OnErrorNotImplementedException;
 import rx.functions.Action1;
 import rx.functions.Action2;
 import rx.observers.TestSubscriber;
@@ -127,5 +128,49 @@ public class DeliverFirstTest {
         subscription.unsubscribe();
         assertFalse(subject.hasObservers());
         assertFalse(view.hasObservers());
+    }
+
+    //  https://github.com/ReactiveX/RxJava/issues/3182
+    @Test(expected = OnErrorNotImplementedException.class)
+    public void testThrowDuringOnNext() throws Exception {
+
+//        Observable
+//            .just(1)
+//            .filter(new Func1<Integer, Boolean>() {
+//                @Override
+//                public Boolean call(Integer integer) {
+//                    return true;
+//                }
+//            })
+//            .first()
+//            .subscribe(new Action1<Integer>() {
+//                @Override
+//                public void call(Integer integer) {
+//                    throw new RuntimeException();
+//                }
+//            });
+
+        PublishSubject<Object> view = PublishSubject.create();
+
+        final PublishSubject<Integer> subject = PublishSubject.create();
+        new DeliverFirst<Object, Integer>(view)
+            .call(subject)
+            .subscribe(new Action1<Delivery<Object, Integer>>() {
+                @Override
+                public void call(Delivery<Object, Integer> delivery) {
+                    delivery.split(
+                        new Action2<Object, Integer>() {
+                            @Override
+                            public void call(Object o, Integer integer) {
+                                throw new RuntimeException();
+                            }
+                        },
+                        null
+                    );
+                }
+            });
+
+        subject.onNext(3);
+        view.onNext(100);
     }
 }

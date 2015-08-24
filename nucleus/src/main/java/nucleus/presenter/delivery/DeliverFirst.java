@@ -18,7 +18,7 @@ public class DeliverFirst<View, T> implements Observable.Transformer<T, Delivery
         return Observable
             .combineLatest(
                 view,
-                observable.materialize().first(),
+                observable.materialize().take(1),
                 new Func2<View, Notification<T>, Delivery<View, T>>() {
                     @Override
                     public Delivery<View, T> call(View view, Notification<T> notification) {
@@ -31,6 +31,6 @@ public class DeliverFirst<View, T> implements Observable.Transformer<T, Delivery
                     return delivery != null;
                 }
             })
-            .first();
+            .take(1);
     }
 }
