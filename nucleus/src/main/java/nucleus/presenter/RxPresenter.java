@@ -291,9 +291,10 @@ public class RxPresenter<View> extends Presenter<View> {
     protected void onSave(Bundle state) {
         super.onSave(state);
         for (int i = requested.size() - 1; i >= 0; i--) {
-            Subscription subscription = restartableSubscriptions.get(i);
+            int restartableId = requested.get(i);
+            Subscription subscription = restartableSubscriptions.get(restartableId);
             if (subscription != null && subscription.isUnsubscribed())
-                requested.remove((Integer)i);
+                requested.remove(i);
         }
         state.putIntegerArrayList(REQUESTED_KEY, requested);
     }

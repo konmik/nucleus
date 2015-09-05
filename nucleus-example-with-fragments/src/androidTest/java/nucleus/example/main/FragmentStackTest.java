@@ -72,7 +72,12 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
     @UiThreadTest
     public void testPushPop() throws Exception {
         FragmentManager manager = activity.getSupportFragmentManager();
-        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID);
+        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID, new FragmentStack.OnFragmentRemovedListener() {
+            @Override
+            public void onFragmentRemoved(Fragment fragment) {
+
+            }
+        });
 
         TestFragment1 fragment = new TestFragment1();
         stack.push(fragment);
@@ -98,7 +103,12 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
     @UiThreadTest
     public void testReplace() throws Exception {
         FragmentManager manager = activity.getSupportFragmentManager();
-        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID);
+        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID, new FragmentStack.OnFragmentRemovedListener() {
+            @Override
+            public void onFragmentRemoved(Fragment fragment) {
+
+            }
+        });
 
         TestFragment1 fragment = new TestFragment1();
         stack.replace(fragment);
@@ -113,7 +123,12 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
     public void testPushReplace() throws Exception {
 
         FragmentManager manager = activity.getSupportFragmentManager();
-        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID);
+        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID, new FragmentStack.OnFragmentRemovedListener() {
+            @Override
+            public void onFragmentRemoved(Fragment fragment) {
+
+            }
+        });
 
         TestFragment1 fragment = new TestFragment1();
         stack.push(fragment);
@@ -132,7 +147,12 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
     @UiThreadTest
     public void testFindCallback() throws Exception {
         FragmentManager manager = activity.getSupportFragmentManager();
-        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID);
+        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID, new FragmentStack.OnFragmentRemovedListener() {
+            @Override
+            public void onFragmentRemoved(Fragment fragment) {
+
+            }
+        });
 
         TestFragmentC fragment = new TestFragmentC();
         stack.push(fragment);
@@ -147,7 +167,12 @@ public class FragmentStackTest extends ActivityInstrumentationTestCase2<TestActi
     @UiThreadTest
     public void testBack() throws Exception {
         FragmentManager manager = activity.getSupportFragmentManager();
-        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID);
+        FragmentStack stack = new FragmentStack(activity, manager, CONTAINER_ID, new FragmentStack.OnFragmentRemovedListener() {
+            @Override
+            public void onFragmentRemoved(Fragment fragment) {
+
+            }
+        });
 
         assertFalse(stack.back());
 

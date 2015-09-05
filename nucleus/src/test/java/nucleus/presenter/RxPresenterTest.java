@@ -125,6 +125,35 @@ public class RxPresenterTest {
     }
 
     @Test
+    public void testCompletedRestartableDoesNoRestart() throws Exception {
+        RxPresenter presenter = new RxPresenter();
+        presenter.onCreate(null);
+
+        Func0<Subscription> restartable = mock(Func0.class);
+        Subscription subscription = mock(Subscription.class);
+        when(restartable.call()).thenReturn(subscription);
+        when(subscription.isUnsubscribed()).thenReturn(false);
+        presenter.restartable(1, restartable);
+
+        verifyNoMoreInteractions(restartable);
+
+        presenter.start(1);
+
+        verify(restartable, times(1)).call();
+        verifyNoMoreInteractions(restartable);
+
+        when(subscription.isUnsubscribed()).thenReturn(true);
+        Bundle bundle = BundleMock.mock();
+        presenter.onSave(bundle);
+
+        presenter = new RxPresenter();
+        presenter.onCreate(bundle);
+        presenter.restartable(1, restartable);
+
+        verifyNoMoreInteractions(restartable);
+    }
+
+    @Test
     public void testViewObservable() {
         RxPresenter<Integer> presenter = new RxPresenter<>();
         presenter.onCreate(null);
