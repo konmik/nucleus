@@ -1,6 +1,7 @@
 package nucleus.presenter;
 
 import android.os.Bundle;
+import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -266,6 +267,7 @@ public class RxPresenter<View> extends Presenter<View> {
     /**
      * {@inheritDoc}
      */
+    @CallSuper
     @Override
     protected void onCreate(Bundle savedState) {
         if (savedState != null)
@@ -275,9 +277,9 @@ public class RxPresenter<View> extends Presenter<View> {
     /**
      * {@inheritDoc}
      */
+    @CallSuper
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         views.onCompleted();
         subscriptions.unsubscribe();
         for (Map.Entry<Integer, Subscription> entry : restartableSubscriptions.entrySet())
@@ -287,9 +289,9 @@ public class RxPresenter<View> extends Presenter<View> {
     /**
      * {@inheritDoc}
      */
+    @CallSuper
     @Override
     protected void onSave(Bundle state) {
-        super.onSave(state);
         for (int i = requested.size() - 1; i >= 0; i--) {
             int restartableId = requested.get(i);
             Subscription subscription = restartableSubscriptions.get(restartableId);
@@ -302,18 +304,18 @@ public class RxPresenter<View> extends Presenter<View> {
     /**
      * {@inheritDoc}
      */
+    @CallSuper
     @Override
     protected void onTakeView(View view) {
-        super.onTakeView(view);
         views.onNext(view);
     }
 
     /**
      * {@inheritDoc}
      */
+    @CallSuper
     @Override
     protected void onDropView() {
-        super.onDropView();
         views.onNext(null);
     }
 }
