@@ -3,7 +3,6 @@ package nucleus.presenter.delivery;
 import rx.Notification;
 import rx.Observable;
 import rx.functions.Func1;
-import rx.functions.Func2;
 
 public class DeliverFirst<View, T> implements Observable.Transformer<T, Delivery<View, T>> {
 
@@ -15,20 +14,17 @@ public class DeliverFirst<View, T> implements Observable.Transformer<T, Delivery
 
     @Override
     public Observable<Delivery<View, T>> call(Observable<T> observable) {
-        return Observable
-            .combineLatest(
-                view,
-                observable.materialize().take(1),
-                new Func2<View, Notification<T>, Delivery<View, T>>() {
-                    @Override
-                    public Delivery<View, T> call(View view, Notification<T> notification) {
-                        return view == null ? null : new Delivery<>(view, notification);
-                    }
-                })
-            .filter(new Func1<Delivery<View, T>, Boolean>() {
+        return observable.materialize()
+            .take(1)
+            .switchMap(new Func1<Notification<T>, Observable<? extends Delivery<View, T>>>() {
                 @Override
-                public Boolean call(Delivery<View, T> delivery) {
-                    return delivery != null;
+                public Observable<? extends Delivery<View, T>> call(final Notification<T> notification) {
+                    return view.map(new Func1<View, Delivery<View, T>>() {
+                        @Override
+                        public Delivery<View, T> call(View view) {
+                            return view == null ? null : new Delivery<>(view, notification);
+                        }
+                    });
                 }
             })
             .take(1);
