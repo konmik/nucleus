@@ -27,6 +27,12 @@ public class DeliverFirst<View, T> implements Observable.Transformer<T, Delivery
                     });
                 }
             })
+            .filter(new Func1<Delivery<View, T>, Boolean>() {
+                @Override
+                public Boolean call(Delivery<View, T> delivery) {
+                    return delivery != null;
+                }
+            })
             .take(1);
     }
 }
