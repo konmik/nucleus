@@ -110,7 +110,7 @@ public class Presenter<View> {
      * {@link Fragment#onResume()} and {@link Fragment#onPause()},
      * {@link android.view.View#onAttachedToWindow()} and {@link android.view.View#onDetachedFromWindow()}.
      *
-     * Calls outside of these methods will return null.
+     * Calls outside of these ranges will return null.
      * Notice here that {@link Activity#onActivityResult(int, int, Intent)} is called *before* {@link Activity#onResume()}
      * so you can't use this method as a callback.
      *
