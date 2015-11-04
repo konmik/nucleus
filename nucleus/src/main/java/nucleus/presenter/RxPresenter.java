@@ -99,7 +99,7 @@ public class RxPresenter<View> extends Presenter<View> {
      * @param restartableId id of a restartable.
      */
     public void stop(int restartableId) {
-        requested.remove((Integer)restartableId);
+        requested.remove((Integer) restartableId);
         Subscription subscription = restartableSubscriptions.get(restartableId);
         if (subscription != null)
             subscription.unsubscribe();
@@ -317,5 +317,15 @@ public class RxPresenter<View> extends Presenter<View> {
     @Override
     protected void onDropView() {
         views.onNext(null);
+    }
+
+    /**
+     * Please, use restartableXX and deliverXX methods for pushing data from RxPresenter into View.
+     */
+    @Deprecated
+    @Nullable
+    @Override
+    public View getView() {
+        return super.getView();
     }
 }

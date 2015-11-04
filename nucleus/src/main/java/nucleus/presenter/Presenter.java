@@ -2,6 +2,7 @@ package nucleus.presenter;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
@@ -103,6 +104,15 @@ public class Presenter<View> {
 
     /**
      * Returns a current view attached to the presenter or null.
+     *
+     * View is normally available between
+     * {@link Activity#onResume()} and {@link Activity#onPause()},
+     * {@link Fragment#onResume()} and {@link Fragment#onPause()},
+     * {@link android.view.View#onAttachedToWindow()} and {@link android.view.View#onDetachedFromWindow()}.
+     *
+     * Calls outside of these methods will return null.
+     * Notice here that {@link Activity#onActivityResult(int, int, Intent)} is called *before* {@link Activity#onResume()}
+     * so you can't use this method as a callback.
      *
      * @return a current attached view.
      */
