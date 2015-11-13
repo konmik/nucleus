@@ -82,7 +82,7 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
     public void onRestoreInstanceState(Bundle presenterState) {
         if (presenter != null)
             throw new IllegalArgumentException("onRestoreInstanceState() should be called before onResume()");
-        this.bundle = presenterState;
+        this.bundle = ParcelFn.unmarshall(ParcelFn.marshall(presenterState));
     }
 
     /**

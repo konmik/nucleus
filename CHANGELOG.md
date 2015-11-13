@@ -1,6 +1,6 @@
 # Changelog
 
-### XX.08.2015, Version: 2.0.0
+### 05.09.2015, Version: 2.0.0
 
 * RxPresenter became completely usable without getView().
 * OperatorSemaphore replaced with standard RxJava operators.

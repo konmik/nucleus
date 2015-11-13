@@ -1,6 +1,7 @@
 package nucleus.view;
 
 import android.os.Bundle;
+import android.os.Parcel;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import org.powermock.reflect.Whitebox;
 import java.util.ArrayList;
 
 import mocks.BundleMock;
+import mocks.ParcelMock;
 import nucleus.factory.PresenterFactory;
 import nucleus.factory.PresenterStorage;
 import nucleus.presenter.Presenter;
@@ -27,10 +29,11 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.doAnswer;
 import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({PresenterLifecycleDelegate.class, PresenterStorage.class})
+@PrepareForTest({PresenterLifecycleDelegate.class, PresenterStorage.class, ParcelFn.class, Parcel.class})
 public class PresenterLifecycleDelegateTest {
 
     PresenterStorage storage;
@@ -55,6 +58,10 @@ public class PresenterLifecycleDelegateTest {
                 return mockPresenter();
             }
         });
+
+        mockStatic(Parcel.class);
+        Parcel parcel = ParcelMock.mock();
+        PowerMockito.when(Parcel.obtain()).thenReturn(parcel);
     }
 
     Presenter mockPresenter() {
@@ -65,7 +72,7 @@ public class PresenterLifecycleDelegateTest {
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                onDestroyListeners.add((Presenter.OnDestroyListener)invocation.getArguments()[0]);
+                onDestroyListeners.add((Presenter.OnDestroyListener) invocation.getArguments()[0]);
                 return null;
             }
         }).when(presenter).addOnDestroyListener(any(Presenter.OnDestroyListener.class));
@@ -86,7 +93,7 @@ public class PresenterLifecycleDelegateTest {
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                presenters.add((Presenter)invocation.getArguments()[0]);
+                presenters.add((Presenter) invocation.getArguments()[0]);
                 return null;
             }
         }).when(storage).add(any(Presenter.class));
@@ -99,7 +106,7 @@ public class PresenterLifecycleDelegateTest {
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                return presenters.get(Integer.parseInt((String)invocation.getArguments()[0]));
+                return presenters.get(Integer.parseInt((String) invocation.getArguments()[0]));
             }
         }).when(storage).getPresenter(anyString());
         Whitebox.setInternalState(PresenterStorage.class, "INSTANCE", storage);
