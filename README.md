@@ -10,9 +10,9 @@ to properly connect background tasks with visual parts of an application.
 
 ### Introduction
 
-Some time has been passed from the moment when [Model-View-Presenter](http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter)
+Some time has passed since [Model-View-Presenter](http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter)
 and [RxJava](https://github.com/ReactiveX/RxJava)
-has completely superseded [Loader](http://developer.android.com/guide/components/loaders.html)
+completely superseded [Loader](http://developer.android.com/guide/components/loaders.html)
 and [AsyncTask](http://developer.android.com/reference/android/os/AsyncTask.html) in our applications.
 
 But there are still some defects in our applications even when using such advanced technologies:
