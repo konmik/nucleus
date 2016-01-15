@@ -106,14 +106,14 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
-     * Checks if a restartable is subscribed.
+     * Checks if a restartable is unsubscribed.
      *
      * @param restartableId id of the restartable.
-     * @return true if the restartable is subscribed, false otherwise.
+     * @return true if the subscription is null or unsubscribed, false otherwise.
      */
-    public boolean isSubscribed(int restartableId) {
+    public boolean isUnsubscribed(int restartableId) {
         Subscription subscription = restartableSubscriptions.get(restartableId);
-        return subscription != null && !subscription.isUnsubscribed();
+        return subscription == null || subscription.isUnsubscribed();
     }
 
     /**
