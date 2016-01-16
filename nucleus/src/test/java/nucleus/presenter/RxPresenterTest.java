@@ -20,6 +20,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.assertFalse;
+
 public class RxPresenterTest {
 
     @Test
@@ -153,6 +156,52 @@ public class RxPresenterTest {
         verifyNoMoreInteractions(restartable);
     }
 
+    @Test
+    public void testRestartableIsUnsubscribed() throws Exception {
+        RxPresenter presenter = new RxPresenter();
+        presenter.create(null);
+
+        Func0<Subscription> restartable = mock(Func0.class);
+        Subscription subscription = mock(Subscription.class);
+        when(restartable.call()).thenReturn(subscription);
+        when(subscription.isUnsubscribed()).thenReturn(false);
+
+        presenter.restartable(1, restartable);
+        assertTrue(presenter.isUnsubscribed(1));
+    }
+
+    @Test
+    public void testStartedRestartableIsNotUnsubscribed() throws Exception {
+        RxPresenter presenter = new RxPresenter();
+        presenter.create(null);
+
+        Func0<Subscription> restartable = mock(Func0.class);
+        Subscription subscription = mock(Subscription.class);
+        when(restartable.call()).thenReturn(subscription);
+        when(subscription.isUnsubscribed()).thenReturn(false);
+
+        presenter.restartable(1, restartable);
+        assertTrue(presenter.isUnsubscribed(1));
+        presenter.start(1);
+        assertFalse(presenter.isUnsubscribed(1));
+    }
+
+    @Test
+    public void testCompletedRestartableIsUnsubscribed() throws Exception {
+        RxPresenter presenter = new RxPresenter();
+        presenter.create(null);
+
+        Func0<Subscription> restartable = mock(Func0.class);
+        Subscription subscription = mock(Subscription.class);
+        when(restartable.call()).thenReturn(subscription);
+        when(subscription.isUnsubscribed()).thenReturn(true);
+
+        presenter.restartable(1, restartable);
+        assertTrue(presenter.isUnsubscribed(1));
+        presenter.start(1);
+        assertTrue(presenter.isUnsubscribed(1));
+    }
+    
     @Test
     public void testViewObservable() {
         RxPresenter<Integer> presenter = new RxPresenter<>();

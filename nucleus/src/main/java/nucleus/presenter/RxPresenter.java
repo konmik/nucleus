@@ -106,6 +106,17 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
+     * Checks if a restartable is unsubscribed.
+     *
+     * @param restartableId id of the restartable.
+     * @return true if the subscription is null or unsubscribed, false otherwise.
+     */
+    public boolean isUnsubscribed(int restartableId) {
+        Subscription subscription = restartableSubscriptions.get(restartableId);
+        return subscription == null || subscription.isUnsubscribed();
+    }
+
+    /**
      * This is a shortcut that can be used instead of combining together
      * {@link #restartable(int, Func0)},
      * {@link #deliverFirst()},
