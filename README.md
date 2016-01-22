@@ -1,7 +1,8 @@
 Nucleus
 =======
 
-[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Nucleus-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/1379)
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Nucleus-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/1379) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/info.android15.nucleus/nucleus/badge.png)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22info.android15.nucleus%22%20AND%20a%3A%22nucleus%22)
+
 
 Nucleus is a simple Android library, which utilizes the [Model-View-Presenter](http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter) pattern
 to properly connect background tasks with visual parts of an application.
@@ -71,7 +72,7 @@ became: "Nucleus is a simple Android library, which utilizes the Model-View-Pres
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus:2.0.4'
+    compile 'info.android15.nucleus:nucleus:2.0.5'
 }
 ```
 
@@ -79,7 +80,7 @@ For additional view classes `NucleusSupportFragment`, `NucleusFragmentActivity` 
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus-support-v4:2.0.4'
+    compile 'info.android15.nucleus:nucleus-support-v4:2.0.5'
 }
 ```
 
@@ -87,7 +88,7 @@ For additional view classes `NucleusActionBarActivity`, `NucleusAppCompatActivit
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus-support-v7:2.0.4'
+    compile 'info.android15.nucleus:nucleus-support-v7:2.0.5'
 }
 ```
 
