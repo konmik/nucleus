@@ -9,6 +9,8 @@ to properly connect background tasks with visual parts of an application.
 
 [MVP introduction article](https://github.com/konmik/konmik.github.io/wiki/Introduction-to-Model-View-Presenter-on-Android)
 
+[Wiki](https://github.com/konmik/nucleus/wiki)
+
 ### Introduction
 
 Some time has passed since [Model-View-Presenter](http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter)
