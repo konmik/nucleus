@@ -1,5 +1,9 @@
 # Changelog
 
+### 02.04.2016, Version: 2.0.5beta
+
+* Advanced presenter destruction mode for fragments.
+
 ### 05.09.2015, Version: 2.0.0
 
 * RxPresenter became completely usable without getView().
