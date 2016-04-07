@@ -1,5 +1,9 @@
 # Changelog
 
+### 08.04.2016, Version: 2.0.6
+
+* Service release to eliminate some version confusion on maven central.
+
 ### 05.09.2015, Version: 2.0.0
 
 * RxPresenter became completely usable without getView().
