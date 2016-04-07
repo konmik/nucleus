@@ -2,7 +2,6 @@ package nucleus.view;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.os.Build;
 import android.os.Bundle;
 
 import org.junit.Before;
@@ -12,11 +11,6 @@ import org.mockito.ArgumentMatcher;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 import mocks.BundleMock;
 import nucleus.factory.ReflectionPresenterFactory;
@@ -33,7 +27,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
-import static org.powermock.api.support.membermodification.MemberModifier.replace;
 import static org.powermock.api.support.membermodification.MemberModifier.stub;
 import static org.powermock.api.support.membermodification.MemberModifier.suppress;
 
@@ -86,8 +79,6 @@ public class NucleusFragmentTest {
         suppress(method(BASE_VIEW_CLASS, "onResume"));
         suppress(method(BASE_VIEW_CLASS, "onPause"));
         suppress(method(BASE_VIEW_CLASS, "onDestroy"));
-        suppress(method(BASE_VIEW_CLASS, "isRemoving"));
-        suppress(method(BASE_VIEW_CLASS, "getParentFragment"));
 
         setUpIsFinishing(false);
     }
@@ -100,7 +91,7 @@ public class NucleusFragmentTest {
         ReflectionPresenterFactory.fromViewClass(argThat(new ArgumentMatcher<Class<?>>() {
             @Override
             public boolean matches(Object argument) {
-                return TestView.class.isAssignableFrom((Class) argument);
+                return TestView.class.isAssignableFrom((Class)argument);
             }
         }));
         verify(mockDelegate, times(1)).getPresenter();
@@ -117,58 +108,6 @@ public class NucleusFragmentTest {
         tested.onSaveInstanceState(BundleMock.mock());
         verify(mockDelegate, times(1)).onSaveInstanceState();
         tested.onDestroy();
-        verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
-    }
-
-    public static void setFinalStatic(Field field, Object newValue) throws Exception {
-        field.setAccessible(true);
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-        field.set(null, newValue);
-    }
-
-    @Test
-    public void testAdvancedDestroy() throws Exception {
-        setFinalStatic(Build.VERSION.class.getDeclaredField("SDK_INT"), 17);
-        tested.setAdvancedDestroyMode(true);
-
-        tested.onCreate(null);
-        tested.onResume();
-        verify(mockDelegate, times(1)).onResume(tested);
-
-        replace(method(BASE_VIEW_CLASS, "isRemoving")).with(new InvocationHandler() {
-            @Override
-            public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
-                return true;
-            }
-        });
-
-        tested.onPause();
-        verify(mockDelegate, times(1)).onPause(true);
-        verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
-    }
-
-    @Test
-    public void testAdvancedParentDestroy() throws Exception {
-        setFinalStatic(Build.VERSION.class.getDeclaredField("SDK_INT"), 17);
-        tested.setAdvancedDestroyMode(true);
-
-        tested.onCreate(null);
-        tested.onResume();
-        verify(mockDelegate, times(1)).onResume(tested);
-
-        replace(method(BASE_VIEW_CLASS, "getParentFragment")).with(new InvocationHandler() {
-            @Override
-            public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
-                Fragment parent = mock(Fragment.class);
-                when(parent.isRemoving()).thenReturn(true);
-                return parent;
-            }
-        });
-
-        tested.onPause();
-        verify(mockDelegate, times(1)).onPause(true);
         verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
     }
 

@@ -20,15 +20,6 @@ public abstract class NucleusSupportFragment<P extends Presenter> extends Fragme
     private PresenterLifecycleDelegate<P> presenterDelegate =
         new PresenterLifecycleDelegate<>(ReflectionPresenterFactory.<P>fromViewClass(getClass()));
 
-    private boolean advancedDestroyMode;
-
-    /**
-     * Automatically detects if the fragment is being removed during onPause and destroys its presenter automatically.
-     */
-    public void setAdvancedDestroyMode(boolean advancedDestroyMode) {
-        this.advancedDestroyMode = advancedDestroyMode;
-    }
-
     /**
      * Returns a current presenter factory.
      */
@@ -80,11 +71,6 @@ public abstract class NucleusSupportFragment<P extends Presenter> extends Fragme
     @Override
     public void onPause() {
         super.onPause();
-        presenterDelegate.onPause(getActivity().isFinishing() || (advancedDestroyMode && isRemoving(this)));
-    }
-
-    private static boolean isRemoving(Fragment fragment) {
-        Fragment parent = fragment.getParentFragment();
-        return fragment.isRemoving() || (parent != null && isRemoving(parent));
+        presenterDelegate.onPause(getActivity().isFinishing());
     }
 }

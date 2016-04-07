@@ -1,7 +1,6 @@
 package nucleus.view;
 
 import android.app.Fragment;
-import android.os.Build;
 import android.os.Bundle;
 
 import nucleus.factory.PresenterFactory;
@@ -20,15 +19,6 @@ public abstract class NucleusFragment<P extends Presenter> extends Fragment impl
     private static final String PRESENTER_STATE_KEY = "presenter_state";
     private PresenterLifecycleDelegate<P> presenterDelegate =
         new PresenterLifecycleDelegate<>(ReflectionPresenterFactory.<P>fromViewClass(getClass()));
-
-    private boolean advancedDestroyMode;
-
-    /**
-     * Automatically detects if the fragment is being removed during onPause and destroys its presenter automatically.
-     */
-    public void setAdvancedDestroyMode(boolean advancedDestroyMode) {
-        this.advancedDestroyMode = advancedDestroyMode;
-    }
 
     /**
      * Returns a current presenter factory.
@@ -81,19 +71,6 @@ public abstract class NucleusFragment<P extends Presenter> extends Fragment impl
     @Override
     public void onPause() {
         super.onPause();
-        presenterDelegate.onPause(getActivity().isFinishing() || (advancedDestroyMode && isRemoving(this)));
-    }
-
-    private static boolean isRemoving(Fragment fragment) {
-
-        if (fragment.isRemoving())
-            return true;
-
-        if (Build.VERSION.SDK_INT >= 17) {
-            Fragment parent = fragment.getParentFragment();
-            return parent != null && isRemoving(parent);
-        }
-
-        return false;
+        presenterDelegate.onPause(getActivity().isFinishing());
     }
 }
