@@ -1,5 +1,10 @@
 # Changelog
 
+### 14.04.2016, Version: 3.0.0-SNAPSHOT
+
+* `onPause` and `onDestroy` were separated
+* View does not became dropped on Fragment's `onPause`
+
 ### 08.04.2016, Version: 2.0.6
 
 * Service release to eliminate some version confusion on maven central.

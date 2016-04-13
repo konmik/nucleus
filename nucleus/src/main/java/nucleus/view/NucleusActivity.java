@@ -71,8 +71,9 @@ public abstract class NucleusActivity<P extends Presenter> extends Activity impl
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        presenterDelegate.onPause(isFinishing());
+    protected void onDestroy() {
+        super.onDestroy();
+        presenterDelegate.onDropView();
+        presenterDelegate.onDestroy(isFinishing());
     }
 }

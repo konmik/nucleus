@@ -123,7 +123,8 @@ public class NucleusLayoutTest {
         tested.onAttachedToWindow();
         verify(mockDelegate, times(1)).onResume(tested);
         tested.onDetachedFromWindow();
-        verify(mockDelegate, times(1)).onPause(false);
+        verify(mockDelegate, times(1)).onDropView();
+        verify(mockDelegate, times(1)).onDestroy(false);
         tested.onSaveInstanceState();
         verify(mockDelegate, times(1)).onSaveInstanceState();
         verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
@@ -145,7 +146,7 @@ public class NucleusLayoutTest {
     public void testDestroy() throws Exception {
         setUpIsFinishing(true);
         tested.onDetachedFromWindow();
-        verify(mockDelegate, times(1)).onPause(true);
+        verify(mockDelegate, times(1)).onDestroy(true);
     }
 
     @Test

@@ -71,8 +71,9 @@ public abstract class NucleusAppCompatActivity<P extends Presenter> extends AppC
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        presenterDelegate.onPause(isFinishing());
+    protected void onDestroy() {
+        super.onDestroy();
+        presenterDelegate.onDropView();
+        presenterDelegate.onDestroy(isFinishing());
     }
 }

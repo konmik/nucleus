@@ -78,6 +78,7 @@ public class NucleusFragmentTest {
         suppress(method(BASE_VIEW_CLASS, "onSaveInstanceState", Bundle.class));
         suppress(method(BASE_VIEW_CLASS, "onResume"));
         suppress(method(BASE_VIEW_CLASS, "onPause"));
+        suppress(method(BASE_VIEW_CLASS, "onDestroyView"));
         suppress(method(BASE_VIEW_CLASS, "onDestroy"));
 
         setUpIsFinishing(false);
@@ -91,7 +92,7 @@ public class NucleusFragmentTest {
         ReflectionPresenterFactory.fromViewClass(argThat(new ArgumentMatcher<Class<?>>() {
             @Override
             public boolean matches(Object argument) {
-                return TestView.class.isAssignableFrom((Class)argument);
+                return TestView.class.isAssignableFrom((Class) argument);
             }
         }));
         verify(mockDelegate, times(1)).getPresenter();
@@ -103,11 +104,12 @@ public class NucleusFragmentTest {
         tested.onCreate(null);
         tested.onResume();
         verify(mockDelegate, times(1)).onResume(tested);
-        tested.onPause();
-        verify(mockDelegate, times(1)).onPause(false);
+        tested.onDestroyView();
+        verify(mockDelegate, times(1)).onDropView();
         tested.onSaveInstanceState(BundleMock.mock());
         verify(mockDelegate, times(1)).onSaveInstanceState();
         tested.onDestroy();
+        verify(mockDelegate, times(1)).onDestroy(false);
         verifyNoMoreInteractions(mockPresenter, mockDelegate, mockFactory);
     }
 
@@ -132,6 +134,6 @@ public class NucleusFragmentTest {
         setUpIsFinishing(true);
         tested.onPause();
         tested.onDestroy();
-        verify(mockDelegate, times(1)).onPause(true);
+        verify(mockDelegate, times(1)).onDestroy(true);
     }
 }

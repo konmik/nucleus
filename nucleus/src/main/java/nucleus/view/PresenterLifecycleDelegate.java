@@ -22,6 +22,8 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
     @Nullable private P presenter;
     @Nullable private Bundle bundle;
 
+    private boolean presenterHasView;
+
     public PresenterLifecycleDelegate(@Nullable PresenterFactory<P> presenterFactory) {
         this.presenterFactory = presenterFactory;
     }
@@ -86,25 +88,40 @@ public final class PresenterLifecycleDelegate<P extends Presenter> {
     }
 
     /**
-     * {@link android.app.Activity#onResume()}, {@link android.app.Fragment#onResume()}, {@link android.view.View#onAttachedToWindow()}
+     * {@link android.app.Activity#onResume()},
+     * {@link android.app.Fragment#onResume()},
+     * {@link android.view.View#onAttachedToWindow()}
      */
     public void onResume(Object view) {
         getPresenter();
-        if (presenter != null)
+        if (presenter != null && !presenterHasView) {
             //noinspection unchecked
             presenter.takeView(view);
+            presenterHasView = true;
+        }
     }
 
     /**
-     * {@link android.app.Activity#onPause()}, {@link android.app.Fragment#onPause()}, {@link android.view.View#onDetachedFromWindow()}
+     * {@link android.app.Activity#onDestroy()},
+     * {@link android.app.Fragment#onDestroyView()},
+     * {@link android.view.View#onDetachedFromWindow()}
      */
-    public void onPause(boolean destroy) {
-        if (presenter != null) {
+    public void onDropView() {
+        if (presenter != null && presenterHasView) {
             presenter.dropView();
-            if (destroy) {
-                presenter.destroy();
-                presenter = null;
-            }
+            presenterHasView = false;
+        }
+    }
+
+    /**
+     * {@link android.app.Activity#onDestroy()},
+     * {@link android.app.Fragment#onDestroy()},
+     * {@link android.view.View#onDetachedFromWindow()}
+     */
+    public void onDestroy(boolean isFinal) {
+        if (presenter != null && isFinal) {
+            presenter.destroy();
+            presenter = null;
         }
     }
 }

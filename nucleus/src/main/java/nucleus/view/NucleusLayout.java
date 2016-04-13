@@ -76,10 +76,10 @@ public class NucleusLayout<P extends Presenter> extends FrameLayout implements V
     public Activity getActivity() {
         Context context = getContext();
         while (!(context instanceof Activity) && context instanceof ContextWrapper)
-            context = ((ContextWrapper)context).getBaseContext();
+            context = ((ContextWrapper) context).getBaseContext();
         if (!(context instanceof Activity))
             throw new IllegalStateException("Expected an activity context, got " + context.getClass().getSimpleName());
-        return (Activity)context;
+        return (Activity) context;
     }
 
     @Override
@@ -92,7 +92,7 @@ public class NucleusLayout<P extends Presenter> extends FrameLayout implements V
 
     @Override
     protected void onRestoreInstanceState(Parcelable state) {
-        Bundle bundle = (Bundle)state;
+        Bundle bundle = (Bundle) state;
         super.onRestoreInstanceState(bundle.getParcelable(PARENT_STATE_KEY));
         presenterDelegate.onRestoreInstanceState(bundle.getBundle(PRESENTER_STATE_KEY));
     }
@@ -107,6 +107,7 @@ public class NucleusLayout<P extends Presenter> extends FrameLayout implements V
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        presenterDelegate.onPause(getActivity().isFinishing());
+        presenterDelegate.onDropView();
+        presenterDelegate.onDestroy(getActivity().isFinishing());
     }
 }

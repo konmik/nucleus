@@ -122,8 +122,9 @@ public class PresenterLifecycleDelegateTest {
         assertNotNull(delegate.onSaveInstanceState());
         delegate.setPresenterFactory(null);
         delegate.onResume(1);
-        delegate.onPause(false);
-        delegate.onPause(true);
+        delegate.onDropView();
+        delegate.onDestroy(false);
+        delegate.onDestroy(true);
     }
 
     @Test
