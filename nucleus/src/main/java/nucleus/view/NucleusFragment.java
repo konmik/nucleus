@@ -76,6 +76,7 @@ public abstract class NucleusFragment<P extends Presenter> extends Fragment impl
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
         presenterDelegate.onDestroy(getActivity().isFinishing());
     }
 }
