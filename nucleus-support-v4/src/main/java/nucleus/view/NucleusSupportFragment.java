@@ -77,6 +77,6 @@ public abstract class NucleusSupportFragment<P extends Presenter> extends Fragme
     @Override
     public void onDestroy() {
         super.onDestroy();
-        presenterDelegate.onDestroy(getActivity().isFinishing());
+        presenterDelegate.onDestroy(!getActivity().isChangingConfigurations());
     }
 }

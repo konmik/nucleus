@@ -61,6 +61,7 @@ public class NucleusLayoutTest {
     public void setUpIsFinishing(boolean b) {
         Activity activity = mock(Activity.class);
         when(activity.isFinishing()).thenReturn(b);
+        when(activity.isChangingConfigurations()).thenReturn(!b);
         stub(method(BASE_VIEW_CLASS, "getContext")).toReturn(activity);
     }
 

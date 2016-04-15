@@ -49,6 +49,7 @@ public class NucleusActivityTest {
 
     public void setUpIsFinishing(boolean b) {
         stub(method(BASE_VIEW_CLASS, "isFinishing")).toReturn(b);
+        stub(method(BASE_VIEW_CLASS, "isChangingConfigurations")).toReturn(!b);
     }
 
     private TestPresenter mockPresenter;

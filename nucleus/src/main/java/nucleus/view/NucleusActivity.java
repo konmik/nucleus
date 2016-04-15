@@ -74,6 +74,6 @@ public abstract class NucleusActivity<P extends Presenter> extends Activity impl
     protected void onDestroy() {
         super.onDestroy();
         presenterDelegate.onDropView();
-        presenterDelegate.onDestroy(isFinishing());
+        presenterDelegate.onDestroy(!isChangingConfigurations());
     }
 }

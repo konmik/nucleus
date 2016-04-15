@@ -108,6 +108,6 @@ public class NucleusLayout<P extends Presenter> extends FrameLayout implements V
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         presenterDelegate.onDropView();
-        presenterDelegate.onDestroy(getActivity().isFinishing());
+        presenterDelegate.onDestroy(!getActivity().isChangingConfigurations());
     }
 }

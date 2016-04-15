@@ -74,6 +74,6 @@ public abstract class NucleusFragmentActivity<P extends Presenter> extends Fragm
     protected void onDestroy() {
         super.onDestroy();
         presenterDelegate.onDropView();
-        presenterDelegate.onDestroy(isFinishing());
+        presenterDelegate.onDestroy(!isChangingConfigurations());
     }
 }
