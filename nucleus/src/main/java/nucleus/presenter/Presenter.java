@@ -66,7 +66,7 @@ public class Presenter<View> {
 
     /**
      * This method is being called when a view gets detached from the presenter.
-     * Normally this happens during {@link Activity#onPause()} ()}, {@link Fragment#onPause()} ()}
+     * Normally this happens during {@link Activity#onPause()} ()}, {@link Fragment#onDestroyView()}
      * and {@link android.view.View#onDetachedFromWindow()}.
      *
      * This method is intended for overriding.
