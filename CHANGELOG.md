@@ -1,9 +1,11 @@
 # Changelog
 
-### 14.04.2016, Version: 3.0.0-SNAPSHOT
+### 28.04.2016, Version: 3.0.0
 
 * `onPause` and `onDestroy` were separated
 * View does not became dropped on Fragment's `onPause`
+* Presenters become dropped on View detachment, Fragment and Activity destruction if the
+ owning activity does not have `isChangingConfigurations()` flag set to true.
 
 ### 08.04.2016, Version: 2.0.6
 
