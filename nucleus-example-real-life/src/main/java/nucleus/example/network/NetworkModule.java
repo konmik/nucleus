@@ -16,12 +16,7 @@ public class NetworkModule {
         return new RestAdapter.Builder()
             .setEndpoint(ServerAPI.ENDPOINT)
             .setLogLevel(RestAdapter.LogLevel.FULL)
-            .setLog(new RestAdapter.Log() {
-                @Override
-                public void log(String message) {
-                    Log.v("Retrofit", message);
-                }
-            })
+            .setLog(message -> Log.v("Retrofit", message))
             .build().create(ServerAPI.class);
     }
 }

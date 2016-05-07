@@ -15,13 +15,10 @@ public class BaseFragment<P extends Presenter> extends NucleusSupportFragment<P>
     @Override
     public void onCreate(Bundle savedInstanceState) {
         final PresenterFactory<P> superFactory = super.getPresenterFactory();
-        setPresenterFactory(superFactory == null ? null : new PresenterFactory<P>() {
-            @Override
-            public P createPresenter() {
-                P presenter = superFactory.createPresenter();
-                ((Injector) getActivity().getApplication()).inject(presenter);
-                return presenter;
-            }
+        setPresenterFactory(superFactory == null ? null : (PresenterFactory<P>) () -> {
+            P presenter = superFactory.createPresenter();
+            ((Injector) getActivity().getApplication()).inject(presenter);
+            return presenter;
         });
         super.onCreate(savedInstanceState);
         Icepick.restoreInstanceState(this, savedInstanceState);
