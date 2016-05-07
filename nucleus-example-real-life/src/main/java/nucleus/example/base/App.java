@@ -1,30 +1,25 @@
 package nucleus.example.base;
 
 import android.app.Application;
-import android.util.Log;
 
-import retrofit.RestAdapter;
+import nucleus.example.util.ComponentReflectionInjector;
+import nucleus.example.util.Injector;
 
-public class App extends Application {
+public class App extends Application implements Injector {
 
-    private static ServerAPI serverAPI;
+    private ComponentReflectionInjector<AppComponent> injector;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        serverAPI = new RestAdapter.Builder()
-            .setEndpoint(ServerAPI.ENDPOINT)
-            .setLogLevel(RestAdapter.LogLevel.FULL)
-            .setLog(new RestAdapter.Log() {
-                @Override
-                public void log(String message) {
-                    Log.v("Retrofit", message);
-                }
-            })
-            .build().create(ServerAPI.class);
+        AppComponent component = DaggerAppComponent.builder()
+            .networkModule(new NetworkModule())
+            .build();
+        injector = new ComponentReflectionInjector<>(AppComponent.class, component);
     }
 
-    public static ServerAPI getServerAPI() {
-        return serverAPI;
+    @Override
+    public void inject(Object target) {
+        injector.inject(target);
     }
 }

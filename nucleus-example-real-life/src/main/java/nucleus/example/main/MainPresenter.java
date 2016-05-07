@@ -1,17 +1,15 @@
 package nucleus.example.main;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 
-import nucleus.example.base.App;
+import javax.inject.Inject;
+
+import icepick.State;
+import nucleus.example.base.BasePresenter;
 import nucleus.example.base.ServerAPI;
-import nucleus.example.logging.LoggingPresenter;
-import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action2;
-import rx.functions.Func0;
 
-public class MainPresenter extends LoggingPresenter<MainFragment> {
+public class MainPresenter extends BasePresenter<MainFragment> {
 
     public static final String NAME_1 = "Chuck Norris";
     public static final String NAME_2 = "Jackie Chan";
@@ -19,50 +17,23 @@ public class MainPresenter extends LoggingPresenter<MainFragment> {
 
     private static final int REQUEST_ITEMS = 1;
 
-    private static final String NAME_KEY = "name";
+    @Inject ServerAPI api;
 
-    private String name = DEFAULT_NAME;
+    @State String name;
 
     @Override
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
 
-        if (savedState != null)
-            name = savedState.getString(NAME_KEY);
-
         restartableLatestCache(REQUEST_ITEMS,
-            new Func0<Observable<ServerAPI.Response>>() {
-                @Override
-                public Observable<ServerAPI.Response> call() {
-                    return App.getServerAPI()
-                        .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
-                        .observeOn(AndroidSchedulers.mainThread());
-                }
-            },
-            new Action2<MainFragment, ServerAPI.Response>() {
-                @Override
-                public void call(MainFragment activity, ServerAPI.Response response) {
-                    activity.onItems(response.items, name);
-                }
-            },
-            new Action2<MainFragment, Throwable>() {
-                @Override
-                public void call(MainFragment activity, Throwable throwable) {
-                    activity.onNetworkError(throwable);
-                }
-            });
-
-        if (savedState == null)
-            start(REQUEST_ITEMS);
+            () -> api
+                .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
+                .observeOn(AndroidSchedulers.mainThread()),
+            (activity, response) -> activity.onItems(response.items, name),
+            MainFragment::onNetworkError);
     }
 
-    @Override
-    protected void onSave(@NonNull Bundle state) {
-        super.onSave(state);
-        state.putString(NAME_KEY, name);
-    }
-
-    public void request(String name) {
+    void request(String name) {
         this.name = name;
         start(REQUEST_ITEMS);
     }

@@ -8,17 +8,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import butterknife.Bind;
+import butterknife.OnClick;
+import icepick.State;
 import nucleus.example.R;
-import nucleus.example.logging.LoggingFragment;
-import nucleus.example.logging.LoggingPresenter;
-import nucleus.factory.RequiresPresenter;
+import nucleus.example.base.BaseFragment;
 
-@RequiresPresenter(LoggingPresenter.class)
-public class ItemFragment extends LoggingFragment<MainPresenter> {
+public class ItemFragment extends BaseFragment<MainPresenter> {
 
-    private static final String TEXT_KEY = "text";
+    @Bind(android.R.id.text1) TextView textView;
 
-    String text;
+    @State String text;
 
     public ItemFragment() {
     }
@@ -26,19 +26,6 @@ public class ItemFragment extends LoggingFragment<MainPresenter> {
     @SuppressLint("ValidFragment")
     public ItemFragment(String text) {
         this.text = text;
-    }
-
-    @Override
-    public void onCreate(Bundle bundle) {
-        super.onCreate(bundle);
-        if (bundle != null)
-            text = bundle.getString(TEXT_KEY);
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle bundle) {
-        super.onSaveInstanceState(bundle);
-        bundle.putString(TEXT_KEY, text);
     }
 
     @Nullable
@@ -50,19 +37,16 @@ public class ItemFragment extends LoggingFragment<MainPresenter> {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        TextView textView = (TextView)view.findViewById(android.R.id.text1);
         textView.setText(text);
-        view.findViewById(R.id.buttonReplace).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((MainActivity)getActivity()).replace(new MainFragment());
-            }
-        });
-        view.findViewById(R.id.buttonBack).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getActivity().onBackPressed();
-            }
-        });
+    }
+
+    @OnClick(R.id.buttonReplace)
+    void onButtonReplace() {
+        ((MainActivity) getActivity()).replace(new MainFragment());
+    }
+
+    @OnClick(R.id.buttonBack)
+    void onButtonBack() {
+        getActivity().onBackPressed();
     }
 }
