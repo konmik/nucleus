@@ -9,12 +9,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import butterknife.Bind;
-import butterknife.OnClick;
 import nucleus.example.R;
 import nucleus.example.base.BaseFragment;
 import nucleus.example.network.ServerAPI;
-import nucleus.example.main.MainActivity;
-import nucleus.example.main.MainFragment;
 import nucleus.example.util.Delayed;
 import nucleus.factory.RequiresPresenter;
 
@@ -54,15 +51,5 @@ public class ItemFragment extends BaseFragment<ItemPresenter> {
 
     void onNetworkError(Throwable throwable) {
         Toast.makeText(getActivity(), throwable.getMessage(), Toast.LENGTH_LONG).show();
-    }
-
-    @OnClick(R.id.buttonReplace)
-    void onButtonReplace() {
-        ((MainActivity) getActivity()).replace(new MainFragment());
-    }
-
-    @OnClick(R.id.buttonBack)
-    void onButtonBack() {
-        getActivity().onBackPressed();
     }
 }
