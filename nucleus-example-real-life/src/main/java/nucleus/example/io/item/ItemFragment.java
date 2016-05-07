@@ -1,4 +1,4 @@
-package nucleus.example.item;
+package nucleus.example.io.item;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

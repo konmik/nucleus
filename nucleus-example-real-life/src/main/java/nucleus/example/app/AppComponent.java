@@ -3,9 +3,9 @@ package nucleus.example.app;
 import javax.inject.Singleton;
 
 import dagger.Component;
-import nucleus.example.item.ItemPresenter;
-import nucleus.example.main.MainActivity;
-import nucleus.example.main.MainPresenter;
+import nucleus.example.io.item.ItemPresenter;
+import nucleus.example.io.main.MainActivity;
+import nucleus.example.io.main.MainPresenter;
 import nucleus.example.network.NetworkModule;
 
 @Singleton
