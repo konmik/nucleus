@@ -12,7 +12,7 @@ import butterknife.Bind;
 import butterknife.OnClick;
 import nucleus.example.R;
 import nucleus.example.base.BaseFragment;
-import nucleus.example.base.ServerAPI;
+import nucleus.example.network.ServerAPI;
 import nucleus.example.main.MainActivity;
 import nucleus.example.main.MainFragment;
 import nucleus.example.util.Delayed;

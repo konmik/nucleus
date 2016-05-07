@@ -6,7 +6,7 @@ import javax.inject.Inject;
 
 import icepick.State;
 import nucleus.example.base.BasePresenter;
-import nucleus.example.base.ServerAPI;
+import nucleus.example.network.ServerAPI;
 
 import static rx.android.schedulers.AndroidSchedulers.mainThread;
 

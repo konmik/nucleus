@@ -15,7 +15,7 @@ import butterknife.OnClick;
 import butterknife.OnItemClick;
 import nucleus.example.R;
 import nucleus.example.base.BaseFragment;
-import nucleus.example.base.ServerAPI;
+import nucleus.example.network.ServerAPI;
 import nucleus.example.item.ItemFragment;
 import nucleus.factory.RequiresPresenter;
 

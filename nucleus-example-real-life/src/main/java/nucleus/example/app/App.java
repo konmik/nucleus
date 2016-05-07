@@ -1,7 +1,8 @@
-package nucleus.example.base;
+package nucleus.example.app;
 
 import android.app.Application;
 
+import nucleus.example.network.NetworkModule;
 import nucleus.example.util.ComponentReflectionInjector;
 import nucleus.example.util.Injector;
 

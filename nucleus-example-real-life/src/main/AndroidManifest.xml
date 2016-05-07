@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name="nucleus.example.base.App"
+        android:name=".app.App"
         android:allowBackup="true"
         android:label="@string/app_name">
 
@@ -18,8 +18,5 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".TestActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
     </application>
 </manifest>
