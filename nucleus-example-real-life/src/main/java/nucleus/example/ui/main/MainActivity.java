@@ -1,4 +1,4 @@
-package nucleus.example.io.main;
+package nucleus.example.ui.main;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;

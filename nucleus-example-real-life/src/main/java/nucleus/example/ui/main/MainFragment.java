@@ -1,4 +1,4 @@
-package nucleus.example.io.main;
+package nucleus.example.ui.main;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,7 +16,7 @@ import butterknife.OnItemClick;
 import nucleus.example.R;
 import nucleus.example.base.BaseFragment;
 import nucleus.example.network.ServerAPI;
-import nucleus.example.io.item.ItemFragment;
+import nucleus.example.ui.item.ItemFragment;
 import nucleus.factory.RequiresPresenter;
 
 @RequiresPresenter(MainPresenter.class)
