@@ -1,4 +1,4 @@
-package nucleus.example.base;
+package nucleus.example.ui.base;
 
 import android.os.Bundle;
 
