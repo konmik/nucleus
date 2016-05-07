@@ -1,6 +1,9 @@
 package nucleus.example.item;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -15,6 +18,7 @@ public class ItemPresenter extends BasePresenter<ItemFragment> {
     public static final int GET_ITEM_REQUEST = 1;
 
     @Inject ServerAPI api;
+    @Inject SharedPreferences pref;
 
     @State int id;
     @State String name;
@@ -26,6 +30,7 @@ public class ItemPresenter extends BasePresenter<ItemFragment> {
         restartableLatestCache(GET_ITEM_REQUEST,
             () -> api.getItem(name.split("\\s+")[0], name.split("\\s+")[1], id)
                 .map(it -> it.item)
+                .delay(pref.getInt("delay", 0), TimeUnit.SECONDS)
                 .observeOn(mainThread()),
             ItemFragment::onItem,
             ItemFragment::onNetworkError);

@@ -30,7 +30,7 @@
                 android:textSize="32dp" />
 
             <CheckBox
-                android:id="@+id/delay"
+                android:id="@+id/button_delay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right|bottom"

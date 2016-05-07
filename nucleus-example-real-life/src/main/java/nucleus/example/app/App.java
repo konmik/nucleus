@@ -15,6 +15,7 @@ public class App extends Application implements Injector {
         super.onCreate();
         AppComponent component = DaggerAppComponent.builder()
             .networkModule(new NetworkModule())
+            .appModule(new AppModule(this))
             .build();
         injector = new ComponentReflectionInjector<>(AppComponent.class, component);
     }
