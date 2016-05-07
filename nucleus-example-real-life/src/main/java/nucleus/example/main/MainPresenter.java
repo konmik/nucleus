@@ -7,7 +7,8 @@ import javax.inject.Inject;
 import icepick.State;
 import nucleus.example.base.BasePresenter;
 import nucleus.example.base.ServerAPI;
-import rx.android.schedulers.AndroidSchedulers;
+
+import static rx.android.schedulers.AndroidSchedulers.mainThread;
 
 public class MainPresenter extends BasePresenter<MainFragment> {
 
@@ -28,7 +29,7 @@ public class MainPresenter extends BasePresenter<MainFragment> {
         restartableLatestCache(REQUEST_ITEMS,
             () -> api
                 .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
-                .observeOn(AndroidSchedulers.mainThread()),
+                .observeOn(mainThread()),
             (activity, response) -> activity.onItems(response.items, name),
             MainFragment::onNetworkError);
     }

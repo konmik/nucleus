@@ -16,6 +16,7 @@ import butterknife.OnItemClick;
 import nucleus.example.R;
 import nucleus.example.base.BaseFragment;
 import nucleus.example.base.ServerAPI;
+import nucleus.example.item.ItemFragment;
 import nucleus.factory.RequiresPresenter;
 
 @RequiresPresenter(MainPresenter.class)
@@ -25,6 +26,7 @@ public class MainFragment extends BaseFragment<MainPresenter> {
     @Bind(R.id.check2) CheckedTextView check2;
     @Bind(R.id.listView) ListView listView;
 
+    private String itemsName;
     private ArrayAdapter<ServerAPI.Item> adapter;
 
     @Override
@@ -50,9 +52,11 @@ public class MainFragment extends BaseFragment<MainPresenter> {
         listView.setAdapter(adapter = new ArrayAdapter<>(getActivity(), R.layout.item));
     }
 
-    void onItems(ServerAPI.Item[] items, String user) {
-        check1.setChecked(user.equals(MainPresenter.NAME_1));
-        check2.setChecked(user.equals(MainPresenter.NAME_2));
+    void onItems(ServerAPI.Item[] items, String name) {
+        this.itemsName = name;
+
+        check1.setChecked(name.equals(MainPresenter.NAME_1));
+        check2.setChecked(name.equals(MainPresenter.NAME_2));
 
         adapter.clear();
         adapter.addAll(items);
@@ -68,8 +72,8 @@ public class MainFragment extends BaseFragment<MainPresenter> {
     }
 
     @OnItemClick(R.id.listView)
-    void OnItemClick(int position) {
+    void onItemClick(int position) {
         ServerAPI.Item item = adapter.getItem(position);
-        ((MainActivity) getActivity()).push(new ItemFragment(item.toString()));
+        ((MainActivity) getActivity()).push(ItemFragment.create(item.id, itemsName));
     }
 }

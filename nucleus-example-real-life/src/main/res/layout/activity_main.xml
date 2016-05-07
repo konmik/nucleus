@@ -16,14 +16,30 @@
             android:layout_width="match_parent"
             android:layout_height="16dp" />
 
-        <TextView
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:gravity="center_vertical"
-            android:paddingLeft="24dp"
-            android:text="@string/app_name"
-            android:textColor="@color/header_text"
-            android:textSize="32dp" />
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:gravity="center_vertical"
+                android:paddingLeft="24dp"
+                android:text="@string/app_name"
+                android:textColor="@color/header_text"
+                android:textSize="32dp" />
+
+            <CheckBox
+                android:id="@+id/delay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right|bottom"
+                android:layout_marginBottom="8dp"
+                android:layout_marginRight="16dp"
+                android:text="Delay" />
+
+        </FrameLayout>
+
     </LinearLayout>
 
     <FrameLayout
