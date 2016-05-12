@@ -5,6 +5,7 @@ import android.text.Html;
 import com.google.gson.annotations.SerializedName;
 
 import retrofit.http.GET;
+import retrofit.http.Header;
 import retrofit.http.Path;
 import retrofit.http.Query;
 import rx.Observable;
@@ -37,7 +38,7 @@ public interface ServerAPI {
     }
 
     @GET("/jokes/random/10")
-    Observable<Response> getItems(@Query("firstName") String firstName, @Query("lastName") String lastName);
+    Observable<Response> getItems(@Query("firstName") String firstName, @Query("lastName") String lastName, @Header("pageNumber") int pageNumberIgnored);
 
     @GET("/jokes/{id}")
     Observable<ItemResponse> getItem(@Query("firstName") String firstName, @Query("lastName") String lastName, @Path("id") int id);

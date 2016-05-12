@@ -51,6 +51,9 @@ dependencies {
     compile 'frankiesardo:icepick:3.2.0'
     apt 'frankiesardo:icepick-processor:3.2.0'
 
+    def supportVersion = '23.4.0'
+    compile "com.android.support:recyclerview-v7:$supportVersion"
+
     def daggerVersion = '2.4'
     compile "javax.annotation:javax.annotation-api:1.2"
     compile "com.google.dagger:dagger:$daggerVersion"

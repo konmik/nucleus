@@ -8,8 +8,10 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import icepick.State;
-import nucleus.example.ui.base.BasePresenter;
 import nucleus.example.network.ServerAPI;
+import nucleus.example.ui.base.BasePresenter;
+import nucleus.example.util.PageBundle;
+import rx.subjects.PublishSubject;
 
 import static rx.android.schedulers.AndroidSchedulers.mainThread;
 
@@ -26,21 +28,29 @@ public class MainPresenter extends BasePresenter<MainFragment> {
 
     @State String name;
 
+    private PublishSubject<Integer> pageRequests = PublishSubject.create();
+
     @Override
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
 
-        restartableLatestCache(REQUEST_ITEMS,
-            () -> api
-                .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
-                .delay(pref.getInt("delay", 0), TimeUnit.SECONDS)
-                .observeOn(mainThread()),
-            (activity, response) -> activity.onItems(response.items, name),
+        restartableReplay(REQUEST_ITEMS,
+            () -> pageRequests.startWith(0)
+                .concatMap(page ->
+                    api.getItems(name.split("\\s+")[0], name.split("\\s+")[1], page)
+                        .map(data -> new PageBundle<>(page, data))
+                        .delay(pref.getInt("delay", 0), TimeUnit.SECONDS)
+                        .observeOn(mainThread())),
+            (activity, page) -> activity.onItems(page, name),
             MainFragment::onNetworkError);
     }
 
     void request(String name) {
         this.name = name;
         start(REQUEST_ITEMS);
+    }
+
+    void requestNext(int page) {
+        pageRequests.onNext(page);
     }
 }
