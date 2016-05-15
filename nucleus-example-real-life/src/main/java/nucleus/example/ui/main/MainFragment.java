@@ -57,9 +57,12 @@ public class MainFragment extends BaseFragment<MainPresenter> {
         check1.setText(MainPresenter.NAME_1);
         check2.setText(MainPresenter.NAME_2);
 
-        pager = new RxPager(10, page -> getPresenter().requestNext(page));
+        pager = new RxPager(10, page -> {
+            adapter.showProgress();
+            getPresenter().requestNext(page);
+        });
 
-        adapter = new SimpleListAdapter<>(
+        adapter = new SimpleListAdapter<>(R.layout.recycler_view_progress,
             new ClassViewHolderType<>(ServerAPI.Item.class, R.layout.item, v -> new SimpleViewHolder<>(v, this::onItemClick)));
         recyclerView.setAdapter(adapter);
 
@@ -77,6 +80,7 @@ public class MainFragment extends BaseFragment<MainPresenter> {
         check1.setChecked(name.equals(MainPresenter.NAME_1));
         check2.setChecked(name.equals(MainPresenter.NAME_2));
 
+        adapter.hideProgress();
         if (page.page != 0)
             adapter.add(asList(items));
         else {
@@ -86,12 +90,14 @@ public class MainFragment extends BaseFragment<MainPresenter> {
     }
 
     void onNetworkError(Throwable throwable) {
+        adapter.hideProgress();
         Toast.makeText(getActivity(), throwable.getMessage(), Toast.LENGTH_LONG).show();
     }
 
     @OnClick({R.id.check1, R.id.check2})
     void onCheckClick(View view) {
         pager.reset();
+        adapter.showProgress();
         getPresenter().request(view.getId() == R.id.check1 ? MainPresenter.NAME_1 : MainPresenter.NAME_2);
     }
 

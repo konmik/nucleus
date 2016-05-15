@@ -4,12 +4,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SimpleListAdapter<T> extends BaseRecyclerViewAdapter {
+public class SimpleListAdapter<T> extends BaseProgressAdapter {
 
     private List<T> items = Collections.emptyList();
 
     public SimpleListAdapter(ViewHolderType... types) {
-        super(types);
+        super(0, types);
+    }
+
+    public SimpleListAdapter(int progressViewId, ViewHolderType... types) {
+        super(progressViewId, types);
     }
 
     public void set(List<T> items) {
