@@ -105,6 +105,7 @@ public class NucleusFragmentTest {
         tested.onCreate(null);
         tested.onResume();
         verify(mockDelegate, times(1)).onResume(tested);
+        tested.onPause();
         tested.onDestroyView();
         verify(mockDelegate, times(1)).onDropView();
         tested.onSaveInstanceState(BundleMock.mock());

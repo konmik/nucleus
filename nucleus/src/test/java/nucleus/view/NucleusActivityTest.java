@@ -105,11 +105,13 @@ public class NucleusActivityTest {
         tested.onCreate(null);
         tested.onResume();
         verify(mockDelegate, times(1)).onResume(tested);
+        tested.onPause();
         tested.onDestroy();
         verify(mockDelegate, times(1)).onDropView();
         verify(mockDelegate, times(1)).onDestroy(false);
         tested.onSaveInstanceState(BundleMock.mock());
         verify(mockDelegate, times(1)).onSaveInstanceState();
+        tested.onPause();
         tested.onDestroy();
         verify(mockDelegate, times(2)).onDropView();
         verify(mockDelegate, times(2)).onDestroy(false);
@@ -135,6 +137,7 @@ public class NucleusActivityTest {
     public void testDestroy() throws Exception {
         tested.onCreate(null);
         setUpIsFinishing(true);
+        tested.onPause();
         tested.onDestroy();
         verify(mockDelegate, times(1)).onDropView();
         verify(mockDelegate, times(1)).onDestroy(true);

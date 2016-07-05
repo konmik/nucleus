@@ -69,8 +69,8 @@ public abstract class NucleusFragment<P extends Presenter> extends Fragment impl
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onPause() {
+        super.onPause();
         presenterDelegate.onDropView();
     }
 
