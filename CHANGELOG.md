@@ -1,5 +1,9 @@
 # Changelog
 
+### 11.07.2016, Version: 4.0.0
+
+* Now activities and fragments drop presenters during onPause instead of onDestroy.
+
 ### 28.04.2016, Version: 3.0.0
 
 * `onPause` and `onDestroy` were separated
