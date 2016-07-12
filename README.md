@@ -74,7 +74,7 @@ became: "Nucleus is a simple Android library, which utilizes the Model-View-Pres
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus:2.0.6'
+    compile 'info.android15.nucleus:nucleus:3.0.1'
 }
 ```
 
@@ -82,7 +82,7 @@ For additional view classes `NucleusSupportFragment`, `NucleusFragmentActivity` 
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus-support-v4:2.0.6'
+    compile 'info.android15.nucleus:nucleus-support-v4:3.0.1'
 }
 ```
 
@@ -90,7 +90,7 @@ For additional view classes `NucleusActionBarActivity`, `NucleusAppCompatActivit
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus-support-v7:2.0.6'
+    compile 'info.android15.nucleus:nucleus-support-v7:3.0.1'
 }
 ```
 
