@@ -8,17 +8,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiConsumer;
+import io.reactivex.functions.Consumer;
+import io.reactivex.subjects.BehaviorSubject;
+import nucleus.SilentCallable;
 import nucleus.presenter.delivery.DeliverFirst;
 import nucleus.presenter.delivery.DeliverLatestCache;
 import nucleus.presenter.delivery.DeliverReplay;
 import nucleus.presenter.delivery.Delivery;
-import rx.Observable;
-import rx.Subscription;
-import rx.functions.Action1;
-import rx.functions.Action2;
-import rx.functions.Func0;
-import rx.subjects.BehaviorSubject;
-import rx.subscriptions.CompositeSubscription;
 
 /**
  * This is an extension of {@link Presenter} which provides RxJava functionality.
@@ -30,14 +31,14 @@ public class RxPresenter<View> extends Presenter<View> {
     private static final String REQUESTED_KEY = RxPresenter.class.getName() + "#requested";
 
     private final BehaviorSubject<View> views = BehaviorSubject.create();
-    private final CompositeSubscription subscriptions = new CompositeSubscription();
+    private final CompositeDisposable subscriptions = new CompositeDisposable();
 
-    private final HashMap<Integer, Func0<Subscription>> restartables = new HashMap<>();
-    private final HashMap<Integer, Subscription> restartableSubscriptions = new HashMap<>();
+    private final HashMap<Integer, SilentCallable<Disposable>> restartables = new HashMap<>();
+    private final HashMap<Integer, Disposable> restartableSubscriptions = new HashMap<>();
     private final ArrayList<Integer> requested = new ArrayList<>();
 
     /**
-     * Returns an {@link rx.Observable} that emits the current attached view or null.
+     * Returns an {@link Observable} that emits the current attached view or null.
      * See {@link BehaviorSubject} for more information.
      *
      * @return an observable that emits the current attached view or null.
@@ -48,21 +49,21 @@ public class RxPresenter<View> extends Presenter<View> {
 
     /**
      * Registers a subscription to automatically unsubscribe it during onDestroy.
-     * See {@link CompositeSubscription#add(Subscription) for details.}
+     * See {@link CompositeDisposable#add(Disposable) for details.}
      *
      * @param subscription a subscription to add.
      */
-    public void add(Subscription subscription) {
+    public void add(Disposable subscription) {
         subscriptions.add(subscription);
     }
 
     /**
      * Removes and unsubscribes a subscription that has been registered with {@link #add} previously.
-     * See {@link CompositeSubscription#remove(Subscription)} for details.
+     * See {@link CompositeDisposable#remove(Disposable)} for details.
      *
      * @param subscription a subscription to remove.
      */
-    public void remove(Subscription subscription) {
+    public void remove(Disposable subscription) {
         subscriptions.remove(subscription);
     }
 
@@ -76,7 +77,7 @@ public class RxPresenter<View> extends Presenter<View> {
      * @param restartableId id of the restartable
      * @param factory       factory of the restartable
      */
-    public void restartable(int restartableId, Func0<Subscription> factory) {
+    public void restartable(int restartableId, SilentCallable<Disposable> factory) {
         restartables.put(restartableId, factory);
         if (requested.contains(restartableId))
             start(restartableId);
@@ -100,9 +101,9 @@ public class RxPresenter<View> extends Presenter<View> {
      */
     public void stop(int restartableId) {
         requested.remove((Integer) restartableId);
-        Subscription subscription = restartableSubscriptions.get(restartableId);
+        Disposable subscription = restartableSubscriptions.get(restartableId);
         if (subscription != null)
-            subscription.unsubscribe();
+            subscription.dispose();
     }
 
     /**
@@ -111,16 +112,16 @@ public class RxPresenter<View> extends Presenter<View> {
      * @param restartableId id of the restartable.
      * @return true if the subscription is null or unsubscribed, false otherwise.
      */
-    public boolean isUnsubscribed(int restartableId) {
-        Subscription subscription = restartableSubscriptions.get(restartableId);
-        return subscription == null || subscription.isUnsubscribed();
+    public boolean isDisposed(int restartableId) {
+        Disposable subscription = restartableSubscriptions.get(restartableId);
+        return subscription == null || subscription.isDisposed();
     }
 
     /**
      * This is a shortcut that can be used instead of combining together
-     * {@link #restartable(int, Func0)},
+     * {@link #restartable(int, SilentCallable)},
      * {@link #deliverFirst()},
-     * {@link #split(Action2, Action2)}.
+     * {@link #split(BiConsumer, BiConsumer)}.
      *
      * @param restartableId     an id of the restartable.
      * @param observableFactory a factory that should return an Observable when the restartable should run.
@@ -128,12 +129,12 @@ public class RxPresenter<View> extends Presenter<View> {
      * @param onError           a callback that will be called if the source observable emits onError.
      * @param <T>               the type of the observable.
      */
-    public <T> void restartableFirst(int restartableId, final Func0<Observable<T>> observableFactory,
-        final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {
+    public <T> void restartableFirst(int restartableId, final SilentCallable<Observable<T>> observableFactory,
+        final BiConsumer<View, T> onNext, @Nullable final BiConsumer<View, Throwable> onError) {
 
-        restartable(restartableId, new Func0<Subscription>() {
+        restartable(restartableId, new SilentCallable<Disposable>() {
             @Override
-            public Subscription call() {
+            public Disposable call() {
                 return observableFactory.call()
                     .compose(RxPresenter.this.<T>deliverFirst())
                     .subscribe(split(onNext, onError));
@@ -142,17 +143,17 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
-     * This is a shortcut for calling {@link #restartableFirst(int, Func0, Action2, Action2)} with the last parameter = null.
+     * This is a shortcut for calling {@link #restartableFirst(int, SilentCallable, BiConsumer, BiConsumer)} with the last parameter = null.
      */
-    public <T> void restartableFirst(int restartableId, final Func0<Observable<T>> observableFactory, final Action2<View, T> onNext) {
+    public <T> void restartableFirst(int restartableId, final SilentCallable<Observable<T>> observableFactory, final BiConsumer<View, T> onNext) {
         restartableFirst(restartableId, observableFactory, onNext, null);
     }
 
     /**
      * This is a shortcut that can be used instead of combining together
-     * {@link #restartable(int, Func0)},
+     * {@link #restartable(int, SilentCallable)},
      * {@link #deliverLatestCache()},
-     * {@link #split(Action2, Action2)}.
+     * {@link #split(BiConsumer, BiConsumer)}.
      *
      * @param restartableId     an id of the restartable.
      * @param observableFactory a factory that should return an Observable when the restartable should run.
@@ -160,12 +161,12 @@ public class RxPresenter<View> extends Presenter<View> {
      * @param onError           a callback that will be called if the source observable emits onError.
      * @param <T>               the type of the observable.
      */
-    public <T> void restartableLatestCache(int restartableId, final Func0<Observable<T>> observableFactory,
-        final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {
+    public <T> void restartableLatestCache(int restartableId, final SilentCallable<Observable<T>> observableFactory,
+        final BiConsumer<View, T> onNext, @Nullable final BiConsumer<View, Throwable> onError) {
 
-        restartable(restartableId, new Func0<Subscription>() {
+        restartable(restartableId, new SilentCallable<Disposable>() {
             @Override
-            public Subscription call() {
+            public Disposable call() {
                 return observableFactory.call()
                     .compose(RxPresenter.this.<T>deliverLatestCache())
                     .subscribe(split(onNext, onError));
@@ -174,17 +175,17 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
-     * This is a shortcut for calling {@link #restartableLatestCache(int, Func0, Action2, Action2)} with the last parameter = null.
+     * This is a shortcut for calling {@link #restartableLatestCache(int, SilentCallable, BiConsumer, BiConsumer)} with the last parameter = null.
      */
-    public <T> void restartableLatestCache(int restartableId, final Func0<Observable<T>> observableFactory, final Action2<View, T> onNext) {
+    public <T> void restartableLatestCache(int restartableId, final SilentCallable<Observable<T>> observableFactory, final BiConsumer<View, T> onNext) {
         restartableLatestCache(restartableId, observableFactory, onNext, null);
     }
 
     /**
      * This is a shortcut that can be used instead of combining together
-     * {@link #restartable(int, Func0)},
+     * {@link #restartable(int, SilentCallable)},
      * {@link #deliverReplay()},
-     * {@link #split(Action2, Action2)}.
+     * {@link #split(BiConsumer, BiConsumer)}.
      *
      * @param restartableId     an id of the restartable.
      * @param observableFactory a factory that should return an Observable when the restartable should run.
@@ -192,12 +193,12 @@ public class RxPresenter<View> extends Presenter<View> {
      * @param onError           a callback that will be called if the source observable emits onError.
      * @param <T>               the type of the observable.
      */
-    public <T> void restartableReplay(int restartableId, final Func0<Observable<T>> observableFactory,
-        final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {
+    public <T> void restartableReplay(int restartableId, final SilentCallable<Observable<T>> observableFactory,
+        final BiConsumer<View, T> onNext, @Nullable final BiConsumer<View, Throwable> onError) {
 
-        restartable(restartableId, new Func0<Subscription>() {
+        restartable(restartableId, new SilentCallable<Disposable>() {
             @Override
-            public Subscription call() {
+            public Disposable call() {
                 return observableFactory.call()
                     .compose(RxPresenter.this.<T>deliverReplay())
                     .subscribe(split(onNext, onError));
@@ -206,15 +207,15 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
-     * This is a shortcut for calling {@link #restartableReplay(int, Func0, Action2, Action2)} with the last parameter = null.
+     * This is a shortcut for calling {@link #restartableReplay(int, SilentCallable, BiConsumer, BiConsumer)} with the last parameter = null.
      */
-    public <T> void restartableReplay(int restartableId, final Func0<Observable<T>> observableFactory, final Action2<View, T> onNext) {
+    public <T> void restartableReplay(int restartableId, final SilentCallable<Observable<T>> observableFactory, final BiConsumer<View, T> onNext) {
         restartableReplay(restartableId, observableFactory, onNext, null);
     }
 
     /**
-     * Returns an {@link rx.Observable.Transformer} that couples views with data that has been emitted by
-     * the source {@link rx.Observable}.
+     * Returns an {@link ObservableTransformer} that couples views with data that has been emitted by
+     * the source {@link Observable}.
      *
      * {@link #deliverLatestCache} keeps the latest onNext value and emits it each time a new view gets attached.
      * If a new onNext value appears while a view is attached, it will be delivered immediately.
@@ -226,8 +227,8 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
-     * Returns an {@link rx.Observable.Transformer} that couples views with data that has been emitted by
-     * the source {@link rx.Observable}.
+     * Returns an {@link ObservableTransformer} that couples views with data that has been emitted by
+     * the source {@link Observable}.
      *
      * {@link #deliverFirst} delivers only the first onNext value that has been emitted by the source observable.
      *
@@ -238,8 +239,8 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
-     * Returns an {@link rx.Observable.Transformer} that couples views with data that has been emitted by
-     * the source {@link rx.Observable}.
+     * Returns an {@link ObservableTransformer} that couples views with data that has been emitted by
+     * the source {@link Observable}.
      *
      * {@link #deliverReplay} keeps all onNext values and emits them each time a new view gets attached.
      * If a new onNext value appears while a view is attached, it will be delivered immediately.
@@ -251,27 +252,27 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
-     * Returns a method that can be used for manual restartable chain build. It returns an Action1 that splits
-     * a received {@link Delivery} into two {@link Action2} onNext and onError calls.
+     * Returns a method that can be used for manual restartable chain build. It returns an Consumer that splits
+     * a received {@link Delivery} into two {@link BiConsumer} onNext and onError calls.
      *
      * @param onNext  a method that will be called if the delivery contains an emitted onNext value.
      * @param onError a method that will be called if the delivery contains an onError throwable.
      * @param <T>     a type on onNext value.
-     * @return an Action1 that splits a received {@link Delivery} into two {@link Action2} onNext and onError calls.
+     * @return an Consumer that splits a received {@link Delivery} into two {@link BiConsumer} onNext and onError calls.
      */
-    public <T> Action1<Delivery<View, T>> split(final Action2<View, T> onNext, @Nullable final Action2<View, Throwable> onError) {
-        return new Action1<Delivery<View, T>>() {
+    public <T> Consumer<Delivery<View, T>> split(final BiConsumer<View, T> onNext, @Nullable final BiConsumer<View, Throwable> onError) {
+        return new Consumer<Delivery<View, T>>() {
             @Override
-            public void call(Delivery<View, T> delivery) {
+            public void accept(Delivery<View, T> delivery) throws Exception {
                 delivery.split(onNext, onError);
             }
         };
     }
 
     /**
-     * This is a shortcut for calling {@link #split(Action2, Action2)} when the second parameter is null.
+     * This is a shortcut for calling {@link #split(BiConsumer, BiConsumer)} when the second parameter is null.
      */
-    public <T> Action1<Delivery<View, T>> split(Action2<View, T> onNext) {
+    public <T> Consumer<Delivery<View, T>> split(BiConsumer<View, T> onNext) {
         return split(onNext, null);
     }
 
@@ -291,10 +292,10 @@ public class RxPresenter<View> extends Presenter<View> {
     @CallSuper
     @Override
     protected void onDestroy() {
-        views.onCompleted();
-        subscriptions.unsubscribe();
-        for (Map.Entry<Integer, Subscription> entry : restartableSubscriptions.entrySet())
-            entry.getValue().unsubscribe();
+        views.onComplete();
+        subscriptions.dispose();
+        for (Map.Entry<Integer, Disposable> entry : restartableSubscriptions.entrySet())
+            entry.getValue().dispose();
     }
 
     /**
@@ -305,8 +306,8 @@ public class RxPresenter<View> extends Presenter<View> {
     protected void onSave(Bundle state) {
         for (int i = requested.size() - 1; i >= 0; i--) {
             int restartableId = requested.get(i);
-            Subscription subscription = restartableSubscriptions.get(restartableId);
-            if (subscription != null && subscription.isUnsubscribed())
+            Disposable subscription = restartableSubscriptions.get(restartableId);
+            if (subscription != null && subscription.isDisposed())
                 requested.remove(i);
         }
         state.putIntegerArrayList(REQUESTED_KEY, requested);

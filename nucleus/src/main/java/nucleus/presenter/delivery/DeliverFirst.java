@@ -1,10 +1,13 @@
 package nucleus.presenter.delivery;
 
-import rx.Notification;
-import rx.Observable;
-import rx.functions.Func1;
+import io.reactivex.Notification;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 
-public class DeliverFirst<View, T> implements Observable.Transformer<T, Delivery<View, T>> {
+public class DeliverFirst<View, T> implements ObservableTransformer<T, Delivery<View, T>> {
 
     private final Observable<View> view;
 
@@ -13,23 +16,23 @@ public class DeliverFirst<View, T> implements Observable.Transformer<T, Delivery
     }
 
     @Override
-    public Observable<Delivery<View, T>> call(Observable<T> observable) {
+    public Observable<Delivery<View, T>> apply(Observable<T> observable) {
         return observable.materialize()
             .take(1)
-            .switchMap(new Func1<Notification<T>, Observable<? extends Delivery<View, T>>>() {
+            .switchMap(new Function<Notification<T>, ObservableSource<? extends Delivery<View,T>>>() {
                 @Override
-                public Observable<? extends Delivery<View, T>> call(final Notification<T> notification) {
-                    return view.map(new Func1<View, Delivery<View, T>>() {
+                public Observable<? extends Delivery<View, T>> apply(final Notification<T> notification) {
+                    return view.map(new Function<View, Delivery<View, T>>() {
                         @Override
-                        public Delivery<View, T> call(View view) {
+                        public Delivery<View, T> apply(View view) {
                             return view == null ? null : new Delivery<>(view, notification);
                         }
                     });
                 }
             })
-            .filter(new Func1<Delivery<View, T>, Boolean>() {
+            .filter(new Predicate<Delivery<View,T>>() {
                 @Override
-                public Boolean call(Delivery<View, T> delivery) {
+                public boolean test(Delivery<View, T> delivery) {
                     return delivery != null;
                 }
             })
