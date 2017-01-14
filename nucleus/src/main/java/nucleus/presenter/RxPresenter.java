@@ -3,6 +3,11 @@ package nucleus.presenter;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import nucleus.presenter.delivery.DeliverFirst;
 import nucleus.presenter.delivery.DeliverLatest;
 import nucleus.presenter.delivery.DeliverLatestCache;
@@ -15,10 +20,6 @@ import rx.functions.Action2;
 import rx.functions.Func0;
 import rx.subjects.BehaviorSubject;
 import rx.subscriptions.CompositeSubscription;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This is an extension of {@link Presenter} which provides RxJava functionality.
