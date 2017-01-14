@@ -3,12 +3,8 @@ package nucleus.presenter;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 import nucleus.presenter.delivery.DeliverFirst;
+import nucleus.presenter.delivery.DeliverLatest;
 import nucleus.presenter.delivery.DeliverLatestCache;
 import nucleus.presenter.delivery.DeliverReplay;
 import nucleus.presenter.delivery.Delivery;
@@ -19,6 +15,10 @@ import rx.functions.Action2;
 import rx.functions.Func0;
 import rx.subjects.BehaviorSubject;
 import rx.subscriptions.CompositeSubscription;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This is an extension of {@link Presenter} which provides RxJava functionality.
@@ -223,6 +223,18 @@ public class RxPresenter<View> extends Presenter<View> {
      */
     public <T> DeliverLatestCache<View, T> deliverLatestCache() {
         return new DeliverLatestCache<>(views);
+    }
+
+    /**
+     * Returns an {@link rx.Observable.Transformer} that couples views with data that has been emitted by
+     * the source {@link rx.Observable}.
+     *
+     * {@link #deliverLatest} delivers each onNext value that has been emitted by the source observable until the the source observable is completed.
+     *
+     * @param <T> the type of source observable emissions
+     */
+    public <T> DeliverLatest<View, T> deliverLatest() {
+        return new DeliverLatest<>(views);
     }
 
     /**
