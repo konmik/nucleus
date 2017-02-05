@@ -4,10 +4,10 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import nucleus.example.main.MainPresenter;
 import retrofit.RestAdapter;
-import rx.Scheduler;
-import rx.android.schedulers.AndroidSchedulers;
 
 import static android.util.Log.v;
 

@@ -5,14 +5,14 @@ import android.support.annotation.NonNull;
 
 import javax.inject.Inject;
 
+import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.functions.BiConsumer;
 import nucleus.example.base.App;
 import nucleus.example.base.MainThread;
 import nucleus.example.base.ServerAPI;
+import nucleus.presenter.Func0;
 import nucleus.presenter.RxPresenter;
-import rx.Observable;
-import rx.Scheduler;
-import rx.functions.Action2;
-import rx.functions.Func0;
 
 public class MainPresenter extends RxPresenter<MainActivity> {
 
@@ -46,15 +46,15 @@ public class MainPresenter extends RxPresenter<MainActivity> {
                         .observeOn(scheduler);
                 }
             },
-            new Action2<MainActivity, ServerAPI.Response>() {
+            new BiConsumer<MainActivity, ServerAPI.Response>() {
                 @Override
-                public void call(MainActivity activity, ServerAPI.Response response) {
+                public void accept(MainActivity activity, ServerAPI.Response response) throws Exception {
                     activity.onItems(response.items, name);
                 }
             },
-            new Action2<MainActivity, Throwable>() {
+            new BiConsumer<MainActivity, Throwable>() {
                 @Override
-                public void call(MainActivity activity, Throwable throwable) {
+                public void accept(MainActivity activity, Throwable throwable) throws Exception {
                     activity.onNetworkError(throwable);
                 }
             });

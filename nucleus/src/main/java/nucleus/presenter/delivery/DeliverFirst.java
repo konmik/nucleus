@@ -1,36 +1,35 @@
 package nucleus.presenter.delivery;
 
-import rx.Notification;
-import rx.Observable;
-import rx.functions.Func1;
+import io.reactivex.Notification;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.functions.Function;
+import nucleus.view.OptionalView;
 
-public class DeliverFirst<View, T> implements Observable.Transformer<T, Delivery<View, T>> {
+import static nucleus.presenter.delivery.Delivery.validObservable;
 
-    private final Observable<View> view;
+public class DeliverFirst<View, T> implements ObservableTransformer<T, Delivery<View, T>> {
 
-    public DeliverFirst(Observable<View> view) {
+    private final Observable<OptionalView<View>> view;
+
+    public DeliverFirst(Observable<OptionalView<View>> view) {
         this.view = view;
     }
 
     @Override
-    public Observable<Delivery<View, T>> call(Observable<T> observable) {
+    public ObservableSource<Delivery<View, T>> apply(Observable<T> observable) {
         return observable.materialize()
             .take(1)
-            .switchMap(new Func1<Notification<T>, Observable<? extends Delivery<View, T>>>() {
+            .switchMap(new Function<Notification<T>, ObservableSource<Delivery<View, T>>>() {
                 @Override
-                public Observable<? extends Delivery<View, T>> call(final Notification<T> notification) {
-                    return view.map(new Func1<View, Delivery<View, T>>() {
+                public ObservableSource<Delivery<View, T>> apply(final Notification<T> notification) throws Exception {
+                    return view.concatMap(new Function<OptionalView<View>, ObservableSource<Delivery<View, T>>>() {
                         @Override
-                        public Delivery<View, T> call(View view) {
-                            return view == null ? null : new Delivery<>(view, notification);
+                        public ObservableSource<Delivery<View, T>> apply(OptionalView<View> view) throws Exception {
+                            return validObservable(view, notification);
                         }
                     });
-                }
-            })
-            .filter(new Func1<Delivery<View, T>, Boolean>() {
-                @Override
-                public Boolean call(Delivery<View, T> delivery) {
-                    return delivery != null;
                 }
             })
             .take(1);

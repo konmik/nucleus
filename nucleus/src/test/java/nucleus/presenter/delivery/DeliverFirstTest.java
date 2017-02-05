@@ -4,13 +4,16 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
-import rx.Notification;
-import rx.Subscription;
-import rx.exceptions.OnErrorNotImplementedException;
-import rx.functions.Action1;
-import rx.functions.Action2;
-import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
+import io.reactivex.Notification;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiConsumer;
+import io.reactivex.functions.Consumer;
+import io.reactivex.internal.functions.Functions;
+import io.reactivex.internal.observers.LambdaObserver;
+import io.reactivex.observers.TestObserver;
+import io.reactivex.subjects.PublishSubject;
+import nucleus.view.OptionalView;
 
 import static org.junit.Assert.assertFalse;
 
@@ -18,120 +21,122 @@ public class DeliverFirstTest {
 
     @Test
     public void testOnce() throws Exception {
-        PublishSubject<Object> view = PublishSubject.create();
-        final TestSubscriber<Delivery<Object, Integer>> testSubscriber = new TestSubscriber<>();
+        PublishSubject<OptionalView<Object>> view = PublishSubject.create();
+        final TestObserver<Delivery<Object, Integer>> testObserver = new TestObserver<>();
         ArrayList<Delivery<Object, Integer>> deliveries = new ArrayList<>();
 
         final PublishSubject<Integer> subject = PublishSubject.create();
         DeliverFirst<Object, Integer> restartable = new DeliverFirst<>(view);
-        Subscription subscription = restartable.call(subject)
-            .subscribe(new Action1<Delivery<Object, Integer>>() {
-                @Override
-                public void call(Delivery<Object, Integer> delivery) {
-                    delivery.split(
-                        new Action2<Object, Integer>() {
-                            @Override
-                            public void call(Object o, Integer integer) {
-                                testSubscriber.onNext(new Delivery<>(o, Notification.createOnNext(integer)));
-                            }
-                        },
-                        new Action2<Object, Throwable>() {
-                            @Override
-                            public void call(Object o, Throwable throwable) {
-                                testSubscriber.onNext(new Delivery<>(o, Notification.<Integer>createOnError(throwable)));
-                            }
+        LambdaObserver<Delivery<Object, Integer>> observer = new LambdaObserver<>(new Consumer<Delivery<Object, Integer>>() {
+            @Override
+            public void accept(Delivery<Object, Integer> delivery) throws Exception {
+                delivery.split(
+                    new BiConsumer<Object, Integer>() {
+                        @Override
+                        public void accept(Object o, Integer integer) throws Exception {
+                            testObserver.onNext(new Delivery<>(o, Notification.createOnNext(integer)));
                         }
-                    );
-                }
-            });
+                    },
+                    new BiConsumer<Object, Throwable>() {
+                        @Override
+                        public void accept(Object o, Throwable throwable) throws Exception {
+                            testObserver.onNext(new Delivery<>(o, Notification.<Integer>createOnError(throwable)));
+                        }
+                    }
+                );
+            }
+        }, Functions.ERROR_CONSUMER, Functions.EMPTY_ACTION, Functions.<Disposable>emptyConsumer());
+        restartable.apply(subject)
+            .subscribe(observer);
 
         // only first value is delivered
         subject.onNext(1);
         subject.onNext(2);
         subject.onNext(3);
 
-        testSubscriber.assertNotCompleted();
-        testSubscriber.assertNoValues();
+        testObserver.assertNotComplete();
+        testObserver.assertNoValues();
 
-        view.onNext(100);
+        view.onNext(new OptionalView<Object>(100));
         deliveries.add(new Delivery<Object, Integer>(100, Notification.createOnNext(1)));
 
-        testSubscriber.assertValueCount(1);
+        testObserver.assertValueCount(1);
 
         // no values delivered if a view has been detached
         view.onNext(null);
 
-        testSubscriber.assertValueCount(1);
+        testObserver.assertValueCount(1);
 
         // the latest value will not be delivered to the new view
-        view.onNext(101);
+        view.onNext(new OptionalView<Object>(101));
 
-        testSubscriber.assertValueCount(1);
+        testObserver.assertValueCount(1);
 
         // successive values will be ignored
         subject.onNext(4);
 
-        testSubscriber.assertValueCount(1);
+        testObserver.assertValueCount(1);
 
         // final checks
-        testSubscriber.assertReceivedOnNext(deliveries);
+        testObserver.assertValueSequence(deliveries);
 
-        subscription.unsubscribe();
+        observer.dispose();
         assertFalse(subject.hasObservers());
         assertFalse(view.hasObservers());
     }
 
     @Test
     public void testOnceThrowable() throws Exception {
-        PublishSubject<Object> view = PublishSubject.create();
-        final TestSubscriber<Delivery<Object, Integer>> testSubscriber = new TestSubscriber<>();
+        PublishSubject<OptionalView<Object>> view = PublishSubject.create();
+        final TestObserver<Delivery<Object, Integer>> testObserver = new TestObserver<>();
         final ArrayList<Delivery<Object, Integer>> deliveries = new ArrayList<>();
 
         final PublishSubject<Integer> subject = PublishSubject.create();
         DeliverFirst<Object, Integer> restartable = new DeliverFirst<>(view);
-        Subscription subscription = restartable.call(subject)
-            .subscribe(new Action1<Delivery<Object, Integer>>() {
-                @Override
-                public void call(Delivery<Object, Integer> delivery) {
-                    delivery.split(
-                        new Action2<Object, Integer>() {
-                            @Override
-                            public void call(Object o, Integer integer) {
-                                testSubscriber.onNext(new Delivery<>(o, Notification.createOnNext(integer)));
-                            }
-                        },
-                        new Action2<Object, Throwable>() {
-                            @Override
-                            public void call(Object o, Throwable throwable) {
-                                testSubscriber.onNext(new Delivery<>(o, Notification.<Integer>createOnError(throwable)));
-                            }
+        LambdaObserver<Delivery<Object, Integer>> observer = new LambdaObserver<>(new Consumer<Delivery<Object, Integer>>() {
+            @Override
+            public void accept(Delivery<Object, Integer> delivery) throws Exception {
+                delivery.split(
+                    new BiConsumer<Object, Integer>() {
+                        @Override
+                        public void accept(Object o, Integer integer) throws Exception {
+                            testObserver.onNext(new Delivery<>(o, Notification.createOnNext(integer)));
                         }
-                    );
-                }
-            });
+                    },
+                    new BiConsumer<Object, Throwable>() {
+                        @Override
+                        public void accept(Object o, Throwable throwable) throws Exception {
+                            testObserver.onNext(new Delivery<>(o, Notification.<Integer>createOnError(throwable)));
+                        }
+                    }
+                );
+            }
+        }, Functions.ERROR_CONSUMER, Functions.EMPTY_ACTION, Functions.<Disposable>emptyConsumer());
+        restartable.apply(subject)
+            .subscribe(observer);
 
         // only first value is delivered
         Throwable throwable = new Throwable();
         subject.onError(throwable);
 
-        testSubscriber.assertNotCompleted();
-        testSubscriber.assertNoValues();
+        testObserver.assertNotComplete();
+        testObserver.assertNoValues();
 
-        view.onNext(100);
+        view.onNext(new OptionalView<Object>(100));
         deliveries.add(new Delivery<Object, Integer>(100, Notification.<Integer>createOnError(throwable)));
 
-        testSubscriber.assertValueCount(1);
+        testObserver.assertValueCount(1);
 
         // final checks
-        testSubscriber.assertReceivedOnNext(deliveries);
+        testObserver.assertValueSequence(deliveries);
 
-        subscription.unsubscribe();
+        observer.dispose();
         assertFalse(subject.hasObservers());
         assertFalse(view.hasObservers());
     }
 
     //  https://github.com/ReactiveX/RxJava/issues/3182
-    @Test(expected = OnErrorNotImplementedException.class)
+    @Test(expected = Exception.class)
     public void testThrowDuringOnNext() throws Exception {
 
 //        Observable
@@ -150,27 +155,46 @@ public class DeliverFirstTest {
 //                }
 //            });
 
-        PublishSubject<Object> view = PublishSubject.create();
+        PublishSubject<OptionalView<Object>> view = PublishSubject.create();
 
         final PublishSubject<Integer> subject = PublishSubject.create();
         new DeliverFirst<Object, Integer>(view)
-            .call(subject)
-            .subscribe(new Action1<Delivery<Object, Integer>>() {
+            .apply(subject)
+            .subscribe(new Observer<Delivery<Object, Integer>>() {
                 @Override
-                public void call(Delivery<Object, Integer> delivery) {
-                    delivery.split(
-                        new Action2<Object, Integer>() {
-                            @Override
-                            public void call(Object o, Integer integer) {
-                                throw new RuntimeException();
-                            }
-                        },
-                        null
-                    );
+                public void onSubscribe(Disposable d) {
+
+                }
+
+                @Override
+                public void onNext(Delivery<Object, Integer> delivery) {
+                    try {
+                        delivery.split(
+                            new BiConsumer<Object, Integer>() {
+                                @Override
+                                public void accept(Object o, Integer integer) throws Exception {
+                                    throw new RuntimeException();
+                                }
+                            },
+                            null
+                        );
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                @Override
+                public void onError(Throwable e) {
+
+                }
+
+                @Override
+                public void onComplete() {
+
                 }
             });
 
         subject.onNext(3);
-        view.onNext(100);
+        view.onNext(new OptionalView<Object>(100));
     }
 }

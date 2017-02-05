@@ -4,9 +4,9 @@ import android.text.Html;
 
 import com.google.gson.annotations.SerializedName;
 
+import io.reactivex.Observable;
 import retrofit.http.GET;
 import retrofit.http.Query;
-import rx.Observable;
 
 public interface ServerAPI {
 

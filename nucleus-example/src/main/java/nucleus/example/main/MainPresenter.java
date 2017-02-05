@@ -3,13 +3,14 @@ package nucleus.example.main;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
+import io.reactivex.Observable;
+import io.reactivex.functions.BiConsumer;
 import nucleus.example.base.App;
 import nucleus.example.base.ServerAPI;
+import nucleus.presenter.Func0;
 import nucleus.presenter.RxPresenter;
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action2;
-import rx.functions.Func0;
+
+import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 
 public class MainPresenter extends RxPresenter<MainActivity> {
 
@@ -36,18 +37,18 @@ public class MainPresenter extends RxPresenter<MainActivity> {
                 public Observable<ServerAPI.Response> call() {
                     return App.getServerAPI()
                         .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
-                        .observeOn(AndroidSchedulers.mainThread());
+                        .observeOn(mainThread());
                 }
             },
-            new Action2<MainActivity, ServerAPI.Response>() {
+            new BiConsumer<MainActivity, ServerAPI.Response>() {
                 @Override
-                public void call(MainActivity activity, ServerAPI.Response response) {
+                public void accept(MainActivity activity, ServerAPI.Response response) throws Exception {
                     activity.onItems(response.items, name);
                 }
             },
-            new Action2<MainActivity, Throwable>() {
+            new BiConsumer<MainActivity, Throwable>() {
                 @Override
-                public void call(MainActivity activity, Throwable throwable) {
+                public void accept(MainActivity activity, Throwable throwable) throws Exception {
                     activity.onNetworkError(throwable);
                 }
             });

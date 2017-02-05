@@ -10,12 +10,12 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.ObjectGraph;
 import dagger.Provides;
+import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.schedulers.TestScheduler;
 import nucleus.example.base.App;
 import nucleus.example.base.MainThread;
 import nucleus.example.base.ServerAPI;
-import rx.Observable;
-import rx.Scheduler;
-import rx.schedulers.TestScheduler;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;

@@ -1,49 +1,49 @@
 package nucleus.presenter.delivery;
 
-import rx.Notification;
-import rx.Observable;
-import rx.Subscription;
-import rx.functions.Action0;
-import rx.functions.Func1;
-import rx.subjects.ReplaySubject;
+import io.reactivex.Notification;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Function;
+import io.reactivex.subjects.ReplaySubject;
+import nucleus.view.OptionalView;
 
-public class DeliverReplay<View, T> implements Observable.Transformer<T, Delivery<View, T>> {
+import static nucleus.presenter.delivery.Delivery.validObservable;
 
-    private final Observable<View> view;
+public class DeliverReplay<View, T> implements ObservableTransformer<T, Delivery<View, T>> {
 
-    public DeliverReplay(Observable<View> view) {
+    private final Observable<OptionalView<View>> view;
+
+    public DeliverReplay(Observable<OptionalView<View>> view) {
         this.view = view;
     }
 
     @Override
-    public Observable<Delivery<View, T>> call(Observable<T> observable) {
+    public Observable<Delivery<View, T>> apply(Observable<T> observable) {
         final ReplaySubject<Notification<T>> subject = ReplaySubject.create();
-        final Subscription subscription = observable
+        final Disposable disposable = observable
             .materialize()
-            .filter(new Func1<Notification<T>, Boolean>() {
-                @Override
-                public Boolean call(Notification<T> notification) {
-                    return !notification.isOnCompleted();
-                }
-            })
-            .subscribe(subject);
+            .doOnEach(subject)
+            .subscribe();
         return view
-            .switchMap(new Func1<View, Observable<Delivery<View, T>>>() {
+            .switchMap(new Function<OptionalView<View>, ObservableSource<Delivery<View, T>>>() {
                 @Override
-                public Observable<Delivery<View, T>> call(final View view) {
-                    return view == null ? Observable.<Delivery<View, T>>never() : subject
-                        .map(new Func1<Notification<T>, Delivery<View, T>>() {
+                public Observable<Delivery<View, T>> apply(final OptionalView<View> view) throws Exception {
+                    return subject
+                        .concatMap(new Function<Notification<T>, ObservableSource<Delivery<View, T>>>() {
                             @Override
-                            public Delivery<View, T> call(Notification<T> notification) {
-                                return new Delivery<>(view, notification);
+                            public ObservableSource<Delivery<View, T>> apply(Notification<T> notification) throws Exception {
+                                return validObservable(view, notification);
                             }
                         });
                 }
             })
-            .doOnUnsubscribe(new Action0() {
+            .doOnDispose(new Action() {
                 @Override
-                public void call() {
-                    subscription.unsubscribe();
+                public void run() {
+                    disposable.dispose();
                 }
             });
     }

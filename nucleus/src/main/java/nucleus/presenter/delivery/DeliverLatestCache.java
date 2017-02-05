@@ -1,41 +1,47 @@
 package nucleus.presenter.delivery;
 
-import rx.Notification;
-import rx.Observable;
-import rx.functions.Func1;
-import rx.functions.Func2;
+import io.reactivex.Notification;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import nucleus.view.OptionalView;
 
-public class DeliverLatestCache<View, T> implements Observable.Transformer<T, Delivery<View, T>> {
+import static nucleus.presenter.delivery.Delivery.validObservable;
 
-    private final Observable<View> view;
+public class DeliverLatestCache<View, T> implements ObservableTransformer<T, Delivery<View, T>> {
 
-    public DeliverLatestCache(Observable<View> view) {
+    private final Observable<OptionalView<View>> view;
+
+    public DeliverLatestCache(Observable<OptionalView<View>> view) {
         this.view = view;
     }
 
     @Override
-    public Observable<Delivery<View, T>> call(Observable<T> observable) {
+    public ObservableSource<Delivery<View, T>> apply(Observable<T> observable) {
         return Observable
             .combineLatest(
                 view,
                 observable
                     .materialize()
-                    .filter(new Func1<Notification<T>, Boolean>() {
+                    .filter(new Predicate<Notification<T>>() {
                         @Override
-                        public Boolean call(Notification<T> notification) {
-                            return !notification.isOnCompleted();
+                        public boolean test(Notification<T> notification) throws Exception {
+                            return !notification.isOnComplete();
                         }
                     }),
-                new Func2<View, Notification<T>, Delivery<View, T>>() {
+                new BiFunction<OptionalView<View>, Notification<T>, Object[]>() {
                     @Override
-                    public Delivery<View, T> call(View view, Notification<T> notification) {
-                        return view == null ? null : new Delivery<>(view, notification);
+                    public Object[] apply(OptionalView<View> view, Notification<T> notification) throws Exception {
+                        return new Object[]{view, notification};
                     }
                 })
-            .filter(new Func1<Delivery<View, T>, Boolean>() {
+            .concatMap(new Function<Object[], ObservableSource<Delivery<View, T>>>() {
                 @Override
-                public Boolean call(Delivery<View, T> delivery) {
-                    return delivery != null;
+                public ObservableSource<Delivery<View, T>> apply(Object[] pack) throws Exception {
+                    return validObservable((OptionalView<View>) pack[0], (Notification<T>) pack[1]);
                 }
             });
     }

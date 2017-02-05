@@ -19,5 +19,5 @@ ext {
     compileSdkVersion = 22
     buildToolsVersion = '22.0.1'
     supportLibraryVersion = '22.2.1'
-    rxVersion = '1.0.14'
+    rxVersion = '2.0.5'
 }
