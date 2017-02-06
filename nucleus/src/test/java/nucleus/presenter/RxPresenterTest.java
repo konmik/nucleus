@@ -32,7 +32,6 @@ public class RxPresenterTest {
         presenter.add(mock);
         presenter.onDestroy();
         verify(mock, times(1)).dispose();
-        verify(mock, atLeastOnce()).isDisposed();
         verifyNoMoreInteractions(mock);
     }
 
@@ -43,7 +42,6 @@ public class RxPresenterTest {
         when(mock.isDisposed()).thenReturn(false);
         presenter.add(mock);
         presenter.remove(mock);
-        verify(mock, atLeastOnce()).isDisposed();
         verify(mock, times(1)).dispose();
         presenter.onDestroy();
         verifyNoMoreInteractions(mock);
@@ -217,7 +215,7 @@ public class RxPresenterTest {
         assertValues(values, testObserver);
 
         presenter.onDropView();
-        values.add(null);
+        values.add(new OptionalView<Integer>(null));
         assertValues(values, testObserver);
 
         presenter.onTakeView(2);

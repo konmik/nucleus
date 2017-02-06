@@ -71,7 +71,7 @@ public class DeliverReplayTest {
         testObserver.assertNotComplete();
 
         // no values delivered if a view has been detached
-        view.onNext(null);
+        view.onNext(new OptionalView<>(null));
 
         testObserver.assertValueCount(3);
         testObserver.assertNotComplete();
@@ -159,7 +159,7 @@ public class DeliverReplayTest {
 
         testObserver.assertValueSequence(onNext);
 
-        view.onNext(null);
+        view.onNext(new OptionalView<>(null));
 
         assertEquals(0, testObserver.completions());
         testObserver.assertValueSequence(onNext);

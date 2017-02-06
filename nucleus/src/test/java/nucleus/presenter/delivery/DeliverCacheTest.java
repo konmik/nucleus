@@ -63,7 +63,7 @@ public class DeliverCacheTest {
         testObserver.assertNotComplete();
 
         // no values delivered if a view has been detached
-        view.onNext(null);
+        view.onNext(new OptionalView<>(null));
 
         testObserver.assertValueCount(1);
         testObserver.assertNotComplete();
