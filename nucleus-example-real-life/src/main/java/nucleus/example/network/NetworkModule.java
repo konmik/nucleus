@@ -1,22 +1,23 @@
 package nucleus.example.network;
 
-import android.util.Log;
-
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import retrofit.RestAdapter;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 @Module
 public class NetworkModule {
     @Singleton
     @Provides
     ServerAPI provideServerApi() {
-        return new RestAdapter.Builder()
-            .setEndpoint(ServerAPI.ENDPOINT)
-            .setLogLevel(RestAdapter.LogLevel.FULL)
-            .setLog(message -> Log.v("Retrofit", message))
-            .build().create(ServerAPI.class);
+        return new Retrofit.Builder()
+            .baseUrl(ServerAPI.ENDPOINT)
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ServerAPI.class);
     }
 }

@@ -1,6 +1,6 @@
 package nucleus.example.util;
 
-import rx.functions.Action1;
+import nucleus.example.util.functions.Action1;
 
 public class RxPager {
 

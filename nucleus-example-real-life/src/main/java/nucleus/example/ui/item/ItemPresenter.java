@@ -8,10 +8,11 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import icepick.State;
-import nucleus.example.ui.base.BasePresenter;
 import nucleus.example.network.ServerAPI;
+import nucleus.example.ui.base.BasePresenter;
 
-import static rx.android.schedulers.AndroidSchedulers.mainThread;
+import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
+import static io.reactivex.schedulers.Schedulers.io;
 
 public class ItemPresenter extends BasePresenter<ItemFragment> {
 
@@ -28,9 +29,10 @@ public class ItemPresenter extends BasePresenter<ItemFragment> {
         super.onCreate(savedState);
 
         restartableLatestCache(GET_ITEM_REQUEST,
-            () -> api.getItem(name.split("\\s+")[0], name.split("\\s+")[1], id)
+            () -> api.getItem(id, name.split("\\s+")[0], name.split("\\s+")[1])
                 .map(it -> it.item)
                 .delay(pref.getInt("delay", 0), TimeUnit.SECONDS)
+                .subscribeOn(io())
                 .observeOn(mainThread()),
             ItemFragment::onItem,
             ItemFragment::onNetworkError);

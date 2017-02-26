@@ -3,7 +3,7 @@ package nucleus.example.util.adapters;
 import android.view.View;
 import android.widget.TextView;
 
-import rx.functions.Action1;
+import nucleus.example.util.functions.Action1;
 
 public class SimpleViewHolder<T> extends BaseViewHolder<T> {
 

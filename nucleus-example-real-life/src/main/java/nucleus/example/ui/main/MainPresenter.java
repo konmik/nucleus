@@ -8,12 +8,13 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import icepick.State;
+import io.reactivex.subjects.PublishSubject;
 import nucleus.example.network.ServerAPI;
 import nucleus.example.ui.base.BasePresenter;
 import nucleus.example.util.PageBundle;
-import rx.subjects.PublishSubject;
 
-import static rx.android.schedulers.AndroidSchedulers.mainThread;
+import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
+import static io.reactivex.schedulers.Schedulers.io;
 
 public class MainPresenter extends BasePresenter<MainFragment> {
 
@@ -40,6 +41,7 @@ public class MainPresenter extends BasePresenter<MainFragment> {
                     api.getItems(name.split("\\s+")[0], name.split("\\s+")[1], page)
                         .map(data -> new PageBundle<>(page, data))
                         .delay(pref.getInt("delay", 0), TimeUnit.SECONDS)
+                        .subscribeOn(io())
                         .observeOn(mainThread())),
             (activity, page) -> activity.onItems(page, name),
             MainFragment::onNetworkError);
