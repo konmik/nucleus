@@ -11,6 +11,7 @@ import nucleus.presenter.Func0;
 import nucleus.presenter.RxPresenter;
 
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
+import static io.reactivex.schedulers.Schedulers.io;
 
 public class MainPresenter extends RxPresenter<MainActivity> {
 
@@ -37,6 +38,7 @@ public class MainPresenter extends RxPresenter<MainActivity> {
                 public Observable<ServerAPI.Response> call() {
                     return App.getServerAPI()
                         .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
+                        .subscribeOn(io())
                         .observeOn(mainThread());
                 }
             },

@@ -5,14 +5,14 @@ import android.text.Html;
 import com.google.gson.annotations.SerializedName;
 
 import io.reactivex.Observable;
-import retrofit.http.GET;
-import retrofit.http.Query;
+import retrofit2.http.GET;
+import retrofit2.http.Query;
 
 public interface ServerAPI {
 
-    public static final String ENDPOINT = "http://api.icndb.com";
+    String ENDPOINT = "http://api.icndb.com";
 
-    public static class Item {
+    class Item {
         @SerializedName("joke")
         public String text;
 
@@ -22,7 +22,7 @@ public interface ServerAPI {
         }
     }
 
-    public static class Response {
+    class Response {
         @SerializedName("value")
         public Item[] items;
     }
