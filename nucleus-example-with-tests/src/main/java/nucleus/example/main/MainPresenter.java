@@ -9,6 +9,7 @@ import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.functions.BiConsumer;
 import nucleus.example.base.App;
+import nucleus.example.base.IoThread;
 import nucleus.example.base.MainThread;
 import nucleus.example.base.ServerAPI;
 import nucleus.presenter.Func0;
@@ -25,7 +26,8 @@ public class MainPresenter extends RxPresenter<MainActivity> {
     private static final String NAME_KEY = "name";
 
     @Inject ServerAPI api;
-    @Inject @MainThread Scheduler scheduler;
+    @Inject @MainThread Scheduler main;
+    @Inject @IoThread Scheduler io;
 
     private String name = DEFAULT_NAME;
 
@@ -43,7 +45,8 @@ public class MainPresenter extends RxPresenter<MainActivity> {
                 public Observable<ServerAPI.Response> call() {
                     return api
                         .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
-                        .observeOn(scheduler);
+                        .subscribeOn(io)
+                        .observeOn(main);
                 }
             },
             new BiConsumer<MainActivity, ServerAPI.Response>() {

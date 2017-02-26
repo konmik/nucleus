@@ -14,6 +14,7 @@ import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.schedulers.TestScheduler;
 import nucleus.example.base.App;
+import nucleus.example.base.IoThread;
 import nucleus.example.base.MainThread;
 import nucleus.example.base.ServerAPI;
 
@@ -41,12 +42,20 @@ public class MainPresenterTest {
         @Provides
         @MainThread
         Scheduler provideScheduler() {
-            return testScheduler;
+            return mainScheduler;
+        }
+
+        @Singleton
+        @Provides
+        @IoThread
+        Scheduler provideIoScheduler() {
+            return ioScheduler;
         }
     }
 
     ServerAPI serverAPIMock;
-    TestScheduler testScheduler;
+    TestScheduler mainScheduler;
+    TestScheduler ioScheduler;
 
     @Test
     public void testRequest() throws Throwable {
@@ -61,7 +70,8 @@ public class MainPresenterTest {
         MainActivity mainActivity = mock(MainActivity.class);
         presenter.takeView(mainActivity);
 
-        testScheduler.triggerActions();
+        ioScheduler.triggerActions();
+        mainScheduler.triggerActions();
 
         verify(serverAPIMock).getItems(FIRST_NAME, LAST_NAME);
         verify(mainActivity).onItems(argThat(new ArgumentMatcher<ServerAPI.Item[]>() {
@@ -85,6 +95,7 @@ public class MainPresenterTest {
     }
 
     private void createTestScheduler() {
-        testScheduler = new TestScheduler();
+        mainScheduler = new TestScheduler();
+        ioScheduler = new TestScheduler();
     }
 }
