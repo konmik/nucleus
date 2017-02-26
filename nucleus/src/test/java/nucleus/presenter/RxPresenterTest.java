@@ -15,7 +15,6 @@ import nucleus.view.OptionalView;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -52,9 +51,9 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.create(null);
 
-        Func0<Disposable> restartable = mock(Func0.class);
+        Factory<Disposable> restartable = mock(Factory.class);
         Disposable disposable = mock(Disposable.class);
-        when(restartable.call()).thenReturn(disposable);
+        when(restartable.create()).thenReturn(disposable);
         when(disposable.isDisposed()).thenReturn(false);
         presenter.restartable(1, restartable);
 
@@ -62,7 +61,7 @@ public class RxPresenterTest {
 
         presenter.start(1);
 
-        verify(restartable, times(1)).call();
+        verify(restartable, times(1)).create();
         verifyNoMoreInteractions(restartable);
 
         Bundle bundle = BundleMock.mock();
@@ -72,7 +71,7 @@ public class RxPresenterTest {
         presenter.create(bundle);
         presenter.restartable(1, restartable);
 
-        verify(restartable, times(2)).call();
+        verify(restartable, times(2)).create();
         verifyNoMoreInteractions(restartable);
     }
 
@@ -81,9 +80,9 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.onCreate(null);
 
-        Func0<Disposable> restartable = mock(Func0.class);
+        Factory<Disposable> restartable = mock(Factory.class);
         Disposable disposable = mock(Disposable.class);
-        when(restartable.call()).thenReturn(disposable);
+        when(restartable.create()).thenReturn(disposable);
         when(disposable.isDisposed()).thenReturn(false);
         presenter.restartable(1, restartable);
 
@@ -91,7 +90,7 @@ public class RxPresenterTest {
 
         presenter.start(1);
 
-        verify(restartable, times(1)).call();
+        verify(restartable, times(1)).create();
         verifyNoMoreInteractions(restartable);
 
         presenter.stop(1);
@@ -103,19 +102,19 @@ public class RxPresenterTest {
         presenter.onCreate(bundle);
         presenter.restartable(1, restartable);
 
-        verify(restartable, times(1)).call();
+        verify(restartable, times(1)).create();
         verifyNoMoreInteractions(restartable);
     }
 
     @Test
     public void testCompletedRestartable() throws Exception {
-        Func0<Disposable> restartable = mock(Func0.class);
+        Factory<Disposable> restartable = mock(Factory.class);
         Disposable disposable = mock(Disposable.class);
 
         RxPresenter presenter = new RxPresenter();
         presenter.create(null);
 
-        when(restartable.call()).thenReturn(disposable);
+        when(restartable.create()).thenReturn(disposable);
         when(disposable.isDisposed()).thenReturn(true);
         presenter.restartable(1, restartable);
 
@@ -129,9 +128,9 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.onCreate(null);
 
-        Func0<Disposable> restartable = mock(Func0.class);
+        Factory<Disposable> restartable = mock(Factory.class);
         Disposable disposable = mock(Disposable.class);
-        when(restartable.call()).thenReturn(disposable);
+        when(restartable.create()).thenReturn(disposable);
         when(disposable.isDisposed()).thenReturn(false);
         presenter.restartable(1, restartable);
 
@@ -139,7 +138,7 @@ public class RxPresenterTest {
 
         presenter.start(1);
 
-        verify(restartable, times(1)).call();
+        verify(restartable, times(1)).create();
         verifyNoMoreInteractions(restartable);
 
         when(disposable.isDisposed()).thenReturn(true);
@@ -158,9 +157,9 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.create(null);
 
-        Func0<Disposable> restartable = mock(Func0.class);
+        Factory<Disposable> restartable = mock(Factory.class);
         Disposable disposable = mock(Disposable.class);
-        when(restartable.call()).thenReturn(disposable);
+        when(restartable.create()).thenReturn(disposable);
         when(disposable.isDisposed()).thenReturn(false);
 
         presenter.restartable(1, restartable);
@@ -172,9 +171,9 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.create(null);
 
-        Func0<Disposable> restartable = mock(Func0.class);
+        Factory<Disposable> restartable = mock(Factory.class);
         Disposable disposable = mock(Disposable.class);
-        when(restartable.call()).thenReturn(disposable);
+        when(restartable.create()).thenReturn(disposable);
         when(disposable.isDisposed()).thenReturn(false);
 
         presenter.restartable(1, restartable);
@@ -188,9 +187,9 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.create(null);
 
-        Func0<Disposable> restartable = mock(Func0.class);
+        Factory<Disposable> restartable = mock(Factory.class);
         Disposable disposable = mock(Disposable.class);
-        when(restartable.call()).thenReturn(disposable);
+        when(restartable.create()).thenReturn(disposable);
         when(disposable.isDisposed()).thenReturn(true);
 
         presenter.restartable(1, restartable);

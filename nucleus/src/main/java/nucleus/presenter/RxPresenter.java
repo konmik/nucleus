@@ -32,7 +32,7 @@ public class RxPresenter<View> extends Presenter<View> {
     private final BehaviorSubject<OptionalView<View>> views = BehaviorSubject.create();
     private final CompositeDisposable disposables = new CompositeDisposable();
 
-    private final HashMap<Integer, Func0<Disposable>> restartables = new HashMap<>();
+    private final HashMap<Integer, Factory<Disposable>> restartables = new HashMap<>();
     private final HashMap<Integer, Disposable> restartableDisposables = new HashMap<>();
     private final ArrayList<Integer> requested = new ArrayList<>();
 
@@ -76,7 +76,7 @@ public class RxPresenter<View> extends Presenter<View> {
      * @param restartableId id of the restartable
      * @param factory       factory of the restartable
      */
-    public void restartable(int restartableId, Func0<Disposable> factory) {
+    public void restartable(int restartableId, Factory<Disposable> factory) {
         restartables.put(restartableId, factory);
         if (requested.contains(restartableId))
             start(restartableId);
@@ -90,7 +90,7 @@ public class RxPresenter<View> extends Presenter<View> {
     public void start(int restartableId) {
         stop(restartableId);
         requested.add(restartableId);
-        restartableDisposables.put(restartableId, restartables.get(restartableId).call());
+        restartableDisposables.put(restartableId, restartables.get(restartableId).create());
     }
 
     /**
@@ -118,7 +118,7 @@ public class RxPresenter<View> extends Presenter<View> {
 
     /**
      * This is a shortcut that can be used instead of combining together
-     * {@link #restartable(int, Func0)},
+     * {@link #restartable(int, Factory)},
      * {@link #deliverFirst()},
      * {@link #split(BiConsumer, BiConsumer)}.
      *
@@ -128,13 +128,13 @@ public class RxPresenter<View> extends Presenter<View> {
      * @param onError           a callback that will be called if the source observable emits onError.
      * @param <T>               the type of the observable.
      */
-    public <T> void restartableFirst(int restartableId, final Func0<Observable<T>> observableFactory,
+    public <T> void restartableFirst(int restartableId, final Factory<Observable<T>> observableFactory,
         final BiConsumer<View, T> onNext, @Nullable final BiConsumer<View, Throwable> onError) {
 
-        restartable(restartableId, new Func0<Disposable>() {
+        restartable(restartableId, new Factory<Disposable>() {
             @Override
-            public Disposable call() {
-                return observableFactory.call()
+            public Disposable create() {
+                return observableFactory.create()
                     .compose(RxPresenter.this.<T>deliverFirst())
                     .subscribe(split(onNext, onError));
             }
@@ -142,15 +142,15 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
-     * This is a shortcut for calling {@link #restartableFirst(int, Func0, BiConsumer, BiConsumer)} with the last parameter = null.
+     * This is a shortcut for calling {@link #restartableFirst(int, Factory, BiConsumer, BiConsumer)} with the last parameter = null.
      */
-    public <T> void restartableFirst(int restartableId, final Func0<Observable<T>> observableFactory, final BiConsumer<View, T> onNext) {
+    public <T> void restartableFirst(int restartableId, final Factory<Observable<T>> observableFactory, final BiConsumer<View, T> onNext) {
         restartableFirst(restartableId, observableFactory, onNext, null);
     }
 
     /**
      * This is a shortcut that can be used instead of combining together
-     * {@link #restartable(int, Func0)},
+     * {@link #restartable(int, Factory)},
      * {@link #deliverLatestCache()},
      * {@link #split(BiConsumer, BiConsumer)}.
      *
@@ -160,13 +160,13 @@ public class RxPresenter<View> extends Presenter<View> {
      * @param onError           a callback that will be called if the source observable emits onError.
      * @param <T>               the type of the observable.
      */
-    public <T> void restartableLatestCache(int restartableId, final Func0<Observable<T>> observableFactory,
+    public <T> void restartableLatestCache(int restartableId, final Factory<Observable<T>> observableFactory,
         final BiConsumer<View, T> onNext, @Nullable final BiConsumer<View, Throwable> onError) {
 
-        restartable(restartableId, new Func0<Disposable>() {
+        restartable(restartableId, new Factory<Disposable>() {
             @Override
-            public Disposable call() {
-                return observableFactory.call()
+            public Disposable create() {
+                return observableFactory.create()
                     .compose(RxPresenter.this.<T>deliverLatestCache())
                     .subscribe(split(onNext, onError));
             }
@@ -174,15 +174,15 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
-     * This is a shortcut for calling {@link #restartableLatestCache(int, Func0, BiConsumer, BiConsumer)} with the last parameter = null.
+     * This is a shortcut for calling {@link #restartableLatestCache(int, Factory, BiConsumer, BiConsumer)} with the last parameter = null.
      */
-    public <T> void restartableLatestCache(int restartableId, final Func0<Observable<T>> observableFactory, final BiConsumer<View, T> onNext) {
+    public <T> void restartableLatestCache(int restartableId, final Factory<Observable<T>> observableFactory, final BiConsumer<View, T> onNext) {
         restartableLatestCache(restartableId, observableFactory, onNext, null);
     }
 
     /**
      * This is a shortcut that can be used instead of combining together
-     * {@link #restartable(int, Func0)},
+     * {@link #restartable(int, Factory)},
      * {@link #deliverReplay()},
      * {@link #split(BiConsumer, BiConsumer)}.
      *
@@ -192,13 +192,13 @@ public class RxPresenter<View> extends Presenter<View> {
      * @param onError           a callback that will be called if the source observable emits onError.
      * @param <T>               the type of the observable.
      */
-    public <T> void restartableReplay(int restartableId, final Func0<Observable<T>> observableFactory,
+    public <T> void restartableReplay(int restartableId, final Factory<Observable<T>> observableFactory,
         final BiConsumer<View, T> onNext, @Nullable final BiConsumer<View, Throwable> onError) {
 
-        restartable(restartableId, new Func0<Disposable>() {
+        restartable(restartableId, new Factory<Disposable>() {
             @Override
-            public Disposable call() {
-                return observableFactory.call()
+            public Disposable create() {
+                return observableFactory.create()
                     .compose(RxPresenter.this.<T>deliverReplay())
                     .subscribe(split(onNext, onError));
             }
@@ -206,9 +206,9 @@ public class RxPresenter<View> extends Presenter<View> {
     }
 
     /**
-     * This is a shortcut for calling {@link #restartableReplay(int, Func0, BiConsumer, BiConsumer)} with the last parameter = null.
+     * This is a shortcut for calling {@link #restartableReplay(int, Factory, BiConsumer, BiConsumer)} with the last parameter = null.
      */
-    public <T> void restartableReplay(int restartableId, final Func0<Observable<T>> observableFactory, final BiConsumer<View, T> onNext) {
+    public <T> void restartableReplay(int restartableId, final Factory<Observable<T>> observableFactory, final BiConsumer<View, T> onNext) {
         restartableReplay(restartableId, observableFactory, onNext, null);
     }
 

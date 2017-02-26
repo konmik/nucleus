@@ -12,7 +12,7 @@ import nucleus.example.base.App;
 import nucleus.example.base.IoThread;
 import nucleus.example.base.MainThread;
 import nucleus.example.base.ServerAPI;
-import nucleus.presenter.Func0;
+import nucleus.presenter.Factory;
 import nucleus.presenter.RxPresenter;
 
 public class MainPresenter extends RxPresenter<MainActivity> {
@@ -40,9 +40,9 @@ public class MainPresenter extends RxPresenter<MainActivity> {
             name = savedState.getString(NAME_KEY);
 
         restartableLatestCache(REQUEST_ITEMS,
-            new Func0<Observable<ServerAPI.Response>>() {
+            new Factory<Observable<ServerAPI.Response>>() {
                 @Override
-                public Observable<ServerAPI.Response> call() {
+                public Observable<ServerAPI.Response> create() {
                     return api
                         .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
                         .subscribeOn(io)
