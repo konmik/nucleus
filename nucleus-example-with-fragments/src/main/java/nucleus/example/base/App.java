@@ -1,9 +1,10 @@
 package nucleus.example.base;
 
 import android.app.Application;
-import android.util.Log;
 
-import retrofit.RestAdapter;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class App extends Application {
 
@@ -12,16 +13,12 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        serverAPI = new RestAdapter.Builder()
-            .setEndpoint(ServerAPI.ENDPOINT)
-            .setLogLevel(RestAdapter.LogLevel.FULL)
-            .setLog(new RestAdapter.Log() {
-                @Override
-                public void log(String message) {
-                    Log.v("Retrofit", message);
-                }
-            })
-            .build().create(ServerAPI.class);
+        serverAPI = new Retrofit.Builder()
+            .baseUrl(ServerAPI.ENDPOINT)
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ServerAPI.class);
     }
 
     public static ServerAPI getServerAPI() {

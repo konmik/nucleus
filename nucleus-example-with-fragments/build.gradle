@@ -24,6 +24,10 @@ dependencies {
     compile "info.android15.nucleus:nucleus:$VERSION_NAME"
     compile "info.android15.nucleus:nucleus-support-v4:$VERSION_NAME"
     compile "info.android15.nucleus:nucleus-support-v7:$VERSION_NAME"
-    compile 'com.squareup.retrofit:retrofit:1.9.0'
-    compile 'io.reactivex:rxandroid:0.24.0'
+
+    compile 'com.squareup.retrofit2:retrofit:2.2.0'
+    compile 'com.squareup.retrofit2:adapter-rxjava2:2.2.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.2.0'
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    compile 'io.reactivex.rxjava2:rxjava:2.0.5'
 }

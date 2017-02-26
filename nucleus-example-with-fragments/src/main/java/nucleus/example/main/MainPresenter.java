@@ -3,13 +3,14 @@ package nucleus.example.main;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
+import io.reactivex.Observable;
+import io.reactivex.functions.BiConsumer;
 import nucleus.example.base.App;
 import nucleus.example.base.ServerAPI;
 import nucleus.example.logging.LoggingPresenter;
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action2;
-import rx.functions.Func0;
+import nucleus.presenter.Func0;
+
+import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 
 public class MainPresenter extends LoggingPresenter<MainFragment> {
 
@@ -36,19 +37,19 @@ public class MainPresenter extends LoggingPresenter<MainFragment> {
                 public Observable<ServerAPI.Response> call() {
                     return App.getServerAPI()
                         .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
-                        .observeOn(AndroidSchedulers.mainThread());
+                        .observeOn(mainThread());
                 }
             },
-            new Action2<MainFragment, ServerAPI.Response>() {
+            new BiConsumer<MainFragment, ServerAPI.Response>() {
                 @Override
-                public void call(MainFragment activity, ServerAPI.Response response) {
-                    activity.onItems(response.items, name);
+                public void accept(MainFragment view, ServerAPI.Response response) throws Exception {
+                    view.onItems(response.items, name);
                 }
             },
-            new Action2<MainFragment, Throwable>() {
+            new BiConsumer<MainFragment, Throwable>() {
                 @Override
-                public void call(MainFragment activity, Throwable throwable) {
-                    activity.onNetworkError(throwable);
+                public void accept(MainFragment view, Throwable throwable) throws Exception {
+                    view.onNetworkError(throwable);
                 }
             });
 
