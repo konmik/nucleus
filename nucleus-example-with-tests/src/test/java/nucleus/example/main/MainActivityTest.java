@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import nucleus.example.R;
 import nucleus.example.base.ServerAPI;
-import nucleus.view.NucleusActivity;
+import nucleus5.view.NucleusActivity;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeastOnce;

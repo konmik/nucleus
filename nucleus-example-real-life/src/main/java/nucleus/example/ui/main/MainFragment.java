@@ -22,7 +22,7 @@ import nucleus.example.util.RxPager;
 import nucleus.example.util.adapters.ClassViewHolderType;
 import nucleus.example.util.adapters.SimpleListAdapter;
 import nucleus.example.util.adapters.SimpleViewHolder;
-import nucleus.factory.RequiresPresenter;
+import nucleus5.factory.RequiresPresenter;
 
 import static java.util.Arrays.asList;
 

@@ -11,7 +11,7 @@ import android.widget.TextView;
 import nucleus.example.R;
 import nucleus.example.logging.LoggingFragment;
 import nucleus.example.logging.LoggingPresenter;
-import nucleus.factory.RequiresPresenter;
+import nucleus5.factory.RequiresPresenter;
 
 @RequiresPresenter(LoggingPresenter.class)
 public class ItemFragment extends LoggingFragment<MainPresenter> {

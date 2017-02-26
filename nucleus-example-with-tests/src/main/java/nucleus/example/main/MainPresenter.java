@@ -12,8 +12,8 @@ import nucleus.example.base.App;
 import nucleus.example.base.IoThread;
 import nucleus.example.base.MainThread;
 import nucleus.example.base.ServerAPI;
-import nucleus.presenter.Factory;
-import nucleus.presenter.RxPresenter;
+import nucleus5.presenter.Factory;
+import nucleus5.presenter.RxPresenter;
 
 public class MainPresenter extends RxPresenter<MainActivity> {
 

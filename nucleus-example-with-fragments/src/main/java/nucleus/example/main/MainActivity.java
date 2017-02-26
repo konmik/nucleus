@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
 import nucleus.example.R;
-import nucleus.view.NucleusAppCompatActivity;
+import nucleus5.view.NucleusAppCompatActivity;
 
 public class MainActivity extends NucleusAppCompatActivity<MainPresenter> {
 

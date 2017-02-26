@@ -8,9 +8,10 @@ import io.reactivex.functions.BiConsumer;
 import nucleus.example.base.App;
 import nucleus.example.base.ServerAPI;
 import nucleus.example.logging.LoggingPresenter;
-import nucleus.presenter.Func0;
+import nucleus5.presenter.Factory;
 
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
+import static io.reactivex.schedulers.Schedulers.io;
 
 public class MainPresenter extends LoggingPresenter<MainFragment> {
 
@@ -32,11 +33,12 @@ public class MainPresenter extends LoggingPresenter<MainFragment> {
             name = savedState.getString(NAME_KEY);
 
         restartableLatestCache(REQUEST_ITEMS,
-            new Func0<Observable<ServerAPI.Response>>() {
+            new Factory<Observable<ServerAPI.Response>>() {
                 @Override
-                public Observable<ServerAPI.Response> call() {
+                public Observable<ServerAPI.Response> create() {
                     return App.getServerAPI()
                         .getItems(name.split("\\s+")[0], name.split("\\s+")[1])
+                        .subscribeOn(io())
                         .observeOn(mainThread());
                 }
             },

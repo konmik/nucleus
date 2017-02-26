@@ -2,7 +2,7 @@ package nucleus.example.logging;
 
 import android.os.Bundle;
 
-import nucleus.presenter.RxPresenter;
+import nucleus5.presenter.RxPresenter;
 
 import static android.util.Log.v;
 

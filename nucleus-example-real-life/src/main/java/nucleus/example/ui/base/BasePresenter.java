@@ -3,7 +3,7 @@ package nucleus.example.ui.base;
 import android.os.Bundle;
 
 import icepick.Icepick;
-import nucleus.presenter.RxPresenter;
+import nucleus5.presenter.RxPresenter;
 
 public class BasePresenter<ViewType> extends RxPresenter<ViewType> {
 

@@ -13,7 +13,7 @@ import nucleus.example.R;
 import nucleus.example.ui.base.BaseFragment;
 import nucleus.example.network.ServerAPI;
 import nucleus.example.util.Delayed;
-import nucleus.factory.RequiresPresenter;
+import nucleus5.factory.RequiresPresenter;
 
 @RequiresPresenter(ItemPresenter.class)
 public class ItemFragment extends BaseFragment<ItemPresenter> {

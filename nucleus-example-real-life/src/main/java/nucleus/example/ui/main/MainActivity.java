@@ -13,7 +13,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import nucleus.example.R;
 import nucleus.example.util.Injector;
-import nucleus.view.NucleusAppCompatActivity;
+import nucleus5.view.NucleusAppCompatActivity;
 
 public class MainActivity extends NucleusAppCompatActivity<MainPresenter> {
 

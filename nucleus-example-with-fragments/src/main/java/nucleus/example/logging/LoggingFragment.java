@@ -3,8 +3,8 @@ package nucleus.example.logging;
 import android.os.Bundle;
 import android.view.View;
 
-import nucleus.presenter.Presenter;
-import nucleus.view.NucleusSupportFragment;
+import nucleus5.presenter.Presenter;
+import nucleus5.view.NucleusSupportFragment;
 
 import static android.util.Log.v;
 

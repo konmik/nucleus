@@ -14,7 +14,7 @@ import android.widget.Toast;
 import nucleus.example.R;
 import nucleus.example.base.ServerAPI;
 import nucleus.example.logging.LoggingFragment;
-import nucleus.factory.RequiresPresenter;
+import nucleus5.factory.RequiresPresenter;
 
 @RequiresPresenter(MainPresenter.class)
 public class MainFragment extends LoggingFragment<MainPresenter> {

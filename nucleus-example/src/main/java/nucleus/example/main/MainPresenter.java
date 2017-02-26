@@ -7,8 +7,8 @@ import io.reactivex.Observable;
 import io.reactivex.functions.BiConsumer;
 import nucleus.example.base.App;
 import nucleus.example.base.ServerAPI;
-import nucleus.presenter.Factory;
-import nucleus.presenter.RxPresenter;
+import nucleus5.presenter.Factory;
+import nucleus5.presenter.RxPresenter;
 
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 import static io.reactivex.schedulers.Schedulers.io;
