@@ -20,9 +20,9 @@ configurations {
 
 dependencies {
     compile "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
-    compile "info.android15.nucleus:nucleus:$VERSION_NAME"
+    compile "info.android15.nucleus5:nucleus:$VERSION_NAME"
     compileJavadoc "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
-    compileJavadoc "info.android15.nucleus:nucleus:$VERSION_NAME"
+    compileJavadoc "info.android15.nucleus5:nucleus:$VERSION_NAME"
 }
 
 apply from: '../gradle/gradle-mvn-push.gradle'

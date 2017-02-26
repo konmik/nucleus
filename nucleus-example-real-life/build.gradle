@@ -39,9 +39,9 @@ dependencies {
     retrolambdaConfig 'net.orfjackal.retrolambda:retrolambda:2.3.0'
 
     def nucleusVersion = '5.0.0'
-    compile "info.android15.nucleus:nucleus:$nucleusVersion"
-    compile "info.android15.nucleus:nucleus-support-v4:$nucleusVersion"
-    compile "info.android15.nucleus:nucleus-support-v7:$nucleusVersion"
+    compile "info.android15.nucleus5:nucleus:$nucleusVersion"
+    compile "info.android15.nucleus5:nucleus-support-v4:$nucleusVersion"
+    compile "info.android15.nucleus5:nucleus-support-v7:$nucleusVersion"
 
     compile 'com.squareup.retrofit2:retrofit:2.2.0'
     compile 'com.squareup.retrofit2:adapter-rxjava2:2.2.0'
