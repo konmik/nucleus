@@ -94,5 +94,30 @@ dependencies {
 }
 ```
 
+### For RxJava 2:
+
+
+``` groovy
+dependencies {
+    compile 'info.android15.nucleus5:nucleus:5.0.0-beta'
+}
+```
+
+For additional view classes `NucleusSupportFragment`, `NucleusFragmentActivity` include:
+
+``` groovy
+dependencies {
+    compile 'info.android15.nucleus5:nucleus-support-v4:5.0.0-beta'
+}
+```
+
+For additional view classes `NucleusActionBarActivity`, `NucleusAppCompatActivity` include:
+
+``` groovy
+dependencies {
+    compile 'info.android15.nucleus5:nucleus-support-v7:5.0.0-beta'
+}
+```
+
 Hint: you can just copy/paste that classes code into ANY View class
 to keep your View classes hierarchy as you like to.
