@@ -99,7 +99,7 @@ dependencies {
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus5:nucleus:5.0.0-beta'
+    compile 'info.android15.nucleus5:nucleus:5.0.0-beta1'
 }
 ```
 
@@ -107,7 +107,7 @@ For additional view classes `NucleusSupportFragment`, `NucleusFragmentActivity` 
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus5:nucleus-support-v4:5.0.0-beta'
+    compile 'info.android15.nucleus5:nucleus-support-v4:5.0.0-beta1'
 }
 ```
 
@@ -115,7 +115,7 @@ For additional view classes `NucleusActionBarActivity`, `NucleusAppCompatActivit
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus5:nucleus-support-v7:5.0.0-beta'
+    compile 'info.android15.nucleus5:nucleus-support-v7:5.0.0-beta1'
 }
 ```
 
