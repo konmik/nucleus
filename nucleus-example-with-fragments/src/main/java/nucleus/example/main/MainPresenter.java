@@ -3,13 +3,11 @@ package nucleus.example.main;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
+import io.reactivex.functions.BiConsumer;
 import nucleus.example.base.App;
 import nucleus.example.base.ServerAPI;
 import nucleus.example.logging.LoggingPresenter;
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action2;
-import rx.functions.Func0;
 
 public class MainPresenter extends LoggingPresenter<MainFragment> {
 
@@ -31,7 +29,7 @@ public class MainPresenter extends LoggingPresenter<MainFragment> {
             name = savedState.getString(NAME_KEY);
 
         restartableLatestCache(REQUEST_ITEMS,
-            new Func0<Observable<ServerAPI.Response>>() {
+            new SilentCallable<Observable<ServerAPI.Response>>() {
                 @Override
                 public Observable<ServerAPI.Response> call() {
                     return App.getServerAPI()
@@ -39,15 +37,15 @@ public class MainPresenter extends LoggingPresenter<MainFragment> {
                         .observeOn(AndroidSchedulers.mainThread());
                 }
             },
-            new Action2<MainFragment, ServerAPI.Response>() {
+            new BiConsumer<MainFragment, ServerAPI.Response>() {
                 @Override
-                public void call(MainFragment activity, ServerAPI.Response response) {
+                public void accept(MainFragment activity, ServerAPI.Response response) {
                     activity.onItems(response.items, name);
                 }
             },
-            new Action2<MainFragment, Throwable>() {
+            new BiConsumer<MainFragment, Throwable>() {
                 @Override
-                public void call(MainFragment activity, Throwable throwable) {
+                public void accept(MainFragment activity, Throwable throwable) {
                     activity.onNetworkError(throwable);
                 }
             });

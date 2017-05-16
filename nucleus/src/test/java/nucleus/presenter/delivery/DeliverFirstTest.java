@@ -4,13 +4,12 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
-import rx.Notification;
-import rx.Subscription;
-import rx.exceptions.OnErrorNotImplementedException;
-import rx.functions.Action1;
-import rx.functions.Action2;
-import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
+import io.reactivex.Notification;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiConsumer;
+import io.reactivex.functions.Consumer;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subscribers.TestSubscriber;
 
 import static org.junit.Assert.assertFalse;
 
@@ -24,20 +23,20 @@ public class DeliverFirstTest {
 
         final PublishSubject<Integer> subject = PublishSubject.create();
         DeliverFirst<Object, Integer> restartable = new DeliverFirst<>(view);
-        Subscription subscription = restartable.call(subject)
-            .subscribe(new Action1<Delivery<Object, Integer>>() {
+        Disposable subscription = restartable.apply(subject)
+            .subscribe(new Consumer<Delivery<Object, Integer>>() {
                 @Override
-                public void call(Delivery<Object, Integer> delivery) {
+                public void accept(Delivery<Object, Integer> delivery) throws Exception {
                     delivery.split(
-                        new Action2<Object, Integer>() {
+                        new BiConsumer<Object, Integer>() {
                             @Override
-                            public void call(Object o, Integer integer) {
+                            public void accept(Object o, Integer integer) {
                                 testSubscriber.onNext(new Delivery<>(o, Notification.createOnNext(integer)));
                             }
                         },
-                        new Action2<Object, Throwable>() {
+                        new BiConsumer<Object, Throwable>() {
                             @Override
-                            public void call(Object o, Throwable throwable) {
+                            public void accept(Object o, Throwable throwable) {
                                 testSubscriber.onNext(new Delivery<>(o, Notification.<Integer>createOnError(throwable)));
                             }
                         }
@@ -50,7 +49,7 @@ public class DeliverFirstTest {
         subject.onNext(2);
         subject.onNext(3);
 
-        testSubscriber.assertNotCompleted();
+        testSubscriber.assertNotComplete();
         testSubscriber.assertNoValues();
 
         view.onNext(100);
@@ -74,9 +73,9 @@ public class DeliverFirstTest {
         testSubscriber.assertValueCount(1);
 
         // final checks
-        testSubscriber.assertReceivedOnNext(deliveries);
+        testSubscriber.assertValueSequence(deliveries);
 
-        subscription.unsubscribe();
+        subscription.dispose();
         assertFalse(subject.hasObservers());
         assertFalse(view.hasObservers());
     }
@@ -89,20 +88,20 @@ public class DeliverFirstTest {
 
         final PublishSubject<Integer> subject = PublishSubject.create();
         DeliverFirst<Object, Integer> restartable = new DeliverFirst<>(view);
-        Subscription subscription = restartable.call(subject)
-            .subscribe(new Action1<Delivery<Object, Integer>>() {
+        Disposable subscription = restartable.apply(subject)
+            .subscribe(new Consumer<Delivery<Object, Integer>>() {
                 @Override
-                public void call(Delivery<Object, Integer> delivery) {
+                public void accept(Delivery<Object, Integer> delivery) throws Exception {
                     delivery.split(
-                        new Action2<Object, Integer>() {
+                        new BiConsumer<Object, Integer>() {
                             @Override
-                            public void call(Object o, Integer integer) {
+                            public void accept(Object o, Integer integer) {
                                 testSubscriber.onNext(new Delivery<>(o, Notification.createOnNext(integer)));
                             }
                         },
-                        new Action2<Object, Throwable>() {
+                        new BiConsumer<Object, Throwable>() {
                             @Override
-                            public void call(Object o, Throwable throwable) {
+                            public void accept(Object o, Throwable throwable) {
                                 testSubscriber.onNext(new Delivery<>(o, Notification.<Integer>createOnError(throwable)));
                             }
                         }
@@ -114,7 +113,7 @@ public class DeliverFirstTest {
         Throwable throwable = new Throwable();
         subject.onError(throwable);
 
-        testSubscriber.assertNotCompleted();
+        testSubscriber.assertNotComplete();
         testSubscriber.assertNoValues();
 
         view.onNext(100);
@@ -123,45 +122,29 @@ public class DeliverFirstTest {
         testSubscriber.assertValueCount(1);
 
         // final checks
-        testSubscriber.assertReceivedOnNext(deliveries);
+        testSubscriber.assertValueSequence(deliveries);
 
-        subscription.unsubscribe();
+        subscription.dispose();
         assertFalse(subject.hasObservers());
         assertFalse(view.hasObservers());
     }
 
     //  https://github.com/ReactiveX/RxJava/issues/3182
-    @Test(expected = OnErrorNotImplementedException.class)
+    @Test(expected = RuntimeException.class)
     public void testThrowDuringOnNext() throws Exception {
-
-//        Observable
-//            .just(1)
-//            .filter(new Func1<Integer, Boolean>() {
-//                @Override
-//                public Boolean call(Integer integer) {
-//                    return true;
-//                }
-//            })
-//            .first()
-//            .subscribe(new Action1<Integer>() {
-//                @Override
-//                public void call(Integer integer) {
-//                    throw new RuntimeException();
-//                }
-//            });
 
         PublishSubject<Object> view = PublishSubject.create();
 
         final PublishSubject<Integer> subject = PublishSubject.create();
         new DeliverFirst<Object, Integer>(view)
-            .call(subject)
-            .subscribe(new Action1<Delivery<Object, Integer>>() {
+            .apply(subject)
+            .subscribe(new Consumer<Delivery<Object, Integer>>() {
                 @Override
-                public void call(Delivery<Object, Integer> delivery) {
+                public void accept(Delivery<Object, Integer> delivery) throws Exception {
                     delivery.split(
-                        new Action2<Object, Integer>() {
+                        new BiConsumer<Object, Integer>() {
                             @Override
-                            public void call(Object o, Integer integer) {
+                            public void accept(Object o, Integer integer) {
                                 throw new RuntimeException();
                             }
                         },

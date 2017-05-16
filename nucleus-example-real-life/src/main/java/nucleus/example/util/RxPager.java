@@ -1,6 +1,6 @@
 package nucleus.example.util;
 
-import rx.functions.Action1;
+import io.reactivex.functions.Consumer;
 
 public class RxPager {
 
@@ -9,9 +9,9 @@ public class RxPager {
     private final int pageSize;
     private int size = 0;
     private int requested = NOT_REQUESTED;
-    private Action1<Integer> onRequest;
+    private Consumer<Integer> onRequest;
 
-    public RxPager(int pageSize, Action1<Integer> onRequest) {
+    public RxPager(int pageSize, Consumer<Integer> onRequest) {
         this.pageSize = pageSize;
         this.onRequest = onRequest;
     }
@@ -19,7 +19,7 @@ public class RxPager {
     public void next() {
         if (size % pageSize == 0 && requested != size) {
             requested = size;
-            onRequest.call(size / pageSize);
+            onRequest.accept(size / pageSize);
         }
     }
 

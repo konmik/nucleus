@@ -4,18 +4,17 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
-import rx.Notification;
-import rx.Observable;
-import rx.Subscription;
-import rx.functions.Action1;
-import rx.functions.Action2;
-import rx.functions.Func1;
-import rx.observers.TestObserver;
-import rx.observers.TestSubscriber;
-import rx.subjects.BehaviorSubject;
-import rx.subjects.PublishSubject;
+import io.reactivex.Notification;
+import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiConsumer;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.observers.TestObserver;
+import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subscribers.TestSubscriber;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class DeliverReplayTest {
@@ -28,20 +27,20 @@ public class DeliverReplayTest {
 
         final PublishSubject<Integer> subject = PublishSubject.create();
         DeliverReplay<Object, Integer> restartable = new DeliverReplay<>(view);
-        Subscription subscription = restartable.call(subject)
-            .subscribe(new Action1<Delivery<Object, Integer>>() {
+        Disposable subscription = restartable.apply(subject)
+            .subscribe(new Consumer<Delivery<Object, Integer>>() {
                 @Override
-                public void call(Delivery<Object, Integer> delivery) {
+                public void accept(Delivery<Object, Integer> delivery) throws Exception {
                     delivery.split(
-                        new Action2<Object, Integer>() {
+                        new BiConsumer<Object, Integer>() {
                             @Override
-                            public void call(Object o, Integer integer) {
+                            public void accept(Object o, Integer integer) {
                                 testSubscriber.onNext(new Delivery<>(o, Notification.createOnNext(integer)));
                             }
                         },
-                        new Action2<Object, Throwable>() {
+                        new BiConsumer<Object, Throwable>() {
                             @Override
-                            public void call(Object o, Throwable throwable) {
+                            public void accept(Object o, Throwable throwable) {
                                 testSubscriber.onNext(new Delivery<>(o, Notification.<Integer>createOnError(throwable)));
                             }
                         }
@@ -54,7 +53,7 @@ public class DeliverReplayTest {
         subject.onNext(2);
         subject.onNext(3);
 
-        testSubscriber.assertNotCompleted();
+        testSubscriber.assertNotComplete();
         testSubscriber.assertNoValues();
 
         view.onNext(100);
@@ -63,13 +62,13 @@ public class DeliverReplayTest {
         deliveries.add(new Delivery<Object, Integer>(100, Notification.createOnNext(3)));
 
         testSubscriber.assertValueCount(3);
-        testSubscriber.assertNotCompleted();
+        testSubscriber.assertNotComplete();
 
         // no values delivered if a view has been detached
         view.onNext(null);
 
         testSubscriber.assertValueCount(3);
-        testSubscriber.assertNotCompleted();
+        testSubscriber.assertNotComplete();
 
         // all values will be be re-delivered to the new view
         view.onNext(101);
@@ -78,7 +77,7 @@ public class DeliverReplayTest {
         deliveries.add(new Delivery<Object, Integer>(101, Notification.createOnNext(3)));
 
         testSubscriber.assertValueCount(6);
-        testSubscriber.assertNotCompleted();
+        testSubscriber.assertNotComplete();
 
         // a throwable will be delivered as well
         Throwable throwable = new Throwable();
@@ -86,12 +85,12 @@ public class DeliverReplayTest {
         deliveries.add(new Delivery<Object, Integer>(101, Notification.<Integer>createOnError(throwable)));
 
         testSubscriber.assertValueCount(7);
-        testSubscriber.assertNotCompleted();
+        testSubscriber.assertNotComplete();
 
         // final checks
-        testSubscriber.assertReceivedOnNext(deliveries);
+        testSubscriber.assertValueSequence(deliveries);
 
-        subscription.unsubscribe();
+        subscription.dispose();
         assertFalse(subject.hasObservers());
         assertFalse(view.hasObservers());
     }
@@ -99,9 +98,9 @@ public class DeliverReplayTest {
     private static final int PAGE_SIZE = 3;
 
     private Observable<String> requestPage(int pageNumber, int pageSize) {
-        return Observable.range(pageNumber * pageSize, pageSize).map(new Func1<Integer, String>() {
+        return Observable.range(pageNumber * pageSize, pageSize).map(new Function<Integer, String>() {
             @Override
-            public String call(Integer integer) {
+            public String apply(Integer integer) {
                 return integer.toString();
             }
         });
@@ -116,24 +115,24 @@ public class DeliverReplayTest {
         final TestObserver<Delivery<Object, String>> testObserver = new TestObserver<>();
 
         nextPageRequests
-            .concatMap(new Func1<Integer, Observable<Integer>>() {
+            .concatMap(new Function<Integer, Observable<Integer>>() {
                 @Override
-                public Observable<Integer> call(Integer targetPage) {
+                public Observable<Integer> apply(Integer targetPage) {
                     return targetPage <= requestedPageCount ?
                         Observable.<Integer>never() :
                         Observable.range(requestedPageCount, targetPage - requestedPageCount);
                 }
             })
-            .doOnNext(new Action1<Integer>() {
+            .doOnNext(new Consumer<Integer>() {
                 @Override
-                public void call(Integer it) {
+                public void accept(Integer it) {
                     requestedPageCount = it + 1;
                 }
             })
             .startWith(Observable.range(0, requestedPageCount))
-            .concatMap(new Func1<Integer, Observable<String>>() {
+            .concatMap(new Function<Integer, Observable<String>>() {
                 @Override
-                public Observable<String> call(final Integer page) {
+                public Observable<String> apply(final Integer page) {
                     return requestPage(page, PAGE_SIZE);
                 }
             })
@@ -142,33 +141,33 @@ public class DeliverReplayTest {
 
         ArrayList<Delivery<Object, String>> onNext = new ArrayList<>();
 
-        testObserver.assertReceivedOnNext(onNext);
+        testObserver.assertValueSequence(onNext);
 
         view.onNext(999);
         addOnNext(onNext, 999, 0, 1, 2);
 
-        testObserver.assertReceivedOnNext(onNext);
+        testObserver.assertValueSequence(onNext);
 
         nextPageRequests.onNext(2);
         addOnNext(onNext, 999, 3, 4, 5);
 
-        testObserver.assertReceivedOnNext(onNext);
+        testObserver.assertValueSequence(onNext);
 
         view.onNext(null);
 
-        assertEquals(0, testObserver.getOnCompletedEvents().size());
-        testObserver.assertReceivedOnNext(onNext);
+        testObserver.assertNotComplete();
+        testObserver.assertValueSequence(onNext);
 
         nextPageRequests.onNext(3);
 
-        assertEquals(0, testObserver.getOnCompletedEvents().size());
-        testObserver.assertReceivedOnNext(onNext);
+        testObserver.assertNotComplete();
+        testObserver.assertValueSequence(onNext);
 
         view.onNext(9999);
         addOnNext(onNext, 9999, 0, 1, 2, 3, 4, 5, 6, 7, 8);
 
-        assertEquals(0, testObserver.getOnCompletedEvents().size());
-        testObserver.assertReceivedOnNext(onNext);
+        testObserver.assertNotComplete();
+        testObserver.assertValueSequence(onNext);
     }
 
     private void addOnNext(ArrayList<Delivery<Object, String>> onNext, Object view, int... values) {

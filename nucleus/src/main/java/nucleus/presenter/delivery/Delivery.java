@@ -2,8 +2,8 @@ package nucleus.presenter.delivery;
 
 import android.support.annotation.Nullable;
 
-import rx.Notification;
-import rx.functions.Action2;
+import io.reactivex.Notification;
+import io.reactivex.functions.BiConsumer;
 
 /**
  * A class that represents a couple of View and Data.
@@ -21,11 +21,11 @@ public final class Delivery<View, T> {
         this.notification = notification;
     }
 
-    public void split(Action2<View, T> onNext, @Nullable Action2<View, Throwable> onError) {
-        if (notification.getKind() == Notification.Kind.OnNext)
-            onNext.call(view, notification.getValue());
-        else if (onError != null && notification.getKind() == Notification.Kind.OnError)
-            onError.call(view, notification.getThrowable());
+    public void split(BiConsumer<View, T> onNext, @Nullable BiConsumer<View, Throwable> onError) throws Exception {
+        if (notification.isOnNext())
+            onNext.accept(view, notification.getValue());
+        else if (onError != null && notification.isOnError())
+            onError.accept(view, notification.getError());
     }
 
     @Override

@@ -8,44 +8,40 @@ import org.mockito.Mockito;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.TestObserver;
 import mocks.BundleMock;
-import rx.Subscription;
-import rx.functions.Func0;
-import rx.observers.TestSubscriber;
+import nucleus.SilentCallable;
 
-import static org.mockito.Mockito.atLeastOnce;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertFalse;
-
 public class RxPresenterTest {
 
     @Test
     public void testAdd()  throws Exception {
         RxPresenter presenter = new RxPresenter();
-        Subscription mock = Mockito.mock(Subscription.class);
-        when(mock.isUnsubscribed()).thenReturn(false);
+        Disposable mock = Mockito.mock(Disposable.class);
+        when(mock.isDisposed()).thenReturn(false);
         presenter.add(mock);
         presenter.onDestroy();
-        verify(mock, times(1)).unsubscribe();
-        verify(mock, atLeastOnce()).isUnsubscribed();
+        verify(mock, times(1)).dispose();
         verifyNoMoreInteractions(mock);
     }
 
     @Test
     public void testAddRemove()  throws Exception {
         RxPresenter presenter = new RxPresenter();
-        Subscription mock = Mockito.mock(Subscription.class);
-        when(mock.isUnsubscribed()).thenReturn(false);
+        Disposable mock = Mockito.mock(Disposable.class);
+        when(mock.isDisposed()).thenReturn(false);
         presenter.add(mock);
         presenter.remove(mock);
-        verify(mock, atLeastOnce()).isUnsubscribed();
-        verify(mock, times(1)).unsubscribe();
+        verify(mock, times(1)).dispose();
         presenter.onDestroy();
         verifyNoMoreInteractions(mock);
     }
@@ -55,10 +51,10 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.create(null);
 
-        Func0<Subscription> restartable = mock(Func0.class);
-        Subscription subscription = mock(Subscription.class);
+        SilentCallable<Disposable> restartable = mock(SilentCallable.class);
+        Disposable subscription = mock(Disposable.class);
         when(restartable.call()).thenReturn(subscription);
-        when(subscription.isUnsubscribed()).thenReturn(false);
+        when(subscription.isDisposed()).thenReturn(false);
         presenter.restartable(1, restartable);
 
         verifyNoMoreInteractions(restartable);
@@ -84,10 +80,10 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.onCreate(null);
 
-        Func0<Subscription> restartable = mock(Func0.class);
-        Subscription subscription = mock(Subscription.class);
+        SilentCallable<Disposable> restartable = mock(SilentCallable.class);
+        Disposable subscription = mock(Disposable.class);
         when(restartable.call()).thenReturn(subscription);
-        when(subscription.isUnsubscribed()).thenReturn(false);
+        when(subscription.isDisposed()).thenReturn(false);
         presenter.restartable(1, restartable);
 
         verifyNoMoreInteractions(restartable);
@@ -112,14 +108,14 @@ public class RxPresenterTest {
 
     @Test
     public void testCompletedRestartable() throws Exception {
-        Func0<Subscription> restartable = mock(Func0.class);
-        Subscription subscription = mock(Subscription.class);
+        SilentCallable<Disposable> restartable = mock(SilentCallable.class);
+        Disposable subscription = mock(Disposable.class);
 
         RxPresenter presenter = new RxPresenter();
         presenter.create(null);
 
         when(restartable.call()).thenReturn(subscription);
-        when(subscription.isUnsubscribed()).thenReturn(true);
+        when(subscription.isDisposed()).thenReturn(true);
         presenter.restartable(1, restartable);
 
         verifyNoMoreInteractions(restartable);
@@ -132,10 +128,10 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.onCreate(null);
 
-        Func0<Subscription> restartable = mock(Func0.class);
-        Subscription subscription = mock(Subscription.class);
+        SilentCallable<Disposable> restartable = mock(SilentCallable.class);
+        Disposable subscription = mock(Disposable.class);
         when(restartable.call()).thenReturn(subscription);
-        when(subscription.isUnsubscribed()).thenReturn(false);
+        when(subscription.isDisposed()).thenReturn(false);
         presenter.restartable(1, restartable);
 
         verifyNoMoreInteractions(restartable);
@@ -145,7 +141,7 @@ public class RxPresenterTest {
         verify(restartable, times(1)).call();
         verifyNoMoreInteractions(restartable);
 
-        when(subscription.isUnsubscribed()).thenReturn(true);
+        when(subscription.isDisposed()).thenReturn(true);
         Bundle bundle = BundleMock.mock();
         presenter.onSave(bundle);
 
@@ -161,13 +157,13 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.create(null);
 
-        Func0<Subscription> restartable = mock(Func0.class);
-        Subscription subscription = mock(Subscription.class);
+        SilentCallable<Disposable> restartable = mock(SilentCallable.class);
+        Disposable subscription = mock(Disposable.class);
         when(restartable.call()).thenReturn(subscription);
-        when(subscription.isUnsubscribed()).thenReturn(false);
+        when(subscription.isDisposed()).thenReturn(false);
 
         presenter.restartable(1, restartable);
-        assertTrue(presenter.isUnsubscribed(1));
+        assertTrue(presenter.isDisposed(1));
     }
 
     @Test
@@ -175,15 +171,15 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.create(null);
 
-        Func0<Subscription> restartable = mock(Func0.class);
-        Subscription subscription = mock(Subscription.class);
+        SilentCallable<Disposable> restartable = mock(SilentCallable.class);
+        Disposable subscription = mock(Disposable.class);
         when(restartable.call()).thenReturn(subscription);
-        when(subscription.isUnsubscribed()).thenReturn(false);
+        when(subscription.isDisposed()).thenReturn(false);
 
         presenter.restartable(1, restartable);
-        assertTrue(presenter.isUnsubscribed(1));
+        assertTrue(presenter.isDisposed(1));
         presenter.start(1);
-        assertFalse(presenter.isUnsubscribed(1));
+        assertFalse(presenter.isDisposed(1));
     }
 
     @Test
@@ -191,15 +187,15 @@ public class RxPresenterTest {
         RxPresenter presenter = new RxPresenter();
         presenter.create(null);
 
-        Func0<Subscription> restartable = mock(Func0.class);
-        Subscription subscription = mock(Subscription.class);
+        SilentCallable<Disposable> restartable = mock(SilentCallable.class);
+        Disposable subscription = mock(Disposable.class);
         when(restartable.call()).thenReturn(subscription);
-        when(subscription.isUnsubscribed()).thenReturn(true);
+        when(subscription.isDisposed()).thenReturn(true);
 
         presenter.restartable(1, restartable);
-        assertTrue(presenter.isUnsubscribed(1));
+        assertTrue(presenter.isDisposed(1));
         presenter.start(1);
-        assertTrue(presenter.isUnsubscribed(1));
+        assertTrue(presenter.isDisposed(1));
     }
     
     @Test
@@ -207,30 +203,30 @@ public class RxPresenterTest {
         RxPresenter<Integer> presenter = new RxPresenter<>();
         presenter.onCreate(null);
 
-        TestSubscriber<Integer> testSubscriber = new TestSubscriber<>();
-        presenter.view().subscribe(testSubscriber);
-        testSubscriber.assertValueCount(0);
+        TestObserver<Integer> testObserver = new TestObserver<>();
+        presenter.view().subscribe(testObserver);
+        testObserver.assertValueCount(0);
 
         List<Integer> values = new ArrayList<>();
 
         presenter.onTakeView(1);
         values.add(1);
-        assertValues(values, testSubscriber);
+        assertValues(values, testObserver);
 
         presenter.onDropView();
         values.add(null);
-        assertValues(values, testSubscriber);
+        assertValues(values, testObserver);
 
         presenter.onTakeView(2);
         values.add(2);
-        assertValues(values, testSubscriber);
+        assertValues(values, testObserver);
 
         presenter.onDestroy();
-        assertValues(values, testSubscriber);
-        testSubscriber.assertCompleted();
+        assertValues(values, testObserver);
+        testObserver.assertComplete();
     }
 
-    private void assertValues(List<Integer> values, TestSubscriber<Integer> subscriber) {
-        subscriber.assertValues(values.toArray(new Integer[values.size()]));
+    private void assertValues(List<Integer> values, TestObserver<Integer> observer) {
+        observer.assertValues(values.toArray(new Integer[values.size()]));
     }
 }

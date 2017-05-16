@@ -8,8 +8,8 @@ import nucleus.example.base.ServerAPI;
 import nucleus.presenter.RxPresenter;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action2;
-import rx.functions.Func0;
+import rx.functions.BiConsumer;
+import rx.functions.SilentCallable;
 
 public class MainPresenter extends RxPresenter<MainActivity> {
 
@@ -31,7 +31,7 @@ public class MainPresenter extends RxPresenter<MainActivity> {
             name = savedState.getString(NAME_KEY);
 
         restartableLatestCache(REQUEST_ITEMS,
-            new Func0<Observable<ServerAPI.Response>>() {
+            new SilentCallable<Observable<ServerAPI.Response>>() {
                 @Override
                 public Observable<ServerAPI.Response> call() {
                     return App.getServerAPI()
@@ -39,13 +39,13 @@ public class MainPresenter extends RxPresenter<MainActivity> {
                         .observeOn(AndroidSchedulers.mainThread());
                 }
             },
-            new Action2<MainActivity, ServerAPI.Response>() {
+            new BiConsumer<MainActivity, ServerAPI.Response>() {
                 @Override
                 public void call(MainActivity activity, ServerAPI.Response response) {
                     activity.onItems(response.items, name);
                 }
             },
-            new Action2<MainActivity, Throwable>() {
+            new BiConsumer<MainActivity, Throwable>() {
                 @Override
                 public void call(MainActivity activity, Throwable throwable) {
                     activity.onNetworkError(throwable);
