@@ -94,6 +94,14 @@ dependencies {
 }
 ```
 
+ProGuard config:
+
+```
+-keepclassmembers class * extends nucleus.presenter.Presenter {
+    <init>();
+}
+```
+
 ### For RxJava 2:
 
 
@@ -121,3 +129,11 @@ dependencies {
 
 Hint: you can just copy/paste those classes code into ANY View class
 to keep your View classes hierarchy as you like to.
+
+ProGuard config:
+
+```
+-keepclassmembers class * extends nucleus5.presenter.Presenter {
+    <init>();
+}
+```
