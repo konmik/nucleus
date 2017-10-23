@@ -15,9 +15,9 @@ configurations {
 }
 
 dependencies {
-    compile "com.android.support:support-annotations:$rootProject.supportLibraryVersion"
+    compile "com.android.support:support-annotations:$rootProject.supportAnnotationsVersion"
     compile "io.reactivex.rxjava2:rxjava:$rootProject.rxVersion"
-    compileJavadoc "com.android.support:support-annotations:$rootProject.supportLibraryVersion"
+    compileJavadoc "com.android.support:support-annotations:$rootProject.supportAnnotationsVersion"
     compileJavadoc "io.reactivex.rxjava2:rxjava:$rootProject.rxVersion"
 
     testCompile project(':nucleus-test-kit')
