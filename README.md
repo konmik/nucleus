@@ -86,7 +86,7 @@ dependencies {
 }
 ```
 
-For additional view classes `NucleusActionBarActivity`, `NucleusAppCompatActivity` include:
+For additional view class `NucleusAppCompatActivity` include:
 
 ``` groovy
 dependencies {
@@ -119,7 +119,7 @@ dependencies {
 }
 ```
 
-For additional view classes `NucleusActionBarActivity`, `NucleusAppCompatActivity` include:
+For additional view class `NucleusAppCompatActivity` include:
 
 ``` groovy
 dependencies {
