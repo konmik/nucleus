@@ -31,13 +31,14 @@ android {
 
 repositories {
     jcenter()
+    mavenLocal()
     maven { url "https://clojars.org/repo/" }
 }
 
 dependencies {
     retrolambdaConfig 'net.orfjackal.retrolambda:retrolambda:2.3.0'
 
-    def nucleusVersion = '3.0.0'
+    def nucleusVersion = '6.0.0'
     compile "info.android15.nucleus:nucleus:$nucleusVersion"
     compile "info.android15.nucleus:nucleus-support-v4:$nucleusVersion"
     compile "info.android15.nucleus:nucleus-support-v7:$nucleusVersion"
@@ -51,7 +52,7 @@ dependencies {
     compile 'frankiesardo:icepick:3.2.0'
     apt 'frankiesardo:icepick-processor:3.2.0'
 
-    def supportVersion = '23.4.0'
+    def supportVersion = '26.0.0'
     compile "com.android.support:recyclerview-v7:$supportVersion"
 
     def daggerVersion = '2.4'

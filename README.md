@@ -74,7 +74,7 @@ became: "Nucleus is a simple Android library, which utilizes the Model-View-Pres
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus:4.0.0'
+    compile 'info.android15.nucleus:nucleus:6.0.0'
 }
 ```
 
@@ -82,7 +82,7 @@ For additional view classes `NucleusSupportFragment`, `NucleusFragmentActivity` 
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus-support-v4:4.0.0'
+    compile 'info.android15.nucleus:nucleus-support-v4:6.0.0'
 }
 ```
 
@@ -90,7 +90,7 @@ For additional view classes `NucleusActionBarActivity`, `NucleusAppCompatActivit
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus:nucleus-support-v7:4.0.0'
+    compile 'info.android15.nucleus:nucleus-support-v7:6.0.0'
 }
 ```
 
@@ -99,7 +99,7 @@ dependencies {
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus5:nucleus:5.0.0-beta1'
+    compile 'info.android15.nucleus5:nucleus:7.0.0'
 }
 ```
 
@@ -107,7 +107,7 @@ For additional view classes `NucleusSupportFragment`, `NucleusFragmentActivity` 
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus5:nucleus-support-v4:5.0.0-beta1'
+    compile 'info.android15.nucleus5:nucleus-support-v4:7.0.0'
 }
 ```
 
@@ -115,9 +115,9 @@ For additional view classes `NucleusActionBarActivity`, `NucleusAppCompatActivit
 
 ``` groovy
 dependencies {
-    compile 'info.android15.nucleus5:nucleus-support-v7:5.0.0-beta1'
+    compile 'info.android15.nucleus5:nucleus-support-v7:7.0.0'
 }
 ```
 
-Hint: you can just copy/paste that classes code into ANY View class
+Hint: you can just copy/paste those classes code into ANY View class
 to keep your View classes hierarchy as you like to.
