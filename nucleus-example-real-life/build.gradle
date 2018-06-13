@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
-apply plugin: 'android-apt'
 
 buildscript {
     repositories {
@@ -8,7 +7,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
-        classpath 'me.tatarka:gradle-retrolambda:3.2.5'
+        classpath 'me.tatarka:gradle-retrolambda:3.6.1'
         classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
     }
     configurations.classpath.exclude group: 'com.android.tools.external.lombok'
@@ -16,7 +15,6 @@ buildscript {
 
 android {
     compileSdkVersion rootProject.compileSdkVersion
-    buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
@@ -52,7 +50,7 @@ dependencies {
     compile 'com.jakewharton:butterknife:7.0.1'
 
     compile 'frankiesardo:icepick:3.2.0'
-    apt 'frankiesardo:icepick-processor:3.2.0'
+    annotationProcessor 'frankiesardo:icepick-processor:3.2.0'
 
     def supportVersion = '26.0.0'
     compile "com.android.support:recyclerview-v7:$supportVersion"
@@ -60,5 +58,5 @@ dependencies {
     def daggerVersion = '2.4'
     compile "javax.annotation:javax.annotation-api:1.2"
     compile "com.google.dagger:dagger:$daggerVersion"
-    apt "com.google.dagger:dagger-compiler:$daggerVersion"
+    annotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
 }

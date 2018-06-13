@@ -18,9 +18,11 @@ configurations {
 }
 
 dependencies {
-    compile "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
+    compile "androidx.legacy:legacy-support-v4:1.0.0-alpha3"
+    compile "androidx.appcompat:appcompat:1.0.0-alpha3"
     compile "info.android15.nucleus5:nucleus:$VERSION_NAME"
-    compileJavadoc "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
+    compileJavadoc "androidx.legacy:legacy-support-v4:1.0.0-alpha3"
+    compileJavadoc "androidx.appcompat:appcompat:1.0.0-alpha3"
     compileJavadoc "info.android15.nucleus5:nucleus:$VERSION_NAME"
 }
 
