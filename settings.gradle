@@ -1,5 +1,6 @@
 include ':nucleus-test-kit'
 include ':nucleus'
+include ':nucleus-x'
 include ':nucleus-support-v7'
 include ':nucleus-support-v4'
 include ':nucleus-example'
