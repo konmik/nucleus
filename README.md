@@ -3,7 +3,7 @@ Nucleus
 
 ### Deprecation notice
 
-Nucleus is not under develpment anymore. It turn out that Redux architecture scales way better than MVP/MVI/MVVM/MVxxx and I do not see further development of Nucleus valuable.
+Nucleus is not under develpment anymore. It turns out that Redux architecture scales way better than MVP/MVI/MVVM/MVxxx and I do not see further development of Nucleus valuable.
 
 I recommend considering [ReKotlin](https://github.com/ReKotlin/ReKotlin) as a simple Redux implementation.
 
