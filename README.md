@@ -1,6 +1,14 @@
 Nucleus
 =======
 
+### Deprecation notice
+
+Nucleus is not under develpment anymore. It turn out that Redux architecture scales way better than MVP/MVI/MVVM/MVxxx and I do not see further development of Nucleus valuable.
+
+I recommend considering [ReKotlin](https://github.com/ReKotlin/ReKotlin) as a simple Redux implementation.
+
+### Info
+
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Nucleus-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/1379) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/info.android15.nucleus/nucleus/badge.png)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22info.android15.nucleus%22%20AND%20a%3A%22nucleus%22)
 
 
